@@ -20,7 +20,7 @@
         #canvas {
             border: #504e52;
             border-style: dashed;
-            border-width: 5;
+            border-width: 3;
             outline: none;  /* because of the 'tabindex' focus trick */
             background-color: var(--canvas-bg-color);
         }
@@ -34,20 +34,20 @@
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.17"></script>
 
     <script>
-        const maxRadius = 200;
-        const maxClusters = 20;
-        const minClusterSize = 50;
-        const predefinedColors = ['green', 'red', 'orange', 'cyan', 'magenta', 'lavender', 'teal'];
+        const maxRadius = 300;
+        const maxClusters = 5000;
+        const minClusterSize = 10;
+        const predefinedColors = ['red', 'yellow', 'blue', 'green', 'cyan', 'pink', 'brown', 'tan', 'gold', 'navy', 'lime', 'white'];
         const settings = {
             seed: 91651088029,
             fps: 0,
             atoms: {
-                count: 500,  // Per Color
-                radius: 1,
+                count: 200,  // Per Color
+                radius: 2.5,
             },
             drawings: {  // Drawing options can be expensive on performance
                 lines: false,   // draw lines between atoms that arr effecting each other
-                circle: false,  // draw atoms as circles
+                circle: true,  // draw atoms as circles
                 clusters: false,
                 background_color: '#000000', // Background color
             },
@@ -56,7 +56,7 @@
                 image: () => {
                     const imageDataURL = canvas.toDataURL({
                         format: 'png',
-                        quality: 1
+                        quality: 7
                     });
                     dataURL_downloader(imageDataURL);
                 },
@@ -65,19 +65,19 @@
                     mediaRecorder.state == 'recording' ? mediaRecorder.stop() : mediaRecorder.start();
                 },
             },
-            explore: false,
-            explorePeriod: 100,
+            explore: true,
+            explorePeriod: 60,
             rules: {},
             rulesArray: [],
             radii: {},
             radii2Array: [],
             colors: [],
-            numColors: 4,
+            numColors: 12,
             time_scale: 1.0,
-            viscosity: 0.7,  // speed-dampening (can be >1 !)
+            viscosity: 0.8,  // speed-dampening (can be >1 !)
             gravity: 0.0,  // pulling downward
-            pulseDuration: 10,
-            wallRepel: 40,
+            pulseDuration: 1,
+            wallRepel: 20,
             reset: () => {
                 randomAtoms(settings.atoms.count, true)
             },
@@ -145,7 +145,7 @@
             configFolder.add(settings, 'reset').name('Reset')
             configFolder.add(settings, 'randomRules').name('Random Rules')
             configFolder.add(settings, 'symmetricRules').name('Symmetric Rules')
-            configFolder.add(settings, 'numColors', 1, 7, 1).name('Number of Colors')
+            configFolder.add(settings, 'numColors', 1, 12, 1).name('Number of Colors')
                 .listen().onFinishChange(v => {
                     setNumberOfColors();
                     startRandom();
@@ -154,14 +154,14 @@
                 startRandom();
             })
             configFolder.add(settings, 'fps').name('FPS - (Live)').listen().disable()
-            configFolder.add(settings.atoms, 'count', 1, 1000, 1).name('Atoms per-color').listen().onFinishChange(v => {
+            configFolder.add(settings.atoms, 'count', 1, 3000, 1).name('Atoms per-color').listen().onFinishChange(v => {
                 randomAtoms(v, true)
             })
             configFolder.add(settings, 'time_scale', 0.1, 5, 0.01).name('Time Scale').listen()
             configFolder.add(settings, 'viscosity', 0.1, 2, 0.1).name('Viscosity').listen()
 
             configFolder.add(settings, 'gravity', 0., 1., 0.05).name('Gravity').listen()
-            configFolder.add(settings, 'pulseDuration', 1, 100, 1).name('Click Pulse Duration').listen()
+            configFolder.add(settings, 'pulseDuration', 1, 1, 1).name('Click Pulse Duration').listen()
 
             configFolder.add(settings, 'wallRepel', 0, 100, 1).name('Wall Repel').listen()
             configFolder.add(settings, 'explore').name('Random Exploration').listen()
@@ -176,6 +176,7 @@
             const exportFolder = settings.gui.addFolder('Export')
             exportFolder.add(settings.export, 'image').name('Image')
             exportFolder.add(settings.export, 'video').name('Video: Start / stop')
+
             // Colors
             for (const atomColor of settings.colors) {
                 const colorFolder =
@@ -226,7 +227,7 @@
                 for (const j of settings.colors) {
                     settings.rules[i][j] = mulberry32() * 2 - 1;
                 }
-                settings.radii[i] = 80;
+                settings.radii[i] = mulberry32() * 300;
             }
             console.log(JSON.stringify(settings.rules));
             flattenRules()
@@ -257,8 +258,8 @@
         }
 
         function updateCanvasDimensions() {
-            canvas.width = window.innerWidth * 0.9;
-            canvas.height = window.innerHeight * 0.9;
+            canvas.width = window.innerWidth * 0.98;
+            canvas.height = window.innerHeight * 0.95;
         }
 
         // Initiate Random locations for Atoms ( used when atoms created )
