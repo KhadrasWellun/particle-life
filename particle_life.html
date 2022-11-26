@@ -72,9 +72,9 @@
             radii: {},
             radii2Array: [],
             colors: [],
-            numColors: 12,
+            numColors: 7,
             time_scale: 1.0,
-            viscosity: 0.8,  // speed-dampening (can be >1 !)
+            viscosity: 0.7,  // speed-dampening (can be >1 !)
             gravity: 0.0,  // pulling downward
             pulseDuration: 1,
             wallRepel: 20,
@@ -227,7 +227,7 @@
                 for (const j of settings.colors) {
                     settings.rules[i][j] = mulberry32() * 2 - 1;
                 }
-                settings.radii[i] = mulberry32() * 300;
+                settings.radii[i] = mulberry32() * 100;
             }
             console.log(JSON.stringify(settings.rules));
             flattenRules()
