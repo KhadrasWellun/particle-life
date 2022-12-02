@@ -66,7 +66,7 @@
                 },
             },
             explore: true,
-            explorePeriod: 60,
+            explorePeriod: 180,
             rules: {},
             rulesArray: [],
             radii: {},
@@ -454,7 +454,7 @@
                   if (settings.rules[c1][c2] > 0) new_strength = -new_strength;
                   settings.rules[c1][c2] = new_strength;
                 } else {  // ...otherwise, the radius
-                  settings.radii[c1] = 1 + Math.floor(mulberry32() * maxRadius);
+                  settings.radii[c1] = 1 + Math.floor(mulberry32() * 100);
                 }
                 flattenRules();
                 exploration_timer = settings.explorePeriod;
