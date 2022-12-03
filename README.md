@@ -34,11 +34,11 @@ Interface (C++ version)
 
 Example Results
 --------------------------------------------------------
-![](images/Screen_20221203-01.png)
+![](images/Screen_20221203-01.jpg)
 -----------------------------------------------
-![](images/Screen_20221203-02.png)
+![](images/Screen_20221203-02.jpg)
 -----------------------------------------------
-![](images/Screen_20221203-03.png)
+![](images/Screen_20221203-03.jpg)
 
 
 
@@ -46,9 +46,9 @@ Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
 
-![](images/Aliens_04.png)
+![](images/Aliens_04.jpg)
 -----------------------------------------------
-![](images/Dark_Matter.jpeg)
+![](images/Dark_Matter.jpg)
 
 To use:
 -------------
