@@ -17,7 +17,7 @@ https://youtu.be/b-afHvgact0
 https://youtu.be/5G5Bnc5s7Kg
 -----------------------------------------------
 https://youtu.be/3rGuQ2XCYvc
-
+-----------------------------------------------
 Online Demo (JavaScript version):
 -------------
 Click here for a live demo (JavaScript): 
@@ -27,25 +27,23 @@ Click here for a live demo (JavaScript):
 -----------------------------------------------  
 A moddified version is here:
   - 2d - https://khadraswellun.github.io/particle-life/particle_life.html
-  
+----------------------------------------------- 
 Interface (C++ version)
 --------------------------------------------------------
-![](images/Interface_1.2.png)
-
+![](images/Interface_1_2.png)
+-----------------------------------------------
 Example Results
 --------------------------------------------------------
-![](images/Screen_20221203-01.jpg)
+![](images/Screen_20221203_01.jpg)
 -----------------------------------------------
-![](images/Screen_20221203-02.jpg)
+![](images/Screen_20221203_02.jpg)
 -----------------------------------------------
-![](images/Screen_20221203-03.jpg)
-
-
+![](images/Screen_20221203_03.jpg)
 
 Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
-
+-----------------------------------------------
 ![](images/Aliens_04.jpg)
 -----------------------------------------------
 ![](images/Dark_Matter.jpg)
