@@ -11,8 +11,11 @@ https://youtu.be/0Kx4Y9TVMGg
 Some Examples Are Here (YouTube videos):
 -----------------------------------------------
 https://youtu.be/97d9fkjQXFQ
+-----------------------------------------------
 https://youtu.be/b-afHvgact0
+-----------------------------------------------
 https://youtu.be/5G5Bnc5s7Kg
+-----------------------------------------------
 https://youtu.be/3rGuQ2XCYvc
 
 Online Demo (JavaScript version):
@@ -21,18 +24,21 @@ Click here for a live demo (JavaScript):
   - 2d - https://hunar4321.github.io/particle-life/particle_life.html
   - 3d - https://hunar4321.github.io/particle-life/particle_life_3d.html
   
+-----------------------------------------------  
 A moddified version is here:
   - 2d - https://khadraswellun.github.io/particle-life/particle_life.html
   
 Interface (C++ version)
 --------------------------------------------------------
-![](images/Interface 1.2.png)
+![](images/Interface_1.2.png)
 
 Example Results
 --------------------------------------------------------
-![](images/Screen 20221203-01.png)
-![](images/Screen 20221203-02.png)
-![](images/Screen 20221203-03.png)
+![](images/Screen_20221203-01.png)
+-----------------------------------------------
+![](images/Screen_20221203-02.png)
+-----------------------------------------------
+![](images/Screen_20221203-03.png)
 
 
 
@@ -40,8 +46,9 @@ Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
 
-![](images/Aliens 04.png)
-![](images/Dark Matter.jpeg)
+![](images/Aliens_04.png)
+-----------------------------------------------
+![](images/Dark_Matter.jpeg)
 
 To use:
 -------------
