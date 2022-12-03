@@ -8,25 +8,39 @@ Learn More Here (YouTube video tutorial):
 -----------------------------------------------
 https://youtu.be/0Kx4Y9TVMGg
 
+Some Examples Are Here (YouTube videos):
+-----------------------------------------------
+https://youtu.be/97d9fkjQXFQ
+https://youtu.be/b-afHvgact0
+https://youtu.be/5G5Bnc5s7Kg
+https://youtu.be/3rGuQ2XCYvc
+
 Online Demo (JavaScript version):
 -------------
 Click here for a live demo (JavaScript): 
   - 2d - https://hunar4321.github.io/particle-life/particle_life.html
   - 3d - https://hunar4321.github.io/particle-life/particle_life_3d.html
+A moddified version is here:
+  - 2d - https://khadraswellun.github.io/particle-life/particle_life.html
   
 Interface (C++ version)
 --------------------------------------------------------
-![](images/interface.jpg)
+![](images/Interface 1.2.png)
 
 Example Results
 --------------------------------------------------------
-![](images/big_pic.jpg)
+![](images/Screen 20221203-01.png)
+![](images/Screen 20221203-02.png)
+![](images/Screen 20221203-03.png)
+
+
 
 Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
 
-![](images/some_patterns.jpg)
+![](images/Aliens 04.png)
+![](images/Dark Matter.jpeg)
 
 To use:
 -------------
@@ -145,14 +159,15 @@ This project was inspired by: Jeffery Ventrella's Clusters http://www.ventrella.
 The code here is probably an order of magnitude simpler than any other Artificial Life codes out there because I started this code solely as an educational material for non-programmers and general audience to prove the point that complexity can arise from simplicity.
 
 
-Todos:
+My Todos:
 --------------------
-1. Adding the ability to save and load parameters (so that people can easily share the interesting models they find)
-2. Ability to add more particle types (currently it is fixed to four particle types)
-3. Currently, the biggest bottleneck is the nested for-loops (which calculate the pairwise distance among all particles) making the computational complexity quadratic. It would be amazing if we could find a way around.
-4. Alternative to point 3, computing the pairwise distances are embarrassingly parallel so it can be computed on GPU.
-5. Adding the ability to resize the screen and improving boundary-checking as many fast moving particles can escape the screen bounds.
-6. Adding a more intuitive UI so that it gives the ability for a finer control over the parameters.
-7. Adding a randomize button or, even better, having a simple meta rule to mutate the initial rule continously and recursively. This way the patterns will never get stuck on a local maximum and will keep changing!
-8. A better way to fine-tune is to use an evolutionary algorithm to select and optimize the parameters but one needs to write a fitness function for that. I currently don't know what fitness function corresponds to in the realm of this program. In our world the fitness function is competition and survival of the fittest. However, here we fine-tune and select the parameters that produce interesting patterns for us but the word "interesting" is easier to say than to define!
+1. Introducing into the interactions between any two colours both the attractive force and the repulsive force, each with its intensity and range acting simultaneously (it is now either attractive or repulsive force).
+2. Ability to add more particle types (currently it is fixed to eight particle types).
+3. Adding the mass parameter for each particle type.
+4. Addition of particle reactivity. When two or more particles touch, there is a probability that some will change colour. This change is done according to a user-defined reactivity table.
+5. Addition of antiparticles, which have negative mass and annihilate on contact with positive mass particles. These will be generated from reactions between normal particles.
+6. Adding metaball. A metaball consists of two or more particles that touch and remain connected for a user-defined minimum time. The metaball will exert an attractive and a repulsive force, calculated according to a certain algorithm and depending on the component particles, and an electric charge as a force resulting from the composition of the internal coloured forces. 
+7. Adding a thermal view option, whereby kinetic energy can be viewed through a specific colour spectrum.
+8. Linking each type of interaction to a probability parameter. Thus, no general probability will apply to all interactions between particles, but each type will have its own probability.
+9. Add the ability to zoom, take screenshots and record video.
 
