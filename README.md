@@ -33,9 +33,9 @@ Interface (C++ version)
 ![](images/Interface_1_2.png)
 --------------------------------------------------------
 Interaction model
-![](images/Particle_Life_Model.jpg)
---------------------------------------------------------
-![](images/Particle_Life_Model_black.jpg)
+
+![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
+
 --------------------------------------------------------
 Example Results
 --------------------------------------------------------
