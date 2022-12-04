@@ -113,7 +113,7 @@ std::vector<point> CreatePoints(const int num, const int r, const int g, const i
  * @param G gravity coefficient
  * @param radius radius of interaction
  */
-void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Group2, const float G, const float radius)
+void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Group2, const float G, const float radius, const float viscosity)
 {
 	const float g = G / -100;	//Gravity coefficient
 	const auto group1size = Group1->size();
@@ -151,11 +151,11 @@ void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Gr
 						fy += (dy / std::sqrt(dx * dx + dy * dy));
 					}
 				}
-
-				//Calculate new velocity
-				p1.vx = (p1.vx + (fx * g)) * (1.0 - viscosity);
-				p1.vy = (p1.vy + (fy * g)) * (1.0 - viscosity) + worldGravity;
-
+				
+					//Calculate new velocity
+					p1.vx = (p1.vx + (fx * g)) * (1 - viscosity);
+					p1.vy = (p1.vy + (fy * g)) * (1 - viscosity) + worldGravity;
+				
 				// Wall Repel
 				if (wallRepel > 0.0F)
 				{
@@ -231,10 +231,18 @@ void ofApp::monads() {
 }
 void ofApp::random()
 {
-	evoProbSlider = RandomFloat(0.1, 2);
-	evoAmountSlider = RandomFloat(0.1, 2);
+	evoProbSlider = RandomFloat(0.1, 1.5);
+	evoAmountSlider = RandomFloat(0.1, 3);
 	viscoSlider = RandomFloat(0.4, 0.9);
-	probabilitySlider = RandomFloat(50, 100);
+	viscoSliderR = RandomFloat(0.4, 0.9);
+	viscoSliderG = RandomFloat(0.4, 0.9);
+	viscoSliderW = RandomFloat(0.4, 0.9);
+	viscoSliderB = RandomFloat(0.4, 0.9);
+	viscoSliderO = RandomFloat(0.4, 0.9);
+	viscoSliderK = RandomFloat(0.4, 0.9);
+	viscoSliderC = RandomFloat(0.4, 0.9);
+	viscoSliderD = RandomFloat(0.4, 0.9);
+	probabilitySlider = RandomFloat(30, 100);
 	// GREEN
 	//numberSliderG = RandomFloat(0, 3000);
 	powerSliderGG = RandomFloat(-100, 100) * forceVariance;
@@ -417,18 +425,26 @@ void ofApp::saveSettings()
 		vSliderCG, vSliderCR, vSliderCW, vSliderCB, vSliderCO, vSliderCK, vSliderCC, vSliderCD,
 		powerSliderDG, powerSliderDR, powerSliderDW, powerSliderDB, powerSliderDO, powerSliderDK, powerSliderDC, powerSliderDD,
 		vSliderDG, vSliderDR, vSliderDW, vSliderDB, vSliderDO, vSliderDK, vSliderDC, vSliderDD,
-		//static_cast<float>(numberSliderG),
-		//static_cast<float>(numberSliderR),
-		//static_cast<float>(numberSliderW),
-		//static_cast<float>(numberSliderB),
-		//static_cast<float>(numberSliderO),
-		//static_cast<float>(numberSliderK),
-		//static_cast<float>(numberSliderC),
-		//static_cast<float>(numberSliderD),
-		//viscoSlider,
-		//evoProbSlider,
-		//evoAmountSlider,
-		//probabilitySlider,
+		static_cast<float>(numberSliderG),
+		static_cast<float>(numberSliderR),
+		static_cast<float>(numberSliderW),
+		static_cast<float>(numberSliderB),
+		static_cast<float>(numberSliderO),
+		static_cast<float>(numberSliderK),
+		static_cast<float>(numberSliderC),
+		static_cast<float>(numberSliderD),
+		viscoSlider,
+		viscoSliderR,
+		viscoSliderG,
+		viscoSliderB,
+		viscoSliderW,
+		viscoSliderO,
+		viscoSliderK,
+		viscoSliderC,
+		viscoSliderD,
+		evoProbSlider,
+		evoAmountSlider,
+		probabilitySlider,
 	};
 
 	std::string save_path;
@@ -492,7 +508,7 @@ void ofApp::loadSettings()
 		}
 	}
 
-	if (p.size() < 96)
+	if (p.size() < 116)
 	{
 		// better checks needed
 		ofSystemAlertDialog("Could not read the file!");
@@ -595,18 +611,26 @@ void ofApp::loadSettings()
 		vSliderDK = p[93];
 		vSliderDC = p[94];
 		vSliderDD = p[95];
-		//numberSliderG = static_cast<int>(p[96]);
-		//numberSliderR = static_cast<int>(p[97]);
-		//numberSliderW = static_cast<int>(p[98]);
-		//numberSliderB = static_cast<int>(p[99]);
-		//numberSliderO = static_cast<int>(p[100]);
-		//numberSliderK = static_cast<int>(p[101]);
-		//numberSliderC = static_cast<int>(p[102]);
-		//numberSliderD = static_cast<int>(p[103]);
-		//viscoSlider = p[104];
-		//evoProbSlider = p[105];
-		//evoAmountSlider = p[106];
-		//probabilitySlider = p[107];
+		numberSliderG = static_cast<int>(p[96]);
+		numberSliderR = static_cast<int>(p[97]);
+		numberSliderW = static_cast<int>(p[98]);
+		numberSliderB = static_cast<int>(p[99]);
+		numberSliderO = static_cast<int>(p[100]);
+		numberSliderK = static_cast<int>(p[101]);
+		numberSliderC = static_cast<int>(p[102]);
+		numberSliderD = static_cast<int>(p[103]);
+		viscoSlider = p[104];
+		viscoSliderR = p[105];
+		viscoSliderG = p[106];
+		viscoSliderB = p[107];
+		viscoSliderW = p[108];
+		viscoSliderO = p[109];
+		viscoSliderK = p[110];
+		viscoSliderC = p[111];
+		viscoSliderD = p[112];
+		evoProbSlider = p[113];
+		evoAmountSlider = p[114];
+		probabilitySlider = p[115];
 	}
 	restart();
 }
@@ -616,7 +640,7 @@ void ofApp::loadSettings()
 void ofApp::setup()
 {
 	lastTime = clock();
-	ofSetWindowTitle("Particle Life - Eight Colors version 1.2");
+	ofSetWindowTitle("Particle Life - Eight Colors version 1.3");
 	ofSetVerticalSync(false);
 
 	// Interface
@@ -628,13 +652,27 @@ void ofApp::setup()
 
 	gui.add(resetButton.setup("Restart"));
 	gui.add(randomChoice.setup("Randomize (space bar)"));
-	gui.add(randomMonads.setup("Randomize monad count"));
+	gui.add(randomCount.setup("Randomize particle count (q)"));
 	gui.add(save.setup("Save Model"));
 	gui.add(load.setup("Load Model"));
 	gui.add(modelToggle.setup("Show Model", false));
 
+	// Viscosity Group
+	viscosityGroup.setup("Viscosity Parameters");
+	viscosityGroup.add(viscoSlider.setup("Viscosity/Friction", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderR.setup("Viscosity Red", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderG.setup("Viscosity Green", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderB.setup("Viscosity Blue", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderW.setup("Viscosity White", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderO.setup("Viscosity Orange", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderK.setup("Viscosity Khaki", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderC.setup("Viscosity Crimson", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderD.setup("Viscosity Dark", viscosity, 0, 1));
+	gui.add(&viscosityGroup);
+	viscosityGroup.minimize();
+
+	// Global Group
 	globalGroup.setup("Global");
-	globalGroup.add(viscoSlider.setup("Viscosity/Friction", viscosity, 0, 1));
 	globalGroup.add(evoToggle.setup("Evolve parameters", true));
 	globalGroup.add(evoProbSlider.setup("evo chance%", evoChance, 0, 100));
 	globalGroup.add(evoAmountSlider.setup("evo amount%%", evoAmount, 0, 100));
@@ -643,10 +681,10 @@ void ofApp::setup()
 	globalGroup.add(motionBlurToggle.setup("Motion Blur", false));
 	globalGroup.add(physicLabel.setup("physic (ms)", "0"));
 	globalGroup.add(gravitySlider.setup("Gravity", worldGravity, -1, 1));
-	
 	gui.add(&globalGroup);
+	globalGroup.minimize();
 
-	// Quantity
+	// Quantity Group
 	qtyGroup.setup("Quantity (require restart/randomize)");
 	qtyGroup.add(numberSliderG.setup("Green", pnumberSliderG, 0, 10000));
 	qtyGroup.add(numberSliderR.setup("Red", pnumberSliderR, 0, 10000));
@@ -657,6 +695,7 @@ void ofApp::setup()
 	qtyGroup.add(numberSliderC.setup("Crimson", pnumberSliderC, 0, 10000));
 	qtyGroup.add(numberSliderD.setup("Dark", pnumberSliderD, 0, 10000));
 	gui.add(&qtyGroup);
+	qtyGroup.minimize();
 
 	// GREEN
 	greenGroup.setup("Green");
@@ -862,6 +901,15 @@ void ofApp::update()
 	physic_begin = clock();
 	probability = probabilitySlider;
 	viscosity = viscoSlider;
+	viscosityR = viscoSliderR;
+	viscosityG = viscoSliderG;
+	viscosityW = viscoSliderW;
+	viscosityB = viscoSliderB;
+	viscosityO = viscoSliderO;
+	viscosityK = viscoSliderK;
+	viscosityC = viscoSliderC;
+	viscosityD = viscoSliderD;
+
 	worldGravity = gravitySlider;
 	wallRepel = wallRepelSlider;
 	evoChance = evoProbSlider;
@@ -1000,6 +1048,14 @@ void ofApp::update()
 		vSliderDD = vSliderDD + ((ofRandom(2.0F) - 1.0F) * (vSliderDD.getMax() - vSliderDD.getMin()) * (evoAmount / 100.0F));
 		probabilitySlider = probabilitySlider + ((ofRandom(2.0F) - 1.0F) * (probabilitySlider.getMax() - probabilitySlider.getMin()) * (evoAmount / 100.0F));
 		viscoSlider = viscoSlider + ((ofRandom(2.0F) - 1.0F) * (viscoSlider.getMax() - viscoSlider.getMin()) * (evoAmount / 100.0F));
+		viscoSliderR = viscoSliderR + ((ofRandom(2.0F) - 1.0F) * (viscoSliderR.getMax() - viscoSliderR.getMin()) * (evoAmount / 100.0F));
+		viscoSliderG = viscoSliderG + ((ofRandom(2.0F) - 1.0F) * (viscoSliderG.getMax() - viscoSliderG.getMin()) * (evoAmount / 100.0F));
+		viscoSliderB = viscoSliderB + ((ofRandom(2.0F) - 1.0F) * (viscoSliderB.getMax() - viscoSliderB.getMin()) * (evoAmount / 100.0F));
+		viscoSliderW = viscoSliderW + ((ofRandom(2.0F) - 1.0F) * (viscoSliderW.getMax() - viscoSliderW.getMin()) * (evoAmount / 100.0F));
+		viscoSliderO = viscoSliderO + ((ofRandom(2.0F) - 1.0F) * (viscoSliderO.getMax() - viscoSliderO.getMin()) * (evoAmount / 100.0F));
+		viscoSliderK = viscoSliderK + ((ofRandom(2.0F) - 1.0F) * (viscoSliderK.getMax() - viscoSliderK.getMin()) * (evoAmount / 100.0F));
+		viscoSliderC = viscoSliderC + ((ofRandom(2.0F) - 1.0F) * (viscoSliderC.getMax() - viscoSliderC.getMin()) * (evoAmount / 100.0F));
+		viscoSliderD = viscoSliderD + ((ofRandom(2.0F) - 1.0F) * (viscoSliderD.getMax() - viscoSliderD.getMin()) * (evoAmount / 100.0F));
 		//numberSliderG = numberSliderG + ((ofRandom(2.0F) - 1.0F) * (numberSliderG.getMax() - numberSliderG.getMin()) * (evoAmount / 100.0F))
 		//numberSliderR = numberSliderR + ((ofRandom(2.0F) - 1.0F) * (numberSliderR.getMax() - numberSliderR.getMin()) * (evoAmount / 100.0F));
 		//numberSliderW = numberSliderW + ((ofRandom(2.0F) - 1.0F) * (numberSliderW.getMax() - numberSliderW.getMin()) * (evoAmount / 100.0F));
@@ -1076,6 +1132,15 @@ void ofApp::update()
 
 		if (probabilitySlider < 0.0F) probabilitySlider = 0;
 		if (viscoSlider < 0.0F) viscoSlider = 0;
+		if (viscoSliderR < 0.0F) viscoSliderR = 0;
+		if (viscoSliderG < 0.0F) viscoSliderG = 0;
+		if (viscoSliderB < 0.0F) viscoSliderB = 0;
+		if (viscoSliderW < 0.0F) viscoSliderW = 0;
+		if (viscoSliderO < 0.0F) viscoSliderO = 0;
+		if (viscoSliderK < 0.0F) viscoSliderK = 0;
+		if (viscoSliderC < 0.0F) viscoSliderC = 0;
+		if (viscoSliderD < 0.0F) viscoSliderD = 0;
+		
 		//if (numberSliderG < 0.0F) numberSliderG = 0;
 		//if (numberSliderR < 0.0F) numberSliderR = 0;
 		//if (numberSliderW < 0.0F) numberSliderW = 0;
@@ -1153,6 +1218,14 @@ void ofApp::update()
 
 		if (probabilitySlider > 100.0F) probabilitySlider = 100.0F;
 		if (viscoSlider > 1.0F) viscoSlider = 1.0F;
+		if (viscoSliderR > 1.0F) viscoSliderR = 1.0F;
+		if (viscoSliderG > 1.0F) viscoSliderG = 1.0F;
+		if (viscoSliderB > 1.0F) viscoSliderB = 1.0F;
+		if (viscoSliderW > 1.0F) viscoSliderW = 1.0F;
+		if (viscoSliderO > 1.0F) viscoSliderO = 1.0F;
+		if (viscoSliderK > 1.0F) viscoSliderK = 1.0F;
+		if (viscoSliderC > 1.0F) viscoSliderC = 1.0F;
+		if (viscoSliderD > 1.0F) viscoSliderD = 1.0F;
 		//if (numberSliderG > 2000.0F) numberSliderG = 2000.0F;
 		//if (numberSliderR > 2000.0F) numberSliderR = 2000.0F;
 		//if (numberSliderW > 2000.0F) numberSliderW = 2000.0F;
@@ -1166,98 +1239,98 @@ void ofApp::update()
 
 	if (numberSliderR > 0)
 	{
-		interaction(&red, &red, powerSliderRR, vSliderRR);
-		if (numberSliderG > 0) interaction(&red, &green, powerSliderRG, vSliderRG);
-		if (numberSliderB > 0) interaction(&red, &blue, powerSliderRB, vSliderRB);
-		if (numberSliderW > 0) interaction(&red, &white, powerSliderRW, vSliderRW);
-		if (numberSliderO > 0) interaction(&red, &orange, powerSliderRO, vSliderRO);
-		if (numberSliderK > 0) interaction(&red, &khaki, powerSliderRK, vSliderRK);
-		if (numberSliderC > 0) interaction(&red, &crimson, powerSliderRC, vSliderRC);
-		if (numberSliderD > 0) interaction(&red, &dark, powerSliderRD, vSliderRD);
+		interaction(&red, &red, powerSliderRR, vSliderRR, viscosityR);
+		if (numberSliderG > 0) interaction(&red, &green, powerSliderRG, vSliderRG, viscosityR);
+		if (numberSliderB > 0) interaction(&red, &blue, powerSliderRB, vSliderRB, viscosityR);
+		if (numberSliderW > 0) interaction(&red, &white, powerSliderRW, vSliderRW, viscosityR);
+		if (numberSliderO > 0) interaction(&red, &orange, powerSliderRO, vSliderRO, viscosityR);
+		if (numberSliderK > 0) interaction(&red, &khaki, powerSliderRK, vSliderRK, viscosityR);
+		if (numberSliderC > 0) interaction(&red, &crimson, powerSliderRC, vSliderRC, viscosityR);
+		if (numberSliderD > 0) interaction(&red, &dark, powerSliderRD, vSliderRD, viscosityR);
 	}
 
 	if (numberSliderG > 0)
 	{
-		if (numberSliderR > 0) interaction(&green, &red, powerSliderGR, vSliderGR);
-		interaction(&green, &green, powerSliderGG, vSliderGG);
-		if (numberSliderB > 0) interaction(&green, &blue, powerSliderGB, vSliderGB);
-		if (numberSliderW > 0) interaction(&green, &white, powerSliderGW, vSliderGW);
-		if (numberSliderO > 0) interaction(&green, &orange, powerSliderGO, vSliderGO);
-		if (numberSliderK > 0) interaction(&green, &khaki, powerSliderGK, vSliderGK);
-		if (numberSliderC > 0) interaction(&green, &crimson, powerSliderGC, vSliderGC);
-		if (numberSliderD > 0) interaction(&green, &dark, powerSliderGD, vSliderGD);
+		if (numberSliderR > 0) interaction(&green, &red, powerSliderGR, vSliderGR, viscosityG);
+		interaction(&green, &green, powerSliderGG, vSliderGG, viscosityG);
+		if (numberSliderB > 0) interaction(&green, &blue, powerSliderGB, vSliderGB, viscosityG);
+		if (numberSliderW > 0) interaction(&green, &white, powerSliderGW, vSliderGW, viscosityG);
+		if (numberSliderO > 0) interaction(&green, &orange, powerSliderGO, vSliderGO, viscosityG);
+		if (numberSliderK > 0) interaction(&green, &khaki, powerSliderGK, vSliderGK, viscosityG);
+		if (numberSliderC > 0) interaction(&green, &crimson, powerSliderGC, vSliderGC, viscosityG);
+		if (numberSliderD > 0) interaction(&green, &dark, powerSliderGD, vSliderGD, viscosityG);
 	}
 
 	if (numberSliderB > 0)
 	{
-		if (numberSliderR > 0) interaction(&blue, &red, powerSliderBR, vSliderBR);
-		if (numberSliderG > 0) interaction(&blue, &green, powerSliderBG, vSliderBG);
-		interaction(&blue, &blue, powerSliderBB, vSliderBB);
-		if (numberSliderW > 0) interaction(&blue, &white, powerSliderBW, vSliderBW);
-		if (numberSliderO > 0) interaction(&blue, &orange, powerSliderBO, vSliderBO);
-		if (numberSliderK > 0) interaction(&blue, &khaki, powerSliderBK, vSliderBK);
-		if (numberSliderC > 0) interaction(&blue, &crimson, powerSliderBC, vSliderBC);
-		if (numberSliderD > 0) interaction(&blue, &dark, powerSliderBD, vSliderBD);
+		if (numberSliderR > 0) interaction(&blue, &red, powerSliderBR, vSliderBR, viscosityB);
+		if (numberSliderG > 0) interaction(&blue, &green, powerSliderBG, vSliderBG, viscosityB);
+		interaction(&blue, &blue, powerSliderBB, vSliderBB, viscosityB);
+		if (numberSliderW > 0) interaction(&blue, &white, powerSliderBW, vSliderBW, viscosityB);
+		if (numberSliderO > 0) interaction(&blue, &orange, powerSliderBO, vSliderBO, viscosityB);
+		if (numberSliderK > 0) interaction(&blue, &khaki, powerSliderBK, vSliderBK, viscosityB);
+		if (numberSliderC > 0) interaction(&blue, &crimson, powerSliderBC, vSliderBC, viscosityB);
+		if (numberSliderD > 0) interaction(&blue, &dark, powerSliderBD, vSliderBD, viscosityB);
 	}
 
 	if (numberSliderW > 0)
 	{
-		if (numberSliderR > 0) interaction(&white, &red, powerSliderWR, vSliderWR);
-		if (numberSliderG > 0) interaction(&white, &green, powerSliderWG, vSliderWG);
-		if (numberSliderB > 0) interaction(&white, &blue, powerSliderWB, vSliderWB);
-		interaction(&white, &white, powerSliderWW, vSliderWW);
-		if (numberSliderO > 0) interaction(&white, &orange, powerSliderWO, vSliderWO);
-		if (numberSliderK > 0) interaction(&white, &khaki, powerSliderWK, vSliderWK);
-		if (numberSliderC > 0) interaction(&white, &crimson, powerSliderWC, vSliderWC);
-		if (numberSliderD > 0) interaction(&white, &dark, powerSliderWD, vSliderWD);
+		if (numberSliderR > 0) interaction(&white, &red, powerSliderWR, vSliderWR, viscosityW);
+		if (numberSliderG > 0) interaction(&white, &green, powerSliderWG, vSliderWG, viscosityW);
+		if (numberSliderB > 0) interaction(&white, &blue, powerSliderWB, vSliderWB, viscosityW);
+		interaction(&white, &white, powerSliderWW, vSliderWW, viscosityW);
+		if (numberSliderO > 0) interaction(&white, &orange, powerSliderWO, vSliderWO, viscosityW);
+		if (numberSliderK > 0) interaction(&white, &khaki, powerSliderWK, vSliderWK, viscosityW);
+		if (numberSliderC > 0) interaction(&white, &crimson, powerSliderWC, vSliderWC, viscosityW);
+		if (numberSliderD > 0) interaction(&white, &dark, powerSliderWD, vSliderWD, viscosityW);
 	}
 
 	if (numberSliderO > 0)
 	{
-		if (numberSliderR > 0) interaction(&orange, &red, powerSliderOR, vSliderOR);
-		if (numberSliderG > 0) interaction(&orange, &green, powerSliderOG, vSliderOG);
-		if (numberSliderB > 0) interaction(&orange, &blue, powerSliderOB, vSliderOB);
-		if (numberSliderW > 0) interaction(&orange, &white, powerSliderOW, vSliderOW);
-		interaction(&orange, &orange, powerSliderOO, vSliderOO);
-		if (numberSliderK > 0) interaction(&orange, &khaki, powerSliderOK, vSliderOK);
-		if (numberSliderC > 0) interaction(&orange, &crimson, powerSliderOC, vSliderOC);
-		if (numberSliderD > 0) interaction(&orange, &dark, powerSliderOD, vSliderOD);
+		if (numberSliderR > 0) interaction(&orange, &red, powerSliderOR, vSliderOR, viscosityO);
+		if (numberSliderG > 0) interaction(&orange, &green, powerSliderOG, vSliderOG, viscosityO);
+		if (numberSliderB > 0) interaction(&orange, &blue, powerSliderOB, vSliderOB, viscosityO);
+		if (numberSliderW > 0) interaction(&orange, &white, powerSliderOW, vSliderOW, viscosityO);
+		interaction(&orange, &orange, powerSliderOO, vSliderOO, viscosityO);
+		if (numberSliderK > 0) interaction(&orange, &khaki, powerSliderOK, vSliderOK, viscosityO);
+		if (numberSliderC > 0) interaction(&orange, &crimson, powerSliderOC, vSliderOC, viscosityO);
+		if (numberSliderD > 0) interaction(&orange, &dark, powerSliderOD, vSliderOD, viscosityO);
 	}
 
 	if (numberSliderK > 0)
 	{
-		if (numberSliderR > 0) interaction(&khaki, &red, powerSliderKR, vSliderKR);
-		if (numberSliderG > 0) interaction(&khaki, &green, powerSliderKG, vSliderKG);
-		if (numberSliderB > 0) interaction(&khaki, &blue, powerSliderKB, vSliderKB);
-		if (numberSliderW > 0) interaction(&khaki, &white, powerSliderKW, vSliderKW);
-		if (numberSliderO > 0) interaction(&khaki, &orange, powerSliderKO, vSliderKO);
-		interaction(&khaki, &khaki, powerSliderKK, vSliderKK);
-		if (numberSliderC > 0) interaction(&khaki, &crimson, powerSliderKC, vSliderKC);
-		if (numberSliderD > 0) interaction(&khaki, &dark, powerSliderKD, vSliderKD);
+		if (numberSliderR > 0) interaction(&khaki, &red, powerSliderKR, vSliderKR, viscosityK);
+		if (numberSliderG > 0) interaction(&khaki, &green, powerSliderKG, vSliderKG, viscosityK);
+		if (numberSliderB > 0) interaction(&khaki, &blue, powerSliderKB, vSliderKB, viscosityK);
+		if (numberSliderW > 0) interaction(&khaki, &white, powerSliderKW, vSliderKW, viscosityK);
+		if (numberSliderO > 0) interaction(&khaki, &orange, powerSliderKO, vSliderKO, viscosityK);
+		interaction(&khaki, &khaki, powerSliderKK, vSliderKK, viscosityK);
+		if (numberSliderC > 0) interaction(&khaki, &crimson, powerSliderKC, vSliderKC, viscosityK);
+		if (numberSliderD > 0) interaction(&khaki, &dark, powerSliderKD, vSliderKD, viscosityK);
 	}
 
 	if (numberSliderC > 0)
 	{
-		if (numberSliderR > 0) interaction(&crimson, &red, powerSliderCR, vSliderCR);
-		if (numberSliderG > 0) interaction(&crimson, &green, powerSliderCG, vSliderCG);
-		if (numberSliderB > 0) interaction(&crimson, &blue, powerSliderCB, vSliderCB);
-		if (numberSliderW > 0) interaction(&crimson, &white, powerSliderCW, vSliderCW);
-		if (numberSliderO > 0) interaction(&crimson, &orange, powerSliderCO, vSliderCO);
-		if (numberSliderK > 0) interaction(&crimson, &khaki, powerSliderCK, vSliderCK);
-		interaction(&crimson, &crimson, powerSliderCC, vSliderCC);
-		if (numberSliderD > 0) interaction(&crimson, &dark, powerSliderCD, vSliderCD);
+		if (numberSliderR > 0) interaction(&crimson, &red, powerSliderCR, vSliderCR, viscosityC);
+		if (numberSliderG > 0) interaction(&crimson, &green, powerSliderCG, vSliderCG, viscosityC);
+		if (numberSliderB > 0) interaction(&crimson, &blue, powerSliderCB, vSliderCB, viscosityC);
+		if (numberSliderW > 0) interaction(&crimson, &white, powerSliderCW, vSliderCW, viscosityC);
+		if (numberSliderO > 0) interaction(&crimson, &orange, powerSliderCO, vSliderCO, viscosityC);
+		if (numberSliderK > 0) interaction(&crimson, &khaki, powerSliderCK, vSliderCK, viscosityC);
+		interaction(&crimson, &crimson, powerSliderCC, vSliderCC, viscosityC);
+		if (numberSliderD > 0) interaction(&crimson, &dark, powerSliderCD, vSliderCD, viscosityC);
 	}
 
 	if (numberSliderD > 0)
 	{
-		if (numberSliderR > 0) interaction(&dark, &red, powerSliderDR, vSliderDR);
-		if (numberSliderG > 0) interaction(&dark, &green, powerSliderDG, vSliderDG);
-		if (numberSliderB > 0) interaction(&dark, &blue, powerSliderDB, vSliderDB);
-		if (numberSliderW > 0) interaction(&dark, &white, powerSliderDW, vSliderDW);
-		if (numberSliderO > 0) interaction(&dark, &orange, powerSliderDO, vSliderDO);
-		if (numberSliderK > 0) interaction(&dark, &khaki, powerSliderDK, vSliderDK);
-		if (numberSliderC > 0) interaction(&dark, &crimson, powerSliderDC, vSliderDC);
-		interaction(&dark, &dark, powerSliderDD, vSliderDD);
+		if (numberSliderR > 0) interaction(&dark, &red, powerSliderDR, vSliderDR, viscosityD);
+		if (numberSliderG > 0) interaction(&dark, &green, powerSliderDG, vSliderDG, viscosityD);
+		if (numberSliderB > 0) interaction(&dark, &blue, powerSliderDB, vSliderDB, viscosityD);
+		if (numberSliderW > 0) interaction(&dark, &white, powerSliderDW, vSliderDW, viscosityD);
+		if (numberSliderO > 0) interaction(&dark, &orange, powerSliderDO, vSliderDO, viscosityD);
+		if (numberSliderK > 0) interaction(&dark, &khaki, powerSliderDK, vSliderDK, viscosityD);
+		if (numberSliderC > 0) interaction(&dark, &crimson, powerSliderDC, vSliderDC, viscosityD);
+		interaction(&dark, &dark, powerSliderDD, vSliderDD, viscosityD);
 	}
 
 	if (save) { saveSettings(); }
@@ -1300,7 +1373,7 @@ void ofApp::draw()
 		random();
 		restart();
 	}
-	if (randomMonads)
+	if (randomCount)
 	{
 		monads();
 		restart();
@@ -1386,6 +1459,11 @@ void ofApp::keyPressed(int key)
 	if (key == ' ')
 	{
 		random();
+		restart();
+	}
+	if (key == 'q')
+	{
+		monads();
 		restart();
 	}
 }

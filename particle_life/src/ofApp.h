@@ -54,11 +54,12 @@ public:
 	void monads();
 	void saveSettings();
 	void loadSettings();
-	void interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float G, float radius);
+	void interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float G, float radius, float viscosity);
 
 	ofxPanel gui;
 
 	ofxGuiGroup globalGroup;
+	ofxGuiGroup viscosityGroup;
 	ofxGuiGroup qtyGroup;
 	ofxGuiGroup redGroup;
 	ofxGuiGroup greenGroup;
@@ -73,7 +74,7 @@ public:
 	ofxButton resetButton;
 	ofxButton selectButton;
 	ofxButton randomChoice;
-	ofxButton randomMonads;
+	ofxButton randomCount;
 	ofxButton save;
 	ofxButton load;
 
@@ -114,6 +115,15 @@ public:
 	int pnumberSliderD = 1000;
 
 	ofxFloatSlider viscoSlider;
+	ofxFloatSlider viscoSliderR;
+	ofxFloatSlider viscoSliderG;
+	ofxFloatSlider viscoSliderW;
+	ofxFloatSlider viscoSliderB;
+	ofxFloatSlider viscoSliderO;
+	ofxFloatSlider viscoSliderK;
+	ofxFloatSlider viscoSliderC;
+	ofxFloatSlider viscoSliderD;
+
 	ofxFloatSlider gravitySlider;
 	ofxFloatSlider wallRepelSlider;
 
@@ -423,6 +433,15 @@ public:
 	int boundHeight = 900;
 
 	float viscosity = 0.5F;
+	float viscosityR = 0.2F;
+	float viscosityG = 0.3F;
+	float viscosityW = 0.4F;
+	float viscosityB = 0.5F;
+	float viscosityO = 0.6F;
+	float viscosityK = 0.7F;
+	float viscosityC = 0.8F;
+	float viscosityD = 0.9F;
+
 	float worldGravity = 0.0F;
 	float forceVariance = 0.7F;
 	float radiusVariance = 0.5F;
