@@ -30,7 +30,7 @@ A moddified version is here:
   
 Interface (C++ version)
 --------------------------------------------------------
-![](images/Interface_1_2.png)
+![](images/Interface_1_2.jpg)
 --------------------------------------------------------
 Interaction model
 
