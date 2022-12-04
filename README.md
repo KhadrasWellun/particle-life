@@ -31,7 +31,12 @@ A moddified version is here:
 Interface (C++ version)
 --------------------------------------------------------
 ![](images/Interface_1_2.png)
-
+--------------------------------------------------------
+Interaction model
+![](images/Particle_Life_Model.jpg)
+--------------------------------------------------------
+![](images/Particle_Life_Model_black.jpg)
+--------------------------------------------------------
 Example Results
 --------------------------------------------------------
 ![](images/Screen_20221203_01.jpg)
@@ -39,9 +44,7 @@ Example Results
 ![](images/Screen_20221203_02.jpg)
 -----------------------------------------------
 ![](images/Screen_20221203_03.jpg)
-
-
-
+-----------------------------------------------
 Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
