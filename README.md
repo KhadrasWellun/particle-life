@@ -30,15 +30,15 @@ A moddified version is here:
   
 Interface (C++ version)
 --------------------------------------------------------
-![](images/Interface_1.2.png)
+![](images/Interface_1_2.png)
 
 Example Results
 --------------------------------------------------------
-![](images/Screen_20221203-01.jpg)
+![](images/Screen_20221203_01.jpg)
 -----------------------------------------------
-![](images/Screen_20221203-02.jpg)
+![](images/Screen_20221203_02.jpg)
 -----------------------------------------------
-![](images/Screen_20221203-03.jpg)
+![](images/Screen_20221203_03.jpg)
 
 
 
