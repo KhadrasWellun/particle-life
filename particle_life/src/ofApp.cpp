@@ -113,7 +113,7 @@ std::vector<point> CreatePoints(const int num, const int r, const int g, const i
  * @param G gravity coefficient
  * @param radius radius of interaction
  */
-void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Group2, const float G, const float radius, const float viscosity)
+void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Group2, const float G, const float radius, const float viscosity, const float probability)
 {
 	const float g = G / -100;	//Gravity coefficient
 	const auto group1size = Group1->size();
@@ -242,7 +242,81 @@ void ofApp::random()
 	viscoSliderK = RandomFloat(0.4, 0.9);
 	viscoSliderC = RandomFloat(0.4, 0.9);
 	viscoSliderD = RandomFloat(0.4, 0.9);
+
 	probabilitySlider = RandomFloat(30, 100);
+
+	probabilitySliderRR = RandomFloat(30, 100);
+	probabilitySliderRG = RandomFloat(30, 100);
+	probabilitySliderRB = RandomFloat(30, 100);
+	probabilitySliderRW = RandomFloat(30, 100);
+	probabilitySliderRO = RandomFloat(30, 100);
+	probabilitySliderRK = RandomFloat(30, 100);
+	probabilitySliderRC = RandomFloat(30, 100);
+	probabilitySliderRD = RandomFloat(30, 100);
+
+	probabilitySliderGR = RandomFloat(30, 100);
+	probabilitySliderGG = RandomFloat(30, 100);
+	probabilitySliderGB = RandomFloat(30, 100);
+	probabilitySliderGW = RandomFloat(30, 100);
+	probabilitySliderGO = RandomFloat(30, 100);
+	probabilitySliderGK = RandomFloat(30, 100);
+	probabilitySliderGC = RandomFloat(30, 100);
+	probabilitySliderGD = RandomFloat(30, 100);
+
+	probabilitySliderBR = RandomFloat(30, 100);
+	probabilitySliderBG = RandomFloat(30, 100);
+	probabilitySliderBB = RandomFloat(30, 100);
+	probabilitySliderBW = RandomFloat(30, 100);
+	probabilitySliderBO = RandomFloat(30, 100);
+	probabilitySliderBK = RandomFloat(30, 100);
+	probabilitySliderBC = RandomFloat(30, 100);
+	probabilitySliderBD = RandomFloat(30, 100);
+
+	probabilitySliderWR = RandomFloat(30, 100);
+	probabilitySliderWG = RandomFloat(30, 100);
+	probabilitySliderWB = RandomFloat(30, 100);
+	probabilitySliderWW = RandomFloat(30, 100);
+	probabilitySliderWO = RandomFloat(30, 100);
+	probabilitySliderWK = RandomFloat(30, 100);
+	probabilitySliderWC = RandomFloat(30, 100);
+	probabilitySliderWD = RandomFloat(30, 100);
+
+	probabilitySliderOR = RandomFloat(30, 100);
+	probabilitySliderOG = RandomFloat(30, 100);
+	probabilitySliderOB = RandomFloat(30, 100);
+	probabilitySliderOW = RandomFloat(30, 100);
+	probabilitySliderOO = RandomFloat(30, 100);
+	probabilitySliderOK = RandomFloat(30, 100);
+	probabilitySliderOC = RandomFloat(30, 100);
+	probabilitySliderOD = RandomFloat(30, 100);
+
+	probabilitySliderKR = RandomFloat(30, 100);
+	probabilitySliderKG = RandomFloat(30, 100);
+	probabilitySliderKB = RandomFloat(30, 100);
+	probabilitySliderKW = RandomFloat(30, 100);
+	probabilitySliderKO = RandomFloat(30, 100);
+	probabilitySliderKK = RandomFloat(30, 100);
+	probabilitySliderKC = RandomFloat(30, 100);
+	probabilitySliderKD = RandomFloat(30, 100);
+
+	probabilitySliderCR = RandomFloat(30, 100);
+	probabilitySliderCG = RandomFloat(30, 100);
+	probabilitySliderCB = RandomFloat(30, 100);
+	probabilitySliderCW = RandomFloat(30, 100);
+	probabilitySliderCO = RandomFloat(30, 100);
+	probabilitySliderCK = RandomFloat(30, 100);
+	probabilitySliderCC = RandomFloat(30, 100);
+	probabilitySliderCD = RandomFloat(30, 100);
+
+	probabilitySliderDR = RandomFloat(30, 100);
+	probabilitySliderDG = RandomFloat(30, 100);
+	probabilitySliderDB = RandomFloat(30, 100);
+	probabilitySliderDW = RandomFloat(30, 100);
+	probabilitySliderDO = RandomFloat(30, 100);
+	probabilitySliderDK = RandomFloat(30, 100);
+	probabilitySliderDC = RandomFloat(30, 100);
+	probabilitySliderDD = RandomFloat(30, 100);
+
 	// GREEN
 	//numberSliderG = RandomFloat(0, 3000);
 	powerSliderGG = RandomFloat(-100, 100) * forceVariance;
@@ -445,6 +519,70 @@ void ofApp::saveSettings()
 		evoProbSlider,
 		evoAmountSlider,
 		probabilitySlider,
+		probabilitySliderRR,
+		probabilitySliderRG,
+		probabilitySliderRB,
+		probabilitySliderRW,
+		probabilitySliderRO,
+		probabilitySliderRK,
+		probabilitySliderRC,
+		probabilitySliderRD,
+		probabilitySliderGR,
+		probabilitySliderGG,
+		probabilitySliderGB,
+		probabilitySliderGW,
+		probabilitySliderGO,
+		probabilitySliderGK,
+		probabilitySliderGC,
+		probabilitySliderGD,
+		probabilitySliderBR,
+		probabilitySliderBG,
+		probabilitySliderBB,
+		probabilitySliderBW,
+		probabilitySliderBO,
+		probabilitySliderBK,
+		probabilitySliderBC,
+		probabilitySliderBD,
+		probabilitySliderWR,
+		probabilitySliderWG,
+		probabilitySliderWB,
+		probabilitySliderWW,
+		probabilitySliderWO,
+		probabilitySliderWK,
+		probabilitySliderWC,
+		probabilitySliderWD,
+		probabilitySliderOR,
+		probabilitySliderOG,
+		probabilitySliderOB,
+		probabilitySliderOW,
+		probabilitySliderOO,
+		probabilitySliderOK,
+		probabilitySliderOC,
+		probabilitySliderOD,
+		probabilitySliderKR,
+		probabilitySliderKG,
+		probabilitySliderKB,
+		probabilitySliderKW,
+		probabilitySliderKO,
+		probabilitySliderKK,
+		probabilitySliderKC,
+		probabilitySliderKD,
+		probabilitySliderCR,
+		probabilitySliderCG,
+		probabilitySliderCB,
+		probabilitySliderCW,
+		probabilitySliderCO,
+		probabilitySliderCK,
+		probabilitySliderCC,
+		probabilitySliderCD,
+		probabilitySliderDR,
+		probabilitySliderDG,
+		probabilitySliderDB,
+		probabilitySliderDW,
+		probabilitySliderDO,
+		probabilitySliderDK,
+		probabilitySliderDC,
+		probabilitySliderDD,
 	};
 
 	std::string save_path;
@@ -508,7 +646,7 @@ void ofApp::loadSettings()
 		}
 	}
 
-	if (p.size() < 116)
+	if (p.size() < 180)
 	{
 		// better checks needed
 		ofSystemAlertDialog("Could not read the file!");
@@ -631,6 +769,70 @@ void ofApp::loadSettings()
 		evoProbSlider = p[113];
 		evoAmountSlider = p[114];
 		probabilitySlider = p[115];
+		probabilitySliderRR = p[116];
+		probabilitySliderRG = p[117];
+		probabilitySliderRB = p[118];
+		probabilitySliderRW = p[119];
+		probabilitySliderRO = p[120];
+		probabilitySliderRK = p[121];
+		probabilitySliderRC = p[122];
+		probabilitySliderRD = p[123];
+		probabilitySliderGR = p[124];
+		probabilitySliderGG = p[125];
+		probabilitySliderGB = p[126];
+		probabilitySliderGW = p[127];
+		probabilitySliderGO = p[128];
+		probabilitySliderGK = p[129];
+		probabilitySliderGC = p[130];
+		probabilitySliderGD = p[131];
+		probabilitySliderBR = p[132];
+		probabilitySliderBG = p[133];
+		probabilitySliderBB = p[134];
+		probabilitySliderBW = p[135];
+		probabilitySliderBO = p[136];
+		probabilitySliderBK = p[137];
+		probabilitySliderBC = p[138];
+		probabilitySliderBD = p[139];
+		probabilitySliderWR = p[140];
+		probabilitySliderWG = p[141];
+		probabilitySliderWB = p[142];
+		probabilitySliderWW = p[143];
+		probabilitySliderWO = p[144];
+		probabilitySliderWK = p[145];
+		probabilitySliderWC = p[146];
+		probabilitySliderWD = p[147];
+		probabilitySliderOR = p[148];
+		probabilitySliderOG = p[149];
+		probabilitySliderOB = p[150];
+		probabilitySliderOW = p[151];
+		probabilitySliderOO = p[152];
+		probabilitySliderOK = p[153];
+		probabilitySliderOC = p[154];
+		probabilitySliderOD = p[155];
+		probabilitySliderKR = p[156];
+		probabilitySliderKG = p[157];
+		probabilitySliderKB = p[158];
+		probabilitySliderKW = p[159];
+		probabilitySliderKO = p[160];
+		probabilitySliderKK = p[161];
+		probabilitySliderKC = p[162];
+		probabilitySliderKD = p[163];
+		probabilitySliderCR = p[164];
+		probabilitySliderCG = p[165];
+		probabilitySliderCB = p[166];
+		probabilitySliderCW = p[167];
+		probabilitySliderCO = p[168];
+		probabilitySliderCK = p[169];
+		probabilitySliderCC = p[170];
+		probabilitySliderCD = p[171];
+		probabilitySliderDR = p[172];
+		probabilitySliderDG = p[173];
+		probabilitySliderDB = p[174];
+		probabilitySliderDW = p[175];
+		probabilitySliderDO = p[176];
+		probabilitySliderDK = p[177];
+		probabilitySliderDC = p[178];
+		probabilitySliderDD = p[179];
 	}
 	restart();
 }
@@ -656,31 +858,17 @@ void ofApp::setup()
 	gui.add(save.setup("Save Model"));
 	gui.add(load.setup("Load Model"));
 	gui.add(modelToggle.setup("Show Model", false));
-
-	// Viscosity Group
-	viscosityGroup.setup("Viscosity Parameters");
-	viscosityGroup.add(viscoSlider.setup("Viscosity/Friction", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderR.setup("Viscosity Red", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderG.setup("Viscosity Green", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderB.setup("Viscosity Blue", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderW.setup("Viscosity White", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderO.setup("Viscosity Orange", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderK.setup("Viscosity Khaki", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderC.setup("Viscosity Crimson", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderD.setup("Viscosity Dark", viscosity, 0, 1));
-	gui.add(&viscosityGroup);
-	viscosityGroup.minimize();
+	
 
 	// Global Group
 	globalGroup.setup("Global");
 	globalGroup.add(evoToggle.setup("Evolve parameters", true));
 	globalGroup.add(evoProbSlider.setup("evo chance%", evoChance, 0, 100));
 	globalGroup.add(evoAmountSlider.setup("evo amount%%", evoAmount, 0, 100));
-	globalGroup.add(radiusToogle.setup("infinite radius", false));
 	globalGroup.add(probabilitySlider.setup("interaction prob%", probability, 1, 100));
 	globalGroup.add(motionBlurToggle.setup("Motion Blur", false));
 	globalGroup.add(physicLabel.setup("physic (ms)", "0"));
-	globalGroup.add(gravitySlider.setup("Gravity", worldGravity, -1, 1));
+	globalGroup.add(radiusToogle.setup("infinite radius", false));
 	gui.add(&globalGroup);
 	globalGroup.minimize();
 
@@ -696,6 +884,124 @@ void ofApp::setup()
 	qtyGroup.add(numberSliderD.setup("Dark", pnumberSliderD, 0, 10000));
 	gui.add(&qtyGroup);
 	qtyGroup.minimize();
+
+	// Viscosity Group
+	viscosityGroup.setup("Viscosity Parameters");
+	viscosityGroup.add(viscoSlider.setup("Viscosity/Friction", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderR.setup("Viscosity Red", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderG.setup("Viscosity Green", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderB.setup("Viscosity Blue", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderW.setup("Viscosity White", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderO.setup("Viscosity Orange", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderK.setup("Viscosity Khaki", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderC.setup("Viscosity Crimson", viscosity, 0, 1));
+	viscosityGroup.add(viscoSliderD.setup("Viscosity Dark", viscosity, 0, 1));
+	gui.add(&viscosityGroup);
+	viscosityGroup.minimize();
+
+	// ProbabilityR Group
+	probabilityRGroup.setup("Interaction Probability % Red");
+	probabilityRGroup.add(probabilitySliderRR.setup("Interaction Probability RR", probabilityRR, 0, 100));
+	probabilityRGroup.add(probabilitySliderRG.setup("Interaction Probability RG", probabilityRG, 0, 100));
+	probabilityRGroup.add(probabilitySliderRB.setup("Interaction Probability RB", probabilityRB, 0, 100));
+	probabilityRGroup.add(probabilitySliderRW.setup("Interaction Probability RW", probabilityRW, 0, 100));
+	probabilityRGroup.add(probabilitySliderRO.setup("Interaction Probability RO", probabilityRO, 0, 100));
+	probabilityRGroup.add(probabilitySliderRK.setup("Interaction Probability RK", probabilityRK, 0, 100));
+	probabilityRGroup.add(probabilitySliderRC.setup("Interaction Probability RC", probabilityRC, 0, 100));
+	probabilityRGroup.add(probabilitySliderRD.setup("Interaction Probability RD", probabilityRD, 0, 100));
+	gui.add(&probabilityRGroup);
+	probabilityRGroup.minimize();
+
+	// ProbabilityG Group
+	probabilityGGroup.setup("Interaction Probability % Green");
+	probabilityGGroup.add(probabilitySliderGR.setup("Interaction Probability GR", probabilityGR, 0, 100));
+	probabilityGGroup.add(probabilitySliderGG.setup("Interaction Probability GG", probabilityGG, 0, 100));
+	probabilityGGroup.add(probabilitySliderGB.setup("Interaction Probability GB", probabilityGB, 0, 100));
+	probabilityGGroup.add(probabilitySliderGW.setup("Interaction Probability GW", probabilityGW, 0, 100));
+	probabilityGGroup.add(probabilitySliderGO.setup("Interaction Probability GO", probabilityGO, 0, 100));
+	probabilityGGroup.add(probabilitySliderGK.setup("Interaction Probability GK", probabilityGK, 0, 100));
+	probabilityGGroup.add(probabilitySliderGC.setup("Interaction Probability GC", probabilityGC, 0, 100));
+	probabilityGGroup.add(probabilitySliderGD.setup("Interaction Probability GD", probabilityGD, 0, 100));
+	gui.add(&probabilityGGroup);
+	probabilityGGroup.minimize();
+
+	// ProbabilityB Group
+	probabilityBGroup.setup("Interaction Probability % Blue");
+	probabilityBGroup.add(probabilitySliderBR.setup("Interaction Probability BR", probabilityBR, 0, 100));
+	probabilityBGroup.add(probabilitySliderBG.setup("Interaction Probability BG", probabilityBG, 0, 100));
+	probabilityBGroup.add(probabilitySliderBB.setup("Interaction Probability BB", probabilityBB, 0, 100));
+	probabilityBGroup.add(probabilitySliderBW.setup("Interaction Probability BW", probabilityBW, 0, 100));
+	probabilityBGroup.add(probabilitySliderBO.setup("Interaction Probability BO", probabilityBO, 0, 100));
+	probabilityBGroup.add(probabilitySliderBK.setup("Interaction Probability BK", probabilityBK, 0, 100));
+	probabilityBGroup.add(probabilitySliderBC.setup("Interaction Probability BC", probabilityBC, 0, 100));
+	probabilityBGroup.add(probabilitySliderBD.setup("Interaction Probability BD", probabilityBD, 0, 100));
+	gui.add(&probabilityBGroup);
+	probabilityBGroup.minimize();
+
+	// ProbabilityW Group
+	probabilityWGroup.setup("Interaction Probability % White");
+	probabilityWGroup.add(probabilitySliderWR.setup("Interaction Probability WR", probabilityWR, 0, 100));
+	probabilityWGroup.add(probabilitySliderWG.setup("Interaction Probability WG", probabilityWG, 0, 100));
+	probabilityWGroup.add(probabilitySliderWB.setup("Interaction Probability WB", probabilityWB, 0, 100));
+	probabilityWGroup.add(probabilitySliderWW.setup("Interaction Probability WW", probabilityWW, 0, 100));
+	probabilityWGroup.add(probabilitySliderWO.setup("Interaction Probability WO", probabilityWO, 0, 100));
+	probabilityWGroup.add(probabilitySliderWK.setup("Interaction Probability WK", probabilityWK, 0, 100));
+	probabilityWGroup.add(probabilitySliderWC.setup("Interaction Probability WC", probabilityWC, 0, 100));
+	probabilityWGroup.add(probabilitySliderWD.setup("Interaction Probability WD", probabilityWD, 0, 100));
+	gui.add(&probabilityWGroup);
+	probabilityWGroup.minimize();
+
+	// ProbabilityO Group
+	probabilityOGroup.setup("Interaction Probability % Orange");
+	probabilityOGroup.add(probabilitySliderOR.setup("Interaction Probability OR", probabilityOR, 0, 100));
+	probabilityOGroup.add(probabilitySliderOG.setup("Interaction Probability OG", probabilityOG, 0, 100));
+	probabilityOGroup.add(probabilitySliderOB.setup("Interaction Probability OB", probabilityOB, 0, 100));
+	probabilityOGroup.add(probabilitySliderOW.setup("Interaction Probability OW", probabilityOW, 0, 100));
+	probabilityOGroup.add(probabilitySliderOO.setup("Interaction Probability OO", probabilityOO, 0, 100));
+	probabilityOGroup.add(probabilitySliderOK.setup("Interaction Probability OK", probabilityOK, 0, 100));
+	probabilityOGroup.add(probabilitySliderOC.setup("Interaction Probability OC", probabilityOC, 0, 100));
+	probabilityOGroup.add(probabilitySliderOD.setup("Interaction Probability OD", probabilityOD, 0, 100));
+	gui.add(&probabilityOGroup);
+	probabilityOGroup.minimize();
+
+	// ProbabilityK Group
+	probabilityKGroup.setup("Interaction Probability % Khaki");
+	probabilityKGroup.add(probabilitySliderKR.setup("Interaction Probability KR", probabilityKR, 0, 100));
+	probabilityKGroup.add(probabilitySliderKG.setup("Interaction Probability KG", probabilityKG, 0, 100));
+	probabilityKGroup.add(probabilitySliderKB.setup("Interaction Probability KB", probabilityKB, 0, 100));
+	probabilityKGroup.add(probabilitySliderKW.setup("Interaction Probability KW", probabilityKW, 0, 100));
+	probabilityKGroup.add(probabilitySliderKO.setup("Interaction Probability KO", probabilityKO, 0, 100));
+	probabilityKGroup.add(probabilitySliderKK.setup("Interaction Probability KK", probabilityKK, 0, 100));
+	probabilityKGroup.add(probabilitySliderKC.setup("Interaction Probability KC", probabilityKC, 0, 100));
+	probabilityKGroup.add(probabilitySliderKD.setup("Interaction Probability KD", probabilityKD, 0, 100));
+	gui.add(&probabilityKGroup);
+	probabilityKGroup.minimize();
+
+	// ProbabilityC Group
+	probabilityCGroup.setup("Interaction Probability % Crimson");
+	probabilityCGroup.add(probabilitySliderCR.setup("Interaction Probability CR", probabilityCR, 0, 100));
+	probabilityCGroup.add(probabilitySliderCG.setup("Interaction Probability CG", probabilityCG, 0, 100));
+	probabilityCGroup.add(probabilitySliderCB.setup("Interaction Probability CB", probabilityCB, 0, 100));
+	probabilityCGroup.add(probabilitySliderCW.setup("Interaction Probability CW", probabilityCW, 0, 100));
+	probabilityCGroup.add(probabilitySliderCO.setup("Interaction Probability CO", probabilityCO, 0, 100));
+	probabilityCGroup.add(probabilitySliderCK.setup("Interaction Probability CK", probabilityCK, 0, 100));
+	probabilityCGroup.add(probabilitySliderCC.setup("Interaction Probability CC", probabilityCC, 0, 100));
+	probabilityCGroup.add(probabilitySliderCD.setup("Interaction Probability CD", probabilityCD, 0, 100));
+	gui.add(&probabilityCGroup);
+	probabilityCGroup.minimize();
+
+	// ProbabilityD Group
+	probabilityDGroup.setup("Interaction Probability % Dark");
+	probabilityDGroup.add(probabilitySliderDR.setup("Interaction Probability DR", probabilityDR, 0, 100));
+	probabilityDGroup.add(probabilitySliderDG.setup("Interaction Probability DG", probabilityDG, 0, 100));
+	probabilityDGroup.add(probabilitySliderDB.setup("Interaction Probability DB", probabilityDB, 0, 100));
+	probabilityDGroup.add(probabilitySliderDW.setup("Interaction Probability DW", probabilityDW, 0, 100));
+	probabilityDGroup.add(probabilitySliderDO.setup("Interaction Probability DO", probabilityDO, 0, 100));
+	probabilityDGroup.add(probabilitySliderDK.setup("Interaction Probability DK", probabilityDK, 0, 100));
+	probabilityDGroup.add(probabilitySliderDC.setup("Interaction Probability DC", probabilityDC, 0, 100));
+	probabilityDGroup.add(probabilitySliderDD.setup("Interaction Probability DD", probabilityDD, 0, 100));
+	gui.add(&probabilityDGroup);
+	probabilityDGroup.minimize();
 
 	// GREEN
 	greenGroup.setup("Green");
@@ -882,10 +1188,9 @@ void ofApp::setup()
 	gui.add(&darkGroup);
 
 	expGroup.setup("Experimental");
-
 	expGroup.add(wallRepelSlider.setup("Wall Repel", wallRepel, 0, 100));
+	expGroup.add(gravitySlider.setup("Gravity", worldGravity, -1, 1));
 	expGroup.add(boundsToggle.setup("Bounded", false));
-
 	expGroup.minimize();
 	gui.add(&expGroup);
 
@@ -1046,7 +1351,7 @@ void ofApp::update()
 		vSliderDK = vSliderDK + ((ofRandom(2.0F) - 1.0F) * (vSliderDK.getMax() - vSliderDK.getMin()) * (evoAmount / 100.0F));
 		vSliderDC = vSliderDC + ((ofRandom(2.0F) - 1.0F) * (vSliderDC.getMax() - vSliderDC.getMin()) * (evoAmount / 100.0F));
 		vSliderDD = vSliderDD + ((ofRandom(2.0F) - 1.0F) * (vSliderDD.getMax() - vSliderDD.getMin()) * (evoAmount / 100.0F));
-		probabilitySlider = probabilitySlider + ((ofRandom(2.0F) - 1.0F) * (probabilitySlider.getMax() - probabilitySlider.getMin()) * (evoAmount / 100.0F));
+		
 		viscoSlider = viscoSlider + ((ofRandom(2.0F) - 1.0F) * (viscoSlider.getMax() - viscoSlider.getMin()) * (evoAmount / 100.0F));
 		viscoSliderR = viscoSliderR + ((ofRandom(2.0F) - 1.0F) * (viscoSliderR.getMax() - viscoSliderR.getMin()) * (evoAmount / 100.0F));
 		viscoSliderG = viscoSliderG + ((ofRandom(2.0F) - 1.0F) * (viscoSliderG.getMax() - viscoSliderG.getMin()) * (evoAmount / 100.0F));
@@ -1056,6 +1361,81 @@ void ofApp::update()
 		viscoSliderK = viscoSliderK + ((ofRandom(2.0F) - 1.0F) * (viscoSliderK.getMax() - viscoSliderK.getMin()) * (evoAmount / 100.0F));
 		viscoSliderC = viscoSliderC + ((ofRandom(2.0F) - 1.0F) * (viscoSliderC.getMax() - viscoSliderC.getMin()) * (evoAmount / 100.0F));
 		viscoSliderD = viscoSliderD + ((ofRandom(2.0F) - 1.0F) * (viscoSliderD.getMax() - viscoSliderD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySlider = probabilitySlider + ((ofRandom(2.0F) - 1.0F) * (probabilitySlider.getMax() - probabilitySlider.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderRR = probabilitySliderRR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRR.getMax() - probabilitySliderRR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRG = probabilitySliderRG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRG.getMax() - probabilitySliderRG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRB = probabilitySliderRB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRB.getMax() - probabilitySliderRB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRW = probabilitySliderRW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRW.getMax() - probabilitySliderRW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRO = probabilitySliderRO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRO.getMax() - probabilitySliderRO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRK = probabilitySliderRK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRK.getMax() - probabilitySliderRK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRC = probabilitySliderRC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRC.getMax() - probabilitySliderRC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderRD = probabilitySliderRD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderRD.getMax() - probabilitySliderRD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderGR = probabilitySliderGR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGR.getMax() - probabilitySliderGR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGG = probabilitySliderGG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGG.getMax() - probabilitySliderGG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGB = probabilitySliderGB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGB.getMax() - probabilitySliderGB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGW = probabilitySliderGW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGW.getMax() - probabilitySliderGW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGO = probabilitySliderGO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGO.getMax() - probabilitySliderGO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGK = probabilitySliderGK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGK.getMax() - probabilitySliderGK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGC = probabilitySliderGC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGC.getMax() - probabilitySliderGC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderGD = probabilitySliderGD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderGD.getMax() - probabilitySliderGD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderBR = probabilitySliderBR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBR.getMax() - probabilitySliderBR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBG = probabilitySliderBG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBG.getMax() - probabilitySliderBG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBB = probabilitySliderBB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBB.getMax() - probabilitySliderBB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBW = probabilitySliderBW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBW.getMax() - probabilitySliderBW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBO = probabilitySliderBO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBO.getMax() - probabilitySliderBO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBK = probabilitySliderBK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBK.getMax() - probabilitySliderBK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBC = probabilitySliderBC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBC.getMax() - probabilitySliderBC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderBD = probabilitySliderBD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderBD.getMax() - probabilitySliderBD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderWR = probabilitySliderWR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWR.getMax() - probabilitySliderWR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWG = probabilitySliderWG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWG.getMax() - probabilitySliderWG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWB = probabilitySliderWB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWB.getMax() - probabilitySliderWB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWW = probabilitySliderWW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWW.getMax() - probabilitySliderWW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWO = probabilitySliderWO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWO.getMax() - probabilitySliderWO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWK = probabilitySliderWK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWK.getMax() - probabilitySliderWK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWC = probabilitySliderWC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWC.getMax() - probabilitySliderWC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderWD = probabilitySliderWD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderWD.getMax() - probabilitySliderWD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderOR = probabilitySliderOR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOR.getMax() - probabilitySliderOR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOG = probabilitySliderOG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOG.getMax() - probabilitySliderOG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOB = probabilitySliderOB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOB.getMax() - probabilitySliderOB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOW = probabilitySliderOW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOW.getMax() - probabilitySliderOW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOO = probabilitySliderOO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOO.getMax() - probabilitySliderOO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOK = probabilitySliderOK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOK.getMax() - probabilitySliderOK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOC = probabilitySliderOC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOC.getMax() - probabilitySliderOC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderOD = probabilitySliderOD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderOD.getMax() - probabilitySliderOD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderKR = probabilitySliderKR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKR.getMax() - probabilitySliderKR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKG = probabilitySliderKG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKG.getMax() - probabilitySliderKG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKB = probabilitySliderKB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKB.getMax() - probabilitySliderKB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKW = probabilitySliderKW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKW.getMax() - probabilitySliderKW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKO = probabilitySliderKO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKO.getMax() - probabilitySliderKO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKK = probabilitySliderKK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKK.getMax() - probabilitySliderKK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKC = probabilitySliderKC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKC.getMax() - probabilitySliderKC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderKD = probabilitySliderKD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderKD.getMax() - probabilitySliderKD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderCR = probabilitySliderCR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCR.getMax() - probabilitySliderCR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCG = probabilitySliderCG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCG.getMax() - probabilitySliderCG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCB = probabilitySliderCB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCB.getMax() - probabilitySliderCB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCW = probabilitySliderCW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCW.getMax() - probabilitySliderCW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCO = probabilitySliderCO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCO.getMax() - probabilitySliderCO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCK = probabilitySliderCK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCK.getMax() - probabilitySliderCK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCC = probabilitySliderCC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCC.getMax() - probabilitySliderCC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderCD = probabilitySliderCD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderCD.getMax() - probabilitySliderCD.getMin()) * (evoAmount / 100.0F));
+
+		probabilitySliderDR = probabilitySliderDR + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDR.getMax() - probabilitySliderDR.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDG = probabilitySliderDG + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDG.getMax() - probabilitySliderDG.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDB = probabilitySliderDB + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDB.getMax() - probabilitySliderDB.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDW = probabilitySliderDW + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDW.getMax() - probabilitySliderDW.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDO = probabilitySliderDO + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDO.getMax() - probabilitySliderDO.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDK = probabilitySliderDK + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDK.getMax() - probabilitySliderDK.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDC = probabilitySliderDC + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDC.getMax() - probabilitySliderDC.getMin()) * (evoAmount / 100.0F));
+		probabilitySliderDD = probabilitySliderDD + ((ofRandom(2.0F) - 1.0F) * (probabilitySliderDD.getMax() - probabilitySliderDD.getMin()) * (evoAmount / 100.0F));
+
 		//numberSliderG = numberSliderG + ((ofRandom(2.0F) - 1.0F) * (numberSliderG.getMax() - numberSliderG.getMin()) * (evoAmount / 100.0F))
 		//numberSliderR = numberSliderR + ((ofRandom(2.0F) - 1.0F) * (numberSliderR.getMax() - numberSliderR.getMin()) * (evoAmount / 100.0F));
 		//numberSliderW = numberSliderW + ((ofRandom(2.0F) - 1.0F) * (numberSliderW.getMax() - numberSliderW.getMin()) * (evoAmount / 100.0F));
@@ -1131,7 +1511,81 @@ void ofApp::update()
 		if (vSliderDD < 0.0F) vSliderDD = 0;
 
 		if (probabilitySlider < 0.0F) probabilitySlider = 0;
+
+		if (probabilitySliderRR < 0.0F) probabilitySliderRR = 0;
+		if (probabilitySliderRG < 0.0F) probabilitySliderRG = 0;
+		if (probabilitySliderRB < 0.0F) probabilitySliderRB = 0;
+		if (probabilitySliderRW < 0.0F) probabilitySliderRW = 0;
+		if (probabilitySliderRO < 0.0F) probabilitySliderRO = 0;
+		if (probabilitySliderRK < 0.0F) probabilitySliderRK = 0;
+		if (probabilitySliderRC < 0.0F) probabilitySliderRC = 0;
+		if (probabilitySliderRD < 0.0F) probabilitySliderRD = 0;
+
+		if (probabilitySliderGR < 0.0F) probabilitySliderGR = 0;
+		if (probabilitySliderGG < 0.0F) probabilitySliderGG = 0;
+		if (probabilitySliderGB < 0.0F) probabilitySliderGB = 0;
+		if (probabilitySliderGW < 0.0F) probabilitySliderGW = 0;
+		if (probabilitySliderGO < 0.0F) probabilitySliderGO = 0;
+		if (probabilitySliderGK < 0.0F) probabilitySliderGK = 0;
+		if (probabilitySliderGC < 0.0F) probabilitySliderGC = 0;
+		if (probabilitySliderGD < 0.0F) probabilitySliderGD = 0;
+
+		if (probabilitySliderBR < 0.0F) probabilitySliderBR = 0;
+		if (probabilitySliderBG < 0.0F) probabilitySliderBG = 0;
+		if (probabilitySliderBB < 0.0F) probabilitySliderBB = 0;
+		if (probabilitySliderBW < 0.0F) probabilitySliderBW = 0;
+		if (probabilitySliderBO < 0.0F) probabilitySliderBO = 0;
+		if (probabilitySliderBK < 0.0F) probabilitySliderBK = 0;
+		if (probabilitySliderBC < 0.0F) probabilitySliderBC = 0;
+		if (probabilitySliderBD < 0.0F) probabilitySliderBD = 0;
+
+		if (probabilitySliderWR < 0.0F) probabilitySliderWR = 0;
+		if (probabilitySliderWG < 0.0F) probabilitySliderWG = 0;
+		if (probabilitySliderWB < 0.0F) probabilitySliderWB = 0;
+		if (probabilitySliderWW < 0.0F) probabilitySliderWW = 0;
+		if (probabilitySliderWO < 0.0F) probabilitySliderWO = 0;
+		if (probabilitySliderWK < 0.0F) probabilitySliderWK = 0;
+		if (probabilitySliderWC < 0.0F) probabilitySliderWC = 0;
+		if (probabilitySliderWD < 0.0F) probabilitySliderWD = 0;
+
+		if (probabilitySliderOR < 0.0F) probabilitySliderOR = 0;
+		if (probabilitySliderOG < 0.0F) probabilitySliderOG = 0;
+		if (probabilitySliderOB < 0.0F) probabilitySliderOB = 0;
+		if (probabilitySliderOW < 0.0F) probabilitySliderOW = 0;
+		if (probabilitySliderOO < 0.0F) probabilitySliderOO = 0;
+		if (probabilitySliderOK < 0.0F) probabilitySliderOK = 0;
+		if (probabilitySliderOC < 0.0F) probabilitySliderOC = 0;
+		if (probabilitySliderOD < 0.0F) probabilitySliderOD = 0;
+
+		if (probabilitySliderKR < 0.0F) probabilitySliderKR = 0;
+		if (probabilitySliderKG < 0.0F) probabilitySliderKG = 0;
+		if (probabilitySliderKB < 0.0F) probabilitySliderKB = 0;
+		if (probabilitySliderKW < 0.0F) probabilitySliderKW = 0;
+		if (probabilitySliderKO < 0.0F) probabilitySliderKO = 0;
+		if (probabilitySliderKK < 0.0F) probabilitySliderKK = 0;
+		if (probabilitySliderKC < 0.0F) probabilitySliderKC = 0;
+		if (probabilitySliderKD < 0.0F) probabilitySliderKD = 0;
+
+		if (probabilitySliderCR < 0.0F) probabilitySliderCR = 0;
+		if (probabilitySliderCG < 0.0F) probabilitySliderCG = 0;
+		if (probabilitySliderCB < 0.0F) probabilitySliderCB = 0;
+		if (probabilitySliderCW < 0.0F) probabilitySliderCW = 0;
+		if (probabilitySliderCO < 0.0F) probabilitySliderCO = 0;
+		if (probabilitySliderCK < 0.0F) probabilitySliderCK = 0;
+		if (probabilitySliderCC < 0.0F) probabilitySliderCC = 0;
+		if (probabilitySliderCD < 0.0F) probabilitySliderCD = 0;
+
+		if (probabilitySliderDR < 0.0F) probabilitySliderDR = 0;
+		if (probabilitySliderDG < 0.0F) probabilitySliderDG = 0;
+		if (probabilitySliderDB < 0.0F) probabilitySliderDB = 0;
+		if (probabilitySliderDW < 0.0F) probabilitySliderDW = 0;
+		if (probabilitySliderDO < 0.0F) probabilitySliderDO = 0;
+		if (probabilitySliderDK < 0.0F) probabilitySliderDK = 0;
+		if (probabilitySliderDC < 0.0F) probabilitySliderDC = 0;
+		if (probabilitySliderDD < 0.0F) probabilitySliderDD = 0;
+
 		if (viscoSlider < 0.0F) viscoSlider = 0;
+
 		if (viscoSliderR < 0.0F) viscoSliderR = 0;
 		if (viscoSliderG < 0.0F) viscoSliderG = 0;
 		if (viscoSliderB < 0.0F) viscoSliderB = 0;
@@ -1217,7 +1671,81 @@ void ofApp::update()
 		if (vSliderDD > 200.0F) vSliderDD = 200.0F;
 
 		if (probabilitySlider > 100.0F) probabilitySlider = 100.0F;
+
+		if (probabilitySliderRR > 100.0F) probabilitySliderRR = 100.0F;
+		if (probabilitySliderRG > 100.0F) probabilitySliderRG = 100.0F;
+		if (probabilitySliderRB > 100.0F) probabilitySliderRB = 100.0F;
+		if (probabilitySliderRW > 100.0F) probabilitySliderRW = 100.0F;
+		if (probabilitySliderRO > 100.0F) probabilitySliderRO = 100.0F;
+		if (probabilitySliderRK > 100.0F) probabilitySliderRK = 100.0F;
+		if (probabilitySliderRC > 100.0F) probabilitySliderRC = 100.0F;
+		if (probabilitySliderRD > 100.0F) probabilitySliderRD = 100.0F;
+
+		if (probabilitySliderGR > 100.0F) probabilitySliderGR = 100.0F;
+		if (probabilitySliderGG > 100.0F) probabilitySliderGG = 100.0F;
+		if (probabilitySliderGB > 100.0F) probabilitySliderGB = 100.0F;
+		if (probabilitySliderGW > 100.0F) probabilitySliderGW = 100.0F;
+		if (probabilitySliderGO > 100.0F) probabilitySliderGO = 100.0F;
+		if (probabilitySliderGK > 100.0F) probabilitySliderGK = 100.0F;
+		if (probabilitySliderGC > 100.0F) probabilitySliderGC = 100.0F;
+		if (probabilitySliderGD > 100.0F) probabilitySliderGD = 100.0F;
+
+		if (probabilitySliderBR > 100.0F) probabilitySliderBR = 100.0F;
+		if (probabilitySliderBG > 100.0F) probabilitySliderBG = 100.0F;
+		if (probabilitySliderBB > 100.0F) probabilitySliderBB = 100.0F;
+		if (probabilitySliderBW > 100.0F) probabilitySliderBW = 100.0F;
+		if (probabilitySliderBO > 100.0F) probabilitySliderBO = 100.0F;
+		if (probabilitySliderBK > 100.0F) probabilitySliderBK = 100.0F;
+		if (probabilitySliderBC > 100.0F) probabilitySliderBC = 100.0F;
+		if (probabilitySliderBD > 100.0F) probabilitySliderBD = 100.0F;
+
+		if (probabilitySliderWR > 100.0F) probabilitySliderWR = 100.0F;
+		if (probabilitySliderWG > 100.0F) probabilitySliderWG = 100.0F;
+		if (probabilitySliderWB > 100.0F) probabilitySliderWB = 100.0F;
+		if (probabilitySliderWW > 100.0F) probabilitySliderWW = 100.0F;
+		if (probabilitySliderWO > 100.0F) probabilitySliderWO = 100.0F;
+		if (probabilitySliderWK > 100.0F) probabilitySliderWK = 100.0F;
+		if (probabilitySliderWC > 100.0F) probabilitySliderWC = 100.0F;
+		if (probabilitySliderWD > 100.0F) probabilitySliderWD = 100.0F;
+
+		if (probabilitySliderOR > 100.0F) probabilitySliderOR = 100.0F;
+		if (probabilitySliderOG > 100.0F) probabilitySliderOG = 100.0F;
+		if (probabilitySliderOB > 100.0F) probabilitySliderOB = 100.0F;
+		if (probabilitySliderOW > 100.0F) probabilitySliderOW = 100.0F;
+		if (probabilitySliderOO > 100.0F) probabilitySliderOO = 100.0F;
+		if (probabilitySliderOK > 100.0F) probabilitySliderOK = 100.0F;
+		if (probabilitySliderOC > 100.0F) probabilitySliderOC = 100.0F;
+		if (probabilitySliderOD > 100.0F) probabilitySliderOD = 100.0F;
+
+		if (probabilitySliderKR > 100.0F) probabilitySliderKR = 100.0F;
+		if (probabilitySliderKG > 100.0F) probabilitySliderKG = 100.0F;
+		if (probabilitySliderKB > 100.0F) probabilitySliderKB = 100.0F;
+		if (probabilitySliderKW > 100.0F) probabilitySliderKW = 100.0F;
+		if (probabilitySliderKO > 100.0F) probabilitySliderKO = 100.0F;
+		if (probabilitySliderKK > 100.0F) probabilitySliderKK = 100.0F;
+		if (probabilitySliderKC > 100.0F) probabilitySliderKC = 100.0F;
+		if (probabilitySliderKD > 100.0F) probabilitySliderKD = 100.0F;
+
+		if (probabilitySliderCR > 100.0F) probabilitySliderCR = 100.0F;
+		if (probabilitySliderCG > 100.0F) probabilitySliderCG = 100.0F;
+		if (probabilitySliderCB > 100.0F) probabilitySliderCB = 100.0F;
+		if (probabilitySliderCW > 100.0F) probabilitySliderCW = 100.0F;
+		if (probabilitySliderCO > 100.0F) probabilitySliderCO = 100.0F;
+		if (probabilitySliderCK > 100.0F) probabilitySliderCK = 100.0F;
+		if (probabilitySliderCC > 100.0F) probabilitySliderCC = 100.0F;
+		if (probabilitySliderCD > 100.0F) probabilitySliderCD = 100.0F;
+
+		if (probabilitySliderDR > 100.0F) probabilitySliderDR = 100.0F;
+		if (probabilitySliderDG > 100.0F) probabilitySliderDG = 100.0F;
+		if (probabilitySliderDB > 100.0F) probabilitySliderDB = 100.0F;
+		if (probabilitySliderDW > 100.0F) probabilitySliderDW = 100.0F;
+		if (probabilitySliderDO > 100.0F) probabilitySliderDO = 100.0F;
+		if (probabilitySliderDK > 100.0F) probabilitySliderDK = 100.0F;
+		if (probabilitySliderDC > 100.0F) probabilitySliderDC = 100.0F;
+		if (probabilitySliderDD > 100.0F) probabilitySliderDD = 100.0F;
+
 		if (viscoSlider > 1.0F) viscoSlider = 1.0F;
+
 		if (viscoSliderR > 1.0F) viscoSliderR = 1.0F;
 		if (viscoSliderG > 1.0F) viscoSliderG = 1.0F;
 		if (viscoSliderB > 1.0F) viscoSliderB = 1.0F;
@@ -1226,6 +1754,7 @@ void ofApp::update()
 		if (viscoSliderK > 1.0F) viscoSliderK = 1.0F;
 		if (viscoSliderC > 1.0F) viscoSliderC = 1.0F;
 		if (viscoSliderD > 1.0F) viscoSliderD = 1.0F;
+
 		//if (numberSliderG > 2000.0F) numberSliderG = 2000.0F;
 		//if (numberSliderR > 2000.0F) numberSliderR = 2000.0F;
 		//if (numberSliderW > 2000.0F) numberSliderW = 2000.0F;
@@ -1239,98 +1768,98 @@ void ofApp::update()
 
 	if (numberSliderR > 0)
 	{
-		interaction(&red, &red, powerSliderRR, vSliderRR, viscosityR);
-		if (numberSliderG > 0) interaction(&red, &green, powerSliderRG, vSliderRG, viscosityR);
-		if (numberSliderB > 0) interaction(&red, &blue, powerSliderRB, vSliderRB, viscosityR);
-		if (numberSliderW > 0) interaction(&red, &white, powerSliderRW, vSliderRW, viscosityR);
-		if (numberSliderO > 0) interaction(&red, &orange, powerSliderRO, vSliderRO, viscosityR);
-		if (numberSliderK > 0) interaction(&red, &khaki, powerSliderRK, vSliderRK, viscosityR);
-		if (numberSliderC > 0) interaction(&red, &crimson, powerSliderRC, vSliderRC, viscosityR);
-		if (numberSliderD > 0) interaction(&red, &dark, powerSliderRD, vSliderRD, viscosityR);
+		interaction(&red, &red, powerSliderRR, vSliderRR, viscosityR, probabilityRR);
+		if (numberSliderG > 0) interaction(&red, &green, powerSliderRG, vSliderRG, viscosityR, probabilityRG);
+		if (numberSliderB > 0) interaction(&red, &blue, powerSliderRB, vSliderRB, viscosityR, probabilityRB);
+		if (numberSliderW > 0) interaction(&red, &white, powerSliderRW, vSliderRW, viscosityR, probabilityRW);
+		if (numberSliderO > 0) interaction(&red, &orange, powerSliderRO, vSliderRO, viscosityR, probabilityRO);
+		if (numberSliderK > 0) interaction(&red, &khaki, powerSliderRK, vSliderRK, viscosityR, probabilityRK);
+		if (numberSliderC > 0) interaction(&red, &crimson, powerSliderRC, vSliderRC, viscosityR, probabilityRC);
+		if (numberSliderD > 0) interaction(&red, &dark, powerSliderRD, vSliderRD, viscosityR, probabilityRD);
 	}
 
 	if (numberSliderG > 0)
 	{
-		if (numberSliderR > 0) interaction(&green, &red, powerSliderGR, vSliderGR, viscosityG);
-		interaction(&green, &green, powerSliderGG, vSliderGG, viscosityG);
-		if (numberSliderB > 0) interaction(&green, &blue, powerSliderGB, vSliderGB, viscosityG);
-		if (numberSliderW > 0) interaction(&green, &white, powerSliderGW, vSliderGW, viscosityG);
-		if (numberSliderO > 0) interaction(&green, &orange, powerSliderGO, vSliderGO, viscosityG);
-		if (numberSliderK > 0) interaction(&green, &khaki, powerSliderGK, vSliderGK, viscosityG);
-		if (numberSliderC > 0) interaction(&green, &crimson, powerSliderGC, vSliderGC, viscosityG);
-		if (numberSliderD > 0) interaction(&green, &dark, powerSliderGD, vSliderGD, viscosityG);
+		if (numberSliderR > 0) interaction(&green, &red, powerSliderGR, vSliderGR, viscosityG, probabilityGR);
+		interaction(&green, &green, powerSliderGG, vSliderGG, viscosityG, probabilityGG);
+		if (numberSliderB > 0) interaction(&green, &blue, powerSliderGB, vSliderGB, viscosityG, probabilityGB);
+		if (numberSliderW > 0) interaction(&green, &white, powerSliderGW, vSliderGW, viscosityG, probabilityGW);
+		if (numberSliderO > 0) interaction(&green, &orange, powerSliderGO, vSliderGO, viscosityG, probabilityGO);
+		if (numberSliderK > 0) interaction(&green, &khaki, powerSliderGK, vSliderGK, viscosityG, probabilityGK);
+		if (numberSliderC > 0) interaction(&green, &crimson, powerSliderGC, vSliderGC, viscosityG, probabilityGC);
+		if (numberSliderD > 0) interaction(&green, &dark, powerSliderGD, vSliderGD, viscosityG, probabilityGD);
 	}
 
 	if (numberSliderB > 0)
 	{
-		if (numberSliderR > 0) interaction(&blue, &red, powerSliderBR, vSliderBR, viscosityB);
-		if (numberSliderG > 0) interaction(&blue, &green, powerSliderBG, vSliderBG, viscosityB);
-		interaction(&blue, &blue, powerSliderBB, vSliderBB, viscosityB);
-		if (numberSliderW > 0) interaction(&blue, &white, powerSliderBW, vSliderBW, viscosityB);
-		if (numberSliderO > 0) interaction(&blue, &orange, powerSliderBO, vSliderBO, viscosityB);
-		if (numberSliderK > 0) interaction(&blue, &khaki, powerSliderBK, vSliderBK, viscosityB);
-		if (numberSliderC > 0) interaction(&blue, &crimson, powerSliderBC, vSliderBC, viscosityB);
-		if (numberSliderD > 0) interaction(&blue, &dark, powerSliderBD, vSliderBD, viscosityB);
+		if (numberSliderR > 0) interaction(&blue, &red, powerSliderBR, vSliderBR, viscosityB, probabilityBR);
+		if (numberSliderG > 0) interaction(&blue, &green, powerSliderBG, vSliderBG, viscosityB, probabilityBG);
+		interaction(&blue, &blue, powerSliderBB, vSliderBB, viscosityB, probabilityBB);
+		if (numberSliderW > 0) interaction(&blue, &white, powerSliderBW, vSliderBW, viscosityB, probabilityBW);
+		if (numberSliderO > 0) interaction(&blue, &orange, powerSliderBO, vSliderBO, viscosityB, probabilityBO);
+		if (numberSliderK > 0) interaction(&blue, &khaki, powerSliderBK, vSliderBK, viscosityB, probabilityBK);
+		if (numberSliderC > 0) interaction(&blue, &crimson, powerSliderBC, vSliderBC, viscosityB, probabilityBC);
+		if (numberSliderD > 0) interaction(&blue, &dark, powerSliderBD, vSliderBD, viscosityB, probabilityBD);
 	}
 
 	if (numberSliderW > 0)
 	{
-		if (numberSliderR > 0) interaction(&white, &red, powerSliderWR, vSliderWR, viscosityW);
-		if (numberSliderG > 0) interaction(&white, &green, powerSliderWG, vSliderWG, viscosityW);
-		if (numberSliderB > 0) interaction(&white, &blue, powerSliderWB, vSliderWB, viscosityW);
-		interaction(&white, &white, powerSliderWW, vSliderWW, viscosityW);
-		if (numberSliderO > 0) interaction(&white, &orange, powerSliderWO, vSliderWO, viscosityW);
-		if (numberSliderK > 0) interaction(&white, &khaki, powerSliderWK, vSliderWK, viscosityW);
-		if (numberSliderC > 0) interaction(&white, &crimson, powerSliderWC, vSliderWC, viscosityW);
-		if (numberSliderD > 0) interaction(&white, &dark, powerSliderWD, vSliderWD, viscosityW);
+		if (numberSliderR > 0) interaction(&white, &red, powerSliderWR, vSliderWR, viscosityW, probabilityWR);
+		if (numberSliderG > 0) interaction(&white, &green, powerSliderWG, vSliderWG, viscosityW, probabilityWG);
+		if (numberSliderB > 0) interaction(&white, &blue, powerSliderWB, vSliderWB, viscosityW, probabilityWB);
+		interaction(&white, &white, powerSliderWW, vSliderWW, viscosityW, probabilityWW);
+		if (numberSliderO > 0) interaction(&white, &orange, powerSliderWO, vSliderWO, viscosityW, probabilityWO);
+		if (numberSliderK > 0) interaction(&white, &khaki, powerSliderWK, vSliderWK, viscosityW, probabilityWK);
+		if (numberSliderC > 0) interaction(&white, &crimson, powerSliderWC, vSliderWC, viscosityW, probabilityWC);
+		if (numberSliderD > 0) interaction(&white, &dark, powerSliderWD, vSliderWD, viscosityW, probabilityWD);
 	}
 
 	if (numberSliderO > 0)
 	{
-		if (numberSliderR > 0) interaction(&orange, &red, powerSliderOR, vSliderOR, viscosityO);
-		if (numberSliderG > 0) interaction(&orange, &green, powerSliderOG, vSliderOG, viscosityO);
-		if (numberSliderB > 0) interaction(&orange, &blue, powerSliderOB, vSliderOB, viscosityO);
-		if (numberSliderW > 0) interaction(&orange, &white, powerSliderOW, vSliderOW, viscosityO);
-		interaction(&orange, &orange, powerSliderOO, vSliderOO, viscosityO);
-		if (numberSliderK > 0) interaction(&orange, &khaki, powerSliderOK, vSliderOK, viscosityO);
-		if (numberSliderC > 0) interaction(&orange, &crimson, powerSliderOC, vSliderOC, viscosityO);
-		if (numberSliderD > 0) interaction(&orange, &dark, powerSliderOD, vSliderOD, viscosityO);
+		if (numberSliderR > 0) interaction(&orange, &red, powerSliderOR, vSliderOR, viscosityO, probabilityOR);
+		if (numberSliderG > 0) interaction(&orange, &green, powerSliderOG, vSliderOG, viscosityO, probabilityOR);
+		if (numberSliderB > 0) interaction(&orange, &blue, powerSliderOB, vSliderOB, viscosityO, probabilityOB);
+		if (numberSliderW > 0) interaction(&orange, &white, powerSliderOW, vSliderOW, viscosityO, probabilityOW);
+		interaction(&orange, &orange, powerSliderOO, vSliderOO, viscosityO, probabilityOO);
+		if (numberSliderK > 0) interaction(&orange, &khaki, powerSliderOK, vSliderOK, viscosityO, probabilityOK);
+		if (numberSliderC > 0) interaction(&orange, &crimson, powerSliderOC, vSliderOC, viscosityO, probabilityOC);
+		if (numberSliderD > 0) interaction(&orange, &dark, powerSliderOD, vSliderOD, viscosityO, probabilityOD);
 	}
 
 	if (numberSliderK > 0)
 	{
-		if (numberSliderR > 0) interaction(&khaki, &red, powerSliderKR, vSliderKR, viscosityK);
-		if (numberSliderG > 0) interaction(&khaki, &green, powerSliderKG, vSliderKG, viscosityK);
-		if (numberSliderB > 0) interaction(&khaki, &blue, powerSliderKB, vSliderKB, viscosityK);
-		if (numberSliderW > 0) interaction(&khaki, &white, powerSliderKW, vSliderKW, viscosityK);
-		if (numberSliderO > 0) interaction(&khaki, &orange, powerSliderKO, vSliderKO, viscosityK);
-		interaction(&khaki, &khaki, powerSliderKK, vSliderKK, viscosityK);
-		if (numberSliderC > 0) interaction(&khaki, &crimson, powerSliderKC, vSliderKC, viscosityK);
-		if (numberSliderD > 0) interaction(&khaki, &dark, powerSliderKD, vSliderKD, viscosityK);
+		if (numberSliderR > 0) interaction(&khaki, &red, powerSliderKR, vSliderKR, viscosityK, probabilityKR);
+		if (numberSliderG > 0) interaction(&khaki, &green, powerSliderKG, vSliderKG, viscosityK, probabilityKG);
+		if (numberSliderB > 0) interaction(&khaki, &blue, powerSliderKB, vSliderKB, viscosityK, probabilityKB);
+		if (numberSliderW > 0) interaction(&khaki, &white, powerSliderKW, vSliderKW, viscosityK, probabilityKW);
+		if (numberSliderO > 0) interaction(&khaki, &orange, powerSliderKO, vSliderKO, viscosityK, probabilityKO);
+		interaction(&khaki, &khaki, powerSliderKK, vSliderKK, viscosityK, probabilityKK);
+		if (numberSliderC > 0) interaction(&khaki, &crimson, powerSliderKC, vSliderKC, viscosityK, probabilityKC);
+		if (numberSliderD > 0) interaction(&khaki, &dark, powerSliderKD, vSliderKD, viscosityK, probabilityKD);
 	}
 
 	if (numberSliderC > 0)
 	{
-		if (numberSliderR > 0) interaction(&crimson, &red, powerSliderCR, vSliderCR, viscosityC);
-		if (numberSliderG > 0) interaction(&crimson, &green, powerSliderCG, vSliderCG, viscosityC);
-		if (numberSliderB > 0) interaction(&crimson, &blue, powerSliderCB, vSliderCB, viscosityC);
-		if (numberSliderW > 0) interaction(&crimson, &white, powerSliderCW, vSliderCW, viscosityC);
-		if (numberSliderO > 0) interaction(&crimson, &orange, powerSliderCO, vSliderCO, viscosityC);
-		if (numberSliderK > 0) interaction(&crimson, &khaki, powerSliderCK, vSliderCK, viscosityC);
-		interaction(&crimson, &crimson, powerSliderCC, vSliderCC, viscosityC);
-		if (numberSliderD > 0) interaction(&crimson, &dark, powerSliderCD, vSliderCD, viscosityC);
+		if (numberSliderR > 0) interaction(&crimson, &red, powerSliderCR, vSliderCR, viscosityC, probabilityCR);
+		if (numberSliderG > 0) interaction(&crimson, &green, powerSliderCG, vSliderCG, viscosityC, probabilityCG);
+		if (numberSliderB > 0) interaction(&crimson, &blue, powerSliderCB, vSliderCB, viscosityC, probabilityCB);
+		if (numberSliderW > 0) interaction(&crimson, &white, powerSliderCW, vSliderCW, viscosityC, probabilityCW);
+		if (numberSliderO > 0) interaction(&crimson, &orange, powerSliderCO, vSliderCO, viscosityC, probabilityCO);
+		if (numberSliderK > 0) interaction(&crimson, &khaki, powerSliderCK, vSliderCK, viscosityC, probabilityCK);
+		interaction(&crimson, &crimson, powerSliderCC, vSliderCC, viscosityC, probabilityCC);
+		if (numberSliderD > 0) interaction(&crimson, &dark, powerSliderCD, vSliderCD, viscosityC, probabilityCD);
 	}
 
 	if (numberSliderD > 0)
 	{
-		if (numberSliderR > 0) interaction(&dark, &red, powerSliderDR, vSliderDR, viscosityD);
-		if (numberSliderG > 0) interaction(&dark, &green, powerSliderDG, vSliderDG, viscosityD);
-		if (numberSliderB > 0) interaction(&dark, &blue, powerSliderDB, vSliderDB, viscosityD);
-		if (numberSliderW > 0) interaction(&dark, &white, powerSliderDW, vSliderDW, viscosityD);
-		if (numberSliderO > 0) interaction(&dark, &orange, powerSliderDO, vSliderDO, viscosityD);
-		if (numberSliderK > 0) interaction(&dark, &khaki, powerSliderDK, vSliderDK, viscosityD);
-		if (numberSliderC > 0) interaction(&dark, &crimson, powerSliderDC, vSliderDC, viscosityD);
-		interaction(&dark, &dark, powerSliderDD, vSliderDD, viscosityD);
+		if (numberSliderR > 0) interaction(&dark, &red, powerSliderDR, vSliderDR, viscosityD, probabilityDR);
+		if (numberSliderG > 0) interaction(&dark, &green, powerSliderDG, vSliderDG, viscosityD, probabilityDG);
+		if (numberSliderB > 0) interaction(&dark, &blue, powerSliderDB, vSliderDB, viscosityD, probabilityDB);
+		if (numberSliderW > 0) interaction(&dark, &white, powerSliderDW, vSliderDW, viscosityD, probabilityDW);
+		if (numberSliderO > 0) interaction(&dark, &orange, powerSliderDO, vSliderDO, viscosityD, probabilityDO);
+		if (numberSliderK > 0) interaction(&dark, &khaki, powerSliderDK, vSliderDK, viscosityD, probabilityDK);
+		if (numberSliderC > 0) interaction(&dark, &crimson, powerSliderDC, vSliderDC, viscosityD, probabilityDC);
+		interaction(&dark, &dark, powerSliderDD, vSliderDD, viscosityD, probabilityDD);
 	}
 
 	if (save) { saveSettings(); }

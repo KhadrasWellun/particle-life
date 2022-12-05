@@ -54,12 +54,20 @@ public:
 	void monads();
 	void saveSettings();
 	void loadSettings();
-	void interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float G, float radius, float viscosity);
+	void interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float G, float radius, float viscosity, float probability);
 
 	ofxPanel gui;
 
 	ofxGuiGroup globalGroup;
 	ofxGuiGroup viscosityGroup;
+	ofxGuiGroup probabilityRGroup;
+	ofxGuiGroup probabilityGGroup;
+	ofxGuiGroup probabilityBGroup;
+	ofxGuiGroup probabilityWGroup;
+	ofxGuiGroup probabilityOGroup;
+	ofxGuiGroup probabilityKGroup;
+	ofxGuiGroup probabilityCGroup;
+	ofxGuiGroup probabilityDGroup;
 	ofxGuiGroup qtyGroup;
 	ofxGuiGroup redGroup;
 	ofxGuiGroup greenGroup;
@@ -94,7 +102,150 @@ public:
 	//end of experimental
 
 	ofxFloatSlider probabilitySlider;
+	ofxFloatSlider probabilitySliderRR;
+	ofxFloatSlider probabilitySliderRG;
+	ofxFloatSlider probabilitySliderRB;
+	ofxFloatSlider probabilitySliderRW;
+	ofxFloatSlider probabilitySliderRO;
+	ofxFloatSlider probabilitySliderRK;
+	ofxFloatSlider probabilitySliderRC;
+	ofxFloatSlider probabilitySliderRD;
+
+	ofxFloatSlider probabilitySliderGR;
+	ofxFloatSlider probabilitySliderGG;
+	ofxFloatSlider probabilitySliderGB;
+	ofxFloatSlider probabilitySliderGW;
+	ofxFloatSlider probabilitySliderGO;
+	ofxFloatSlider probabilitySliderGK;
+	ofxFloatSlider probabilitySliderGC;
+	ofxFloatSlider probabilitySliderGD;
+
+	ofxFloatSlider probabilitySliderBR;
+	ofxFloatSlider probabilitySliderBG;
+	ofxFloatSlider probabilitySliderBB;
+	ofxFloatSlider probabilitySliderBW;
+	ofxFloatSlider probabilitySliderBO;
+	ofxFloatSlider probabilitySliderBK;
+	ofxFloatSlider probabilitySliderBC;
+	ofxFloatSlider probabilitySliderBD;
+
+	ofxFloatSlider probabilitySliderWR;
+	ofxFloatSlider probabilitySliderWG;
+	ofxFloatSlider probabilitySliderWB;
+	ofxFloatSlider probabilitySliderWW;
+	ofxFloatSlider probabilitySliderWO;
+	ofxFloatSlider probabilitySliderWK;
+	ofxFloatSlider probabilitySliderWC;
+	ofxFloatSlider probabilitySliderWD;
+
+	ofxFloatSlider probabilitySliderOR;
+	ofxFloatSlider probabilitySliderOG;
+	ofxFloatSlider probabilitySliderOB;
+	ofxFloatSlider probabilitySliderOW;
+	ofxFloatSlider probabilitySliderOO;
+	ofxFloatSlider probabilitySliderOK;
+	ofxFloatSlider probabilitySliderOC;
+	ofxFloatSlider probabilitySliderOD;
+
+	ofxFloatSlider probabilitySliderKR;
+	ofxFloatSlider probabilitySliderKG;
+	ofxFloatSlider probabilitySliderKB;
+	ofxFloatSlider probabilitySliderKW;
+	ofxFloatSlider probabilitySliderKO;
+	ofxFloatSlider probabilitySliderKK;
+	ofxFloatSlider probabilitySliderKC;
+	ofxFloatSlider probabilitySliderKD;
+
+	ofxFloatSlider probabilitySliderCR;
+	ofxFloatSlider probabilitySliderCG;
+	ofxFloatSlider probabilitySliderCB;
+	ofxFloatSlider probabilitySliderCW;
+	ofxFloatSlider probabilitySliderCO;
+	ofxFloatSlider probabilitySliderCK;
+	ofxFloatSlider probabilitySliderCC;
+	ofxFloatSlider probabilitySliderCD;
+
+	ofxFloatSlider probabilitySliderDR;
+	ofxFloatSlider probabilitySliderDG;
+	ofxFloatSlider probabilitySliderDB;
+	ofxFloatSlider probabilitySliderDW;
+	ofxFloatSlider probabilitySliderDO;
+	ofxFloatSlider probabilitySliderDK;
+	ofxFloatSlider probabilitySliderDC;
+	ofxFloatSlider probabilitySliderDD;
+
 	unsigned int probability = 90.00;
+	unsigned int probabilityRR = 90.00;
+	unsigned int probabilityRG = 95.00;
+	unsigned int probabilityRB = 100.00;
+	unsigned int probabilityRW = 80.00;
+	unsigned int probabilityRO = 85.00;
+	unsigned int probabilityRK = 70.00;
+	unsigned int probabilityRC = 75.00;
+	unsigned int probabilityRD = 65.00;
+
+	unsigned int probabilityGR = 90.00;
+	unsigned int probabilityGG = 95.00;
+	unsigned int probabilityGB = 100.00;
+	unsigned int probabilityGW = 80.00;
+	unsigned int probabilityGO = 85.00;
+	unsigned int probabilityGK = 70.00;
+	unsigned int probabilityGC = 75.00;
+	unsigned int probabilityGD = 65.00;
+
+	unsigned int probabilityBR = 90.00;
+	unsigned int probabilityBG = 95.00;
+	unsigned int probabilityBB = 100.00;
+	unsigned int probabilityBW = 80.00;
+	unsigned int probabilityBO = 85.00;
+	unsigned int probabilityBK = 70.00;
+	unsigned int probabilityBC = 75.00;
+	unsigned int probabilityBD = 65.00;
+
+	unsigned int probabilityWR = 90.00;
+	unsigned int probabilityWG = 95.00;
+	unsigned int probabilityWB = 100.00;
+	unsigned int probabilityWW = 80.00;
+	unsigned int probabilityWO = 85.00;
+	unsigned int probabilityWK = 70.00;
+	unsigned int probabilityWC = 75.00;
+	unsigned int probabilityWD = 65.00;
+
+	unsigned int probabilityOR = 90.00;
+	unsigned int probabilityOG = 95.00;
+	unsigned int probabilityOB = 100.00;
+	unsigned int probabilityOW = 80.00;
+	unsigned int probabilityOO = 85.00;
+	unsigned int probabilityOK = 70.00;
+	unsigned int probabilityOC = 75.00;
+	unsigned int probabilityOD = 65.00;
+
+	unsigned int probabilityKR = 90.00;
+	unsigned int probabilityKG = 95.00;
+	unsigned int probabilityKB = 100.00;
+	unsigned int probabilityKW = 80.00;
+	unsigned int probabilityKO = 85.00;
+	unsigned int probabilityKK = 70.00;
+	unsigned int probabilityKC = 75.00;
+	unsigned int probabilityKD = 65.00;
+
+	unsigned int probabilityCR = 90.00;
+	unsigned int probabilityCG = 95.00;
+	unsigned int probabilityCB = 100.00;
+	unsigned int probabilityCW = 80.00;
+	unsigned int probabilityCO = 85.00;
+	unsigned int probabilityCK = 70.00;
+	unsigned int probabilityCC = 75.00;
+	unsigned int probabilityCD = 65.00;
+
+	unsigned int probabilityDR = 90.00;
+	unsigned int probabilityDG = 95.00;
+	unsigned int probabilityDB = 100.00;
+	unsigned int probabilityDW = 80.00;
+	unsigned int probabilityDO = 85.00;
+	unsigned int probabilityDK = 70.00;
+	unsigned int probabilityDC = 75.00;
+	unsigned int probabilityDD = 65.00;
 
 	ofxIntSlider numberSliderR;
 	ofxIntSlider numberSliderG;
