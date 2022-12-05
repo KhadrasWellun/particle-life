@@ -2,3 +2,35 @@
 <Green>
 	<bounded>1</bounded>
 </Green>
+<Settings>
+	<Show_Model>0</Show_Model>
+	<Global>
+		<Viscosity_Friction>0.75551</Viscosity_Friction>
+		<Evolve_parameters>1</Evolve_parameters>
+		<infinite_radius>0</infinite_radius>
+		<Motion_Blur>0</Motion_Blur>
+		<Gravity>0</Gravity>
+	</Global>
+	<Quantity__require_restart_randomize_>
+		<Green>1542</Green>
+		<Red>1298</Red>
+		<White>1948</White>
+		<Blue>1897</Blue>
+		<Orange>1296</Orange>
+		<Khaki>421</Khaki>
+		<Crimson>1590</Crimson>
+		<Dark>1221</Dark>
+	</Quantity__require_restart_randomize_>
+	<Green />
+	<Red />
+	<White />
+	<Blue />
+	<Orange />
+	<Khaki />
+	<Crimson />
+	<Dark />
+	<Experimental>
+		<Wall_Repel>20</Wall_Repel>
+		<Bounded>0</Bounded>
+	</Experimental>
+</Settings>
