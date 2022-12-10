@@ -1,8 +1,24 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/hunar4321/life_code)
 ![GitHub](https://img.shields.io/github/license/hunar4321/life_code)
 
-# Particle Life Simulation
-A simple program to simulate primitive Artificial Life using simple rules of attraction or repulsion among atom-like particles, producing complex self-organzing life-like patterns. Excluding the GUI elements, the code is less than a page. The video tutorial and walkthrough are available below.
+# Artificial Universe with Particle Life Simulation
+A simple program to simulate Artificial Universes, with primitive Artificial Life, using simple rules of attraction and repulsion among atom-like particles, producing complex self-organzing life-like patterns.
+
+Each particle emits a number of coloured fields of attractive and repulsive forces, depending on how many colours are defined. In the case of my version, there are 8 particle colours, so each particle will emit 16 coloured force fields: 8 attractive and 8 repulsive. Each coloured force field has its own intensity and range of action.
+
+Each coloured particle reacts only to the field of the same colour as itself.
+
+The eighth colour is black. This is so that the black particles are camouflaged by the background which is also black. These black particles simulate dark matter.
+
+Every color interaction has its own viscosity. Being 64 color interactions there will be 64 viscosity parameters.
+
+Every interaction between two colours has a certain probability of happening. Since there are 64 colours color interactions there will be 64 probability parameters.
+
+Each parameter evolves with a certain probability and percentage, set by the user.
+
+There are 5 types of randomizations: the number of particles per color, the interaction strengths (intensity and radius) between colors, the probabilities of interactions, the viscosity of colors and all these parameters together.
+
+The video tutorial and walkthrough are available below.
 
 Learn More Here (YouTube video tutorial):
 -----------------------------------------------
@@ -20,17 +36,19 @@ https://youtu.be/3rGuQ2XCYvc
 
 Online Demo (JavaScript version):
 -------------
-Click here for a live demo (JavaScript): 
+Click here for a live demo of original code (JavaScript): 
   - 2d - https://hunar4321.github.io/particle-life/particle_life.html
   - 3d - https://hunar4321.github.io/particle-life/particle_life_3d.html
   
 -----------------------------------------------  
-A moddified version is here:
+Click here for a live demo of my modified code (JavaScript):
   - 2d - https://khadraswellun.github.io/particle-life/particle_life.html
-  
+
+I modified the maximum number of color to 12, I add randomization of all interaction force ranges (they never stay at 80 anymore). This link works on Smart TVs as well as mobile phones that have access to an internet browser. 
+
 Interface (C++ version)
 --------------------------------------------------------
-![](images/Interface_1_2.jpg)
+![](images/Interface_1_4.jpg)
 --------------------------------------------------------
 Interaction model
 
@@ -39,12 +57,21 @@ Interaction model
 --------------------------------------------------------
 Example Results
 --------------------------------------------------------
-![](images/Screen_20221203_01.jpg)
+![](images/Screen_20221210_01.jpg)
 -----------------------------------------------
-![](images/Screen_20221203_02.jpg)
+![](images/Screen_20221210_02.jpg)
 -----------------------------------------------
-![](images/Screen_20221203_03.jpg)
+![](images/Screen_20221210_03.jpg)
 -----------------------------------------------
+![](images/Screen_20221210_04.jpg)
+-----------------------------------------------
+![](images/Screen_20221210_05.jpg)
+-----------------------------------------------
+![](images/Screen_20221210_06.jpg)
+-----------------------------------------------
+![](images/Screen_20221210_07.jpg)
+-----------------------------------------------
+
 Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
@@ -60,9 +87,8 @@ Download this repo. unzip the file then go to /particle_life/bin/ folder and cli
 Code:
 ----------------
 The source code is available in C++, JavaScript, and Python.
-Watch this YouTube video for a walkthrough tutorial: https://youtu.be/0Kx4Y9TVMGg
 
-If you would like to contribute to the C++ program, the core algorithm is the first 100 lines of code at:  "/particle_life/src/ofApp.cpp". The rest are GUI components and rendering controls which are provided by the openFrameworks library an opensource and easy-to-use image rendering library.
+Use this youtube channel to see more: https://www.youtube.com/channel/UCfpUYnmGctDK4Ep-nA6GYPw
 
 To start, download this repository then download openFrameworks library from here: https://openframeworks.cc/. Use openFramework's projectGenerator and import /particle_life/ folder to the project.
 
@@ -77,98 +103,11 @@ Other Ports:
 - [Go-1](https://github.com/sikora507/go-artificial-life), [Go-2](https://github.com/fglo/particles-rules-of-attraction), [Go-3](https://github.com/youssefboulmalf/Particle-Life-Go)
 - [Python](https://github.com/gianfa/pyrticleslife)
 - [Lua](https://github.com/ravener/love-life)
+- [QB64-PE](https://github.com/a740g/Particle-Life)
 - [Webgl](https://github.com/CapsAdmin/webgl-particles)
 - [Java](https://github.com/helloimalemur/ParticleSimulation)
 - [C# Winforms](https://github.com/BlinkSun/ParticleLifeSimulation)
 - [FreeBasic](https://www.freebasic.net/forum/viewtopic.php?p=294331#p294331)
-
-The JavaScript code is as simple as this: 
--------------------------------------
-Also, look at the particle_life.html file for a more optimized version - thanks to those who have contributed. 
-
-```html
-<canvas id="life" width="500" height="500"></canvas>
-<script>
-  //Hunar Ahmad @ brainxyz
-  m = document.getElementById("life").getContext("2d");
-  draw = (x, y, c, s) => {
-    m.fillStyle = c;
-    m.fillRect(x, y, s, s);
-  };
-  atoms = [];
-  atom = (x, y, c) => {
-    return { x: x, y: y, vx: 0, vy: 0, color: c };
-  };
-  random = () => {
-    return Math.random() * 400 + 50;
-  };
-  create = (number, color) => {
-    group = [];
-    for (let i = 0; i < number; i++) {
-      group.push(atom(random(), random(), color));
-      atoms.push(group[i]);
-    }
-    return group;
-  };
-  rule = (atoms1, atoms2, g) => {
-    for (let i = 0; i < atoms1.length; i++) {
-      fx = 0;
-      fy = 0;
-      for (let j = 0; j < atoms2.length; j++) {
-        a = atoms1[i];
-        b = atoms2[j];
-        dx = a.x - b.x;
-        dy = a.y - b.y;
-        d = Math.sqrt(dx * dx + dy * dy);
-        if (d > 0 && d < 80) {
-          F = (g * 1) / d;
-          fx += F * dx;
-          fy += F * dy;
-        }
-      }
-      a.vx = (a.vx + fx) * 0.5;
-      a.vy = (a.vy + fy) * 0.5;
-      a.x += a.vx;
-      a.y += a.vy;
-      if (a.x <= 0 || a.x >= 500) { a.vx *= -1; }
-      if (a.y <= 0 || a.y >= 500) { a.vy *= -1; }
-    }
-  };
-  yellow = create(200, "yellow");
-  red = create(200, "red");
-  green = create(200, "green");
-  update = () => {
-    rule(green, green, -0.32);
-    rule(green, red, -0.17);
-    rule(green, yellow, 0.34);
-    rule(red, red, -0.1);
-    rule(red, green, -0.34);
-    rule(yellow, yellow, 0.15);
-    rule(yellow, green, -0.2);
-    m.clearRect(0, 0, 500, 500);
-    draw(0, 0, "black", 500);
-    for (i = 0; i < atoms.length; i++) {
-      draw(atoms[i].x, atoms[i].y, atoms[i].color, 5);
-    }
-    requestAnimationFrame(update);
-  };
-  update();
-</script>
-```
-
-</br>
-
-
-Related topics:
-Particle Life Simulation,
-Primordial Soup - Evolution,
-Conway's game of life,
-Cellular automata,
-Self organzing patterns,
-
-This project was inspired by: Jeffery Ventrella's Clusters http://www.ventrella.com/Clusters/. I do not have access to Ventrella's code but I guess the main difference of this project from the other particle life projects is that I did not implement collision detection and this made simulating thousands of particles possible in real-time. Also, I added GUI controls to change the parameters in real-time allowing easy fine-tuning and exploration, hence, I was able to find some never-seen-before patterns emerge form some extremely simple models of relations. 
-The code here is probably an order of magnitude simpler than any other Artificial Life codes out there because I started this code solely as an educational material for non-programmers and general audience to prove the point that complexity can arise from simplicity.
-
 
 My Todos:
 --------------------
@@ -179,7 +118,7 @@ My Todos:
 5. Addition of antiparticles, which have negative mass and annihilate on contact with positive mass particles. These will be generated from reactions between normal particles.
 6. Adding metaball. A metaball consists of two or more particles that touch and remain connected for a user-defined minimum time. The metaball will exert an attractive and a repulsive force, calculated according to a certain algorithm and depending on the component particles, and an electric charge as a force resulting from the composition of the internal coloured forces. 
 7. Adding a thermal view option, whereby kinetic energy can be viewed through a specific colour spectrum.
-8. Linking each type of interaction to a probability parameter. Thus, no general probability will apply to all interactions between particles, but each type will have its own probability.
+8. (done) Linking each type of interaction to a probability parameter. Thus, no general probability will apply to all interactions between particles, but each type will have its own probability.
 9. Add the ability to zoom, take screenshots and record video.
-10. Addition of a specific viscosity to each particle colour (possibility of creating superfluids).
+10. (done) Addition of a specific viscosity to each color interaction (possibility of creating superfluids).
 
