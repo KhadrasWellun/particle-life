@@ -219,6 +219,329 @@ void ofApp::restart()
 /**
  * @brief Generate initial simulation parameters
  */
+void ofApp::random()
+{
+	numberSliderG = RandomInt(200, 2000);
+	numberSliderR = RandomInt(200, 2000);
+	numberSliderW = RandomInt(200, 2000);
+	numberSliderB = RandomInt(200, 2000);
+	numberSliderO = RandomInt(200, 2000);
+	numberSliderK = RandomInt(200, 2000);
+	numberSliderC = RandomInt(200, 2000);
+	numberSliderD = RandomInt(200, 2000);
+
+	evoProbSlider = RandomFloat(0.1, 1.5);
+	evoAmountSlider = RandomFloat(0.1, 3);
+
+	viscositySlider = RandomFloat(0.0, 1.0);
+
+	viscositySliderRR = RandomFloat(0.0, 1.0);
+	viscositySliderRG = RandomFloat(0.0, 1.0);
+	viscositySliderRW = RandomFloat(0.0, 1.0);
+	viscositySliderRB = RandomFloat(0.0, 1.0);
+	viscositySliderRO = RandomFloat(0.0, 1.0);
+	viscositySliderRK = RandomFloat(0.0, 1.0);
+	viscositySliderRC = RandomFloat(0.0, 1.0);
+	viscositySliderRD = RandomFloat(0.0, 1.0);
+
+	viscositySliderGR = RandomFloat(0.0, 1.0);
+	viscositySliderGG = RandomFloat(0.0, 1.0);
+	viscositySliderGW = RandomFloat(0.0, 1.0);
+	viscositySliderGB = RandomFloat(0.0, 1.0);
+	viscositySliderGO = RandomFloat(0.0, 1.0);
+	viscositySliderGK = RandomFloat(0.0, 1.0);
+	viscositySliderGC = RandomFloat(0.0, 1.0);
+	viscositySliderGD = RandomFloat(0.0, 1.0);
+
+	viscositySliderBR = RandomFloat(0.0, 1.0);
+	viscositySliderBG = RandomFloat(0.0, 1.0);
+	viscositySliderBW = RandomFloat(0.0, 1.0);
+	viscositySliderBB = RandomFloat(0.0, 1.0);
+	viscositySliderBO = RandomFloat(0.0, 1.0);
+	viscositySliderBK = RandomFloat(0.0, 1.0);
+	viscositySliderBC = RandomFloat(0.0, 1.0);
+	viscositySliderBD = RandomFloat(0.0, 1.0);
+
+	viscositySliderWR = RandomFloat(0.0, 1.0);
+	viscositySliderWG = RandomFloat(0.0, 1.0);
+	viscositySliderWW = RandomFloat(0.0, 1.0);
+	viscositySliderWB = RandomFloat(0.0, 1.0);
+	viscositySliderWO = RandomFloat(0.0, 1.0);
+	viscositySliderWK = RandomFloat(0.0, 1.0);
+	viscositySliderWC = RandomFloat(0.0, 1.0);
+	viscositySliderWD = RandomFloat(0.0, 1.0);
+
+	viscositySliderOR = RandomFloat(0.0, 1.0);
+	viscositySliderOG = RandomFloat(0.0, 1.0);
+	viscositySliderOW = RandomFloat(0.0, 1.0);
+	viscositySliderOB = RandomFloat(0.0, 1.0);
+	viscositySliderOO = RandomFloat(0.0, 1.0);
+	viscositySliderOK = RandomFloat(0.0, 1.0);
+	viscositySliderOC = RandomFloat(0.0, 1.0);
+	viscositySliderOD = RandomFloat(0.0, 1.0);
+
+	viscositySliderKR = RandomFloat(0.0, 1.0);
+	viscositySliderKG = RandomFloat(0.0, 1.0);
+	viscositySliderKW = RandomFloat(0.0, 1.0);
+	viscositySliderKB = RandomFloat(0.0, 1.0);
+	viscositySliderKO = RandomFloat(0.0, 1.0);
+	viscositySliderKK = RandomFloat(0.0, 1.0);
+	viscositySliderKC = RandomFloat(0.0, 1.0);
+	viscositySliderKD = RandomFloat(0.0, 1.0);
+
+	viscositySliderCR = RandomFloat(0.0, 1.0);
+	viscositySliderCG = RandomFloat(0.0, 1.0);
+	viscositySliderCW = RandomFloat(0.0, 1.0);
+	viscositySliderCB = RandomFloat(0.0, 1.0);
+	viscositySliderCO = RandomFloat(0.0, 1.0);
+	viscositySliderCK = RandomFloat(0.0, 1.0);
+	viscositySliderCC = RandomFloat(0.0, 1.0);
+	viscositySliderCD = RandomFloat(0.0, 1.0);
+
+	viscositySliderDR = RandomFloat(0.0, 1.0);
+	viscositySliderDG = RandomFloat(0.0, 1.0);
+	viscositySliderDW = RandomFloat(0.0, 1.0);
+	viscositySliderDB = RandomFloat(0.0, 1.0);
+	viscositySliderDO = RandomFloat(0.0, 1.0);
+	viscositySliderDK = RandomFloat(0.0, 1.0);
+	viscositySliderDC = RandomFloat(0.0, 1.0);
+	viscositySliderDD = RandomFloat(0.0, 1.0);
+
+	probabilitySlider = RandomFloat(0, 100);
+
+	probabilitySliderRR = RandomFloat(0, 100);
+	probabilitySliderRG = RandomFloat(0, 100);
+	probabilitySliderRB = RandomFloat(0, 100);
+	probabilitySliderRW = RandomFloat(0, 100);
+	probabilitySliderRO = RandomFloat(0, 100);
+	probabilitySliderRK = RandomFloat(0, 100);
+	probabilitySliderRC = RandomFloat(0, 100);
+	probabilitySliderRD = RandomFloat(0, 100);
+
+	probabilitySliderGR = RandomFloat(0, 100);
+	probabilitySliderGG = RandomFloat(0, 100);
+	probabilitySliderGB = RandomFloat(0, 100);
+	probabilitySliderGW = RandomFloat(0, 100);
+	probabilitySliderGO = RandomFloat(0, 100);
+	probabilitySliderGK = RandomFloat(0, 100);
+	probabilitySliderGC = RandomFloat(0, 100);
+	probabilitySliderGD = RandomFloat(0, 100);
+
+	probabilitySliderBR = RandomFloat(0, 100);
+	probabilitySliderBG = RandomFloat(0, 100);
+	probabilitySliderBB = RandomFloat(0, 100);
+	probabilitySliderBW = RandomFloat(0, 100);
+	probabilitySliderBO = RandomFloat(0, 100);
+	probabilitySliderBK = RandomFloat(0, 100);
+	probabilitySliderBC = RandomFloat(0, 100);
+	probabilitySliderBD = RandomFloat(0, 100);
+
+	probabilitySliderWR = RandomFloat(0, 100);
+	probabilitySliderWG = RandomFloat(0, 100);
+	probabilitySliderWB = RandomFloat(0, 100);
+	probabilitySliderWW = RandomFloat(0, 100);
+	probabilitySliderWO = RandomFloat(0, 100);
+	probabilitySliderWK = RandomFloat(0, 100);
+	probabilitySliderWC = RandomFloat(0, 100);
+	probabilitySliderWD = RandomFloat(0, 100);
+
+	probabilitySliderOR = RandomFloat(0, 100);
+	probabilitySliderOG = RandomFloat(0, 100);
+	probabilitySliderOB = RandomFloat(0, 100);
+	probabilitySliderOW = RandomFloat(0, 100);
+	probabilitySliderOO = RandomFloat(0, 100);
+	probabilitySliderOK = RandomFloat(0, 100);
+	probabilitySliderOC = RandomFloat(0, 100);
+	probabilitySliderOD = RandomFloat(0, 100);
+
+	probabilitySliderKR = RandomFloat(0, 100);
+	probabilitySliderKG = RandomFloat(0, 100);
+	probabilitySliderKB = RandomFloat(0, 100);
+	probabilitySliderKW = RandomFloat(0, 100);
+	probabilitySliderKO = RandomFloat(0, 100);
+	probabilitySliderKK = RandomFloat(0, 100);
+	probabilitySliderKC = RandomFloat(0, 100);
+	probabilitySliderKD = RandomFloat(0, 100);
+
+	probabilitySliderCR = RandomFloat(0, 100);
+	probabilitySliderCG = RandomFloat(0, 100);
+	probabilitySliderCB = RandomFloat(0, 100);
+	probabilitySliderCW = RandomFloat(0, 100);
+	probabilitySliderCO = RandomFloat(0, 100);
+	probabilitySliderCK = RandomFloat(0, 100);
+	probabilitySliderCC = RandomFloat(0, 100);
+	probabilitySliderCD = RandomFloat(0, 100);
+
+	probabilitySliderDR = RandomFloat(0, 100);
+	probabilitySliderDG = RandomFloat(0, 100);
+	probabilitySliderDB = RandomFloat(0, 100);
+	probabilitySliderDW = RandomFloat(0, 100);
+	probabilitySliderDO = RandomFloat(0, 100);
+	probabilitySliderDK = RandomFloat(0, 100);
+	probabilitySliderDC = RandomFloat(0, 100);
+	probabilitySliderDD = RandomFloat(0, 100);
+
+	// GREEN
+	//numberSliderG = RandomFloat(0, 3000);
+	powerSliderGG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderGD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderGG = RandomFloat(0, 200) * radiusVariance;
+	vSliderGR = RandomFloat(0, 200) * radiusVariance;
+	vSliderGW = RandomFloat(0, 200) * radiusVariance;
+	vSliderGB = RandomFloat(0, 200) * radiusVariance;
+	vSliderGO = RandomFloat(0, 200) * radiusVariance;
+	vSliderGK = RandomFloat(0, 200) * radiusVariance;
+	vSliderGC = RandomFloat(0, 200) * radiusVariance;
+	vSliderGD = RandomFloat(0, 200) * radiusVariance;
+
+	// RED
+	//numberSliderR = RandomFloat(0, 3000);
+	powerSliderRR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderRD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderRG = RandomFloat(0, 500) * radiusVariance;
+	vSliderRR = RandomFloat(0, 500) * radiusVariance;
+	vSliderRW = RandomFloat(0, 500) * radiusVariance;
+	vSliderRB = RandomFloat(0, 500) * radiusVariance;
+	vSliderRO = RandomFloat(0, 500) * radiusVariance;
+	vSliderRK = RandomFloat(0, 500) * radiusVariance;
+	vSliderRC = RandomFloat(0, 500) * radiusVariance;
+	vSliderRD = RandomFloat(0, 500) * radiusVariance;
+
+	// WHITE
+	// numberSliderW = RandomFloat(0, 3000);
+	powerSliderWW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderWD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderWG = RandomFloat(0, 500) * radiusVariance;
+	vSliderWR = RandomFloat(0, 500) * radiusVariance;
+	vSliderWW = RandomFloat(0, 500) * radiusVariance;
+	vSliderWB = RandomFloat(0, 500) * radiusVariance;
+	vSliderWO = RandomFloat(0, 500) * radiusVariance;
+	vSliderWK = RandomFloat(0, 500) * radiusVariance;
+	vSliderWC = RandomFloat(0, 500) * radiusVariance;
+	vSliderWD = RandomFloat(0, 500) * radiusVariance;
+
+	// BLUE
+	//numberSliderB = RandomFloat(0, 3000);
+	powerSliderBB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderBD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderBG = RandomFloat(0, 500) * radiusVariance;
+	vSliderBR = RandomFloat(0, 500) * radiusVariance;
+	vSliderBW = RandomFloat(0, 500) * radiusVariance;
+	vSliderBB = RandomFloat(0, 500) * radiusVariance;
+	vSliderBO = RandomFloat(0, 500) * radiusVariance;
+	vSliderBK = RandomFloat(0, 500) * radiusVariance;
+	vSliderBC = RandomFloat(0, 500) * radiusVariance;
+	vSliderBD = RandomFloat(0, 500) * radiusVariance;
+
+	// ORANGE
+	//numberSliderO = RandomFloat(0, 3000);
+	powerSliderOB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderOD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderOG = RandomFloat(0, 500) * radiusVariance;
+	vSliderOR = RandomFloat(0, 500) * radiusVariance;
+	vSliderOW = RandomFloat(0, 500) * radiusVariance;
+	vSliderOB = RandomFloat(0, 500) * radiusVariance;
+	vSliderOO = RandomFloat(0, 500) * radiusVariance;
+	vSliderOK = RandomFloat(0, 500) * radiusVariance;
+	vSliderOC = RandomFloat(0, 500) * radiusVariance;
+	vSliderOD = RandomFloat(0, 500) * radiusVariance;
+
+	// KHAKI
+	//numberSliderK = RandomFloat(0, 3000);
+	powerSliderKB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderKD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderKG = RandomFloat(0, 500) * radiusVariance;
+	vSliderKR = RandomFloat(0, 500) * radiusVariance;
+	vSliderKW = RandomFloat(0, 500) * radiusVariance;
+	vSliderKB = RandomFloat(0, 500) * radiusVariance;
+	vSliderKO = RandomFloat(0, 500) * radiusVariance;
+	vSliderKK = RandomFloat(0, 500) * radiusVariance;
+	vSliderKC = RandomFloat(0, 500) * radiusVariance;
+	vSliderKD = RandomFloat(0, 500) * radiusVariance;
+
+	// CRIMSON
+	//numberSliderC = RandomFloat(0, 3000);
+	powerSliderCB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderCD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderCG = RandomFloat(0, 500) * radiusVariance;
+	vSliderCR = RandomFloat(0, 500) * radiusVariance;
+	vSliderCW = RandomFloat(0, 500) * radiusVariance;
+	vSliderCB = RandomFloat(0, 500) * radiusVariance;
+	vSliderCO = RandomFloat(0, 500) * radiusVariance;
+	vSliderCK = RandomFloat(0, 500) * radiusVariance;
+	vSliderCC = RandomFloat(0, 500) * radiusVariance;
+	vSliderCD = RandomFloat(0, 500) * radiusVariance;
+
+	// DARK
+	//numberSliderD = RandomFloat(0, 3000);
+	powerSliderDB = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDW = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDR = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDG = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDO = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDK = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDC = RandomFloat(-100, 100) * forceVariance;
+	powerSliderDD = RandomFloat(-100, 100) * forceVariance;
+
+	vSliderDG = RandomFloat(0, 500) * radiusVariance;
+	vSliderDR = RandomFloat(0, 500) * radiusVariance;
+	vSliderDW = RandomFloat(0, 500) * radiusVariance;
+	vSliderDB = RandomFloat(0, 500) * radiusVariance;
+	vSliderDO = RandomFloat(0, 500) * radiusVariance;
+	vSliderDK = RandomFloat(0, 500) * radiusVariance;
+	vSliderDC = RandomFloat(0, 500) * radiusVariance;
+	vSliderDD = RandomFloat(0, 500) * radiusVariance;
+}
+
 void ofApp::monads() {
 	numberSliderG = RandomInt(200, 2000);
 	numberSliderR = RandomInt(200, 2000);
@@ -229,20 +552,74 @@ void ofApp::monads() {
 	numberSliderC = RandomInt(200, 2000);
 	numberSliderD = RandomInt(200, 2000);
 }
-void ofApp::random()
-{
-	evoProbSlider = RandomFloat(0.1, 1.5);
-	evoAmountSlider = RandomFloat(0.1, 3);
-	viscoSlider = RandomFloat(0.4, 0.9);
-	viscoSliderR = RandomFloat(0.4, 0.9);
-	viscoSliderG = RandomFloat(0.4, 0.9);
-	viscoSliderW = RandomFloat(0.4, 0.9);
-	viscoSliderB = RandomFloat(0.4, 0.9);
-	viscoSliderO = RandomFloat(0.4, 0.9);
-	viscoSliderK = RandomFloat(0.4, 0.9);
-	viscoSliderC = RandomFloat(0.4, 0.9);
-	viscoSliderD = RandomFloat(0.4, 0.9);
-
+void ofApp::rndvsc() {
+	viscositySlider = RandomFloat(0.0, 1.0);
+	viscositySliderRR = RandomFloat(0.0, 1.0);
+	viscositySliderRG = RandomFloat(0.0, 1.0);
+	viscositySliderRW = RandomFloat(0.0, 1.0);
+	viscositySliderRB = RandomFloat(0.0, 1.0);
+	viscositySliderRO = RandomFloat(0.0, 1.0);
+	viscositySliderRK = RandomFloat(0.0, 1.0);
+	viscositySliderRC = RandomFloat(0.0, 1.0);
+	viscositySliderRD = RandomFloat(0.0, 1.0);
+	viscositySliderGR = RandomFloat(0.0, 1.0);
+	viscositySliderGG = RandomFloat(0.0, 1.0);
+	viscositySliderGW = RandomFloat(0.0, 1.0);
+	viscositySliderGB = RandomFloat(0.0, 1.0);
+	viscositySliderGO = RandomFloat(0.0, 1.0);
+	viscositySliderGK = RandomFloat(0.0, 1.0);
+	viscositySliderGC = RandomFloat(0.0, 1.0);
+	viscositySliderGD = RandomFloat(0.0, 1.0);
+	viscositySliderBR = RandomFloat(0.0, 1.0);
+	viscositySliderBG = RandomFloat(0.0, 1.0);
+	viscositySliderBW = RandomFloat(0.0, 1.0);
+	viscositySliderBB = RandomFloat(0.0, 1.0);
+	viscositySliderBO = RandomFloat(0.0, 1.0);
+	viscositySliderBK = RandomFloat(0.0, 1.0);
+	viscositySliderBC = RandomFloat(0.0, 1.0);
+	viscositySliderBD = RandomFloat(0.0, 1.0);
+	viscositySliderWR = RandomFloat(0.0, 1.0);
+	viscositySliderWG = RandomFloat(0.0, 1.0);
+	viscositySliderWW = RandomFloat(0.0, 1.0);
+	viscositySliderWB = RandomFloat(0.0, 1.0);
+	viscositySliderWO = RandomFloat(0.0, 1.0);
+	viscositySliderWK = RandomFloat(0.0, 1.0);
+	viscositySliderWC = RandomFloat(0.0, 1.0);
+	viscositySliderWD = RandomFloat(0.0, 1.0);
+	viscositySliderOR = RandomFloat(0.0, 1.0);
+	viscositySliderOG = RandomFloat(0.0, 1.0);
+	viscositySliderOW = RandomFloat(0.0, 1.0);
+	viscositySliderOB = RandomFloat(0.0, 1.0);
+	viscositySliderOO = RandomFloat(0.0, 1.0);
+	viscositySliderOK = RandomFloat(0.0, 1.0);
+	viscositySliderOC = RandomFloat(0.0, 1.0);
+	viscositySliderOD = RandomFloat(0.0, 1.0);
+	viscositySliderKR = RandomFloat(0.0, 1.0);
+	viscositySliderKG = RandomFloat(0.0, 1.0);
+	viscositySliderKW = RandomFloat(0.0, 1.0);
+	viscositySliderKB = RandomFloat(0.0, 1.0);
+	viscositySliderKO = RandomFloat(0.0, 1.0);
+	viscositySliderKK = RandomFloat(0.0, 1.0);
+	viscositySliderKC = RandomFloat(0.0, 1.0);
+	viscositySliderKD = RandomFloat(0.0, 1.0);
+	viscositySliderCR = RandomFloat(0.0, 1.0);
+	viscositySliderCG = RandomFloat(0.0, 1.0);
+	viscositySliderCW = RandomFloat(0.0, 1.0);
+	viscositySliderCB = RandomFloat(0.0, 1.0);
+	viscositySliderCO = RandomFloat(0.0, 1.0);
+	viscositySliderCK = RandomFloat(0.0, 1.0);
+	viscositySliderCC = RandomFloat(0.0, 1.0);
+	viscositySliderCD = RandomFloat(0.0, 1.0);
+	viscositySliderDR = RandomFloat(0.0, 1.0);
+	viscositySliderDG = RandomFloat(0.0, 1.0);
+	viscositySliderDW = RandomFloat(0.0, 1.0);
+	viscositySliderDB = RandomFloat(0.0, 1.0);
+	viscositySliderDO = RandomFloat(0.0, 1.0);
+	viscositySliderDK = RandomFloat(0.0, 1.0);
+	viscositySliderDC = RandomFloat(0.0, 1.0);
+	viscositySliderDD = RandomFloat(0.0, 1.0);
+}
+void ofApp::rndprob() {
 	probabilitySlider = RandomFloat(30, 100);
 
 	probabilitySliderRR = RandomFloat(30, 100);
@@ -316,7 +693,8 @@ void ofApp::random()
 	probabilitySliderDK = RandomFloat(30, 100);
 	probabilitySliderDC = RandomFloat(30, 100);
 	probabilitySliderDD = RandomFloat(30, 100);
-
+}
+void ofApp::rndir() {
 	// GREEN
 	//numberSliderG = RandomFloat(0, 3000);
 	powerSliderGG = RandomFloat(-100, 100) * forceVariance;
@@ -348,14 +726,14 @@ void ofApp::random()
 	powerSliderRC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderRD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderRG = RandomFloat(0, 200) * radiusVariance;
-	vSliderRR = RandomFloat(0, 200) * radiusVariance;
-	vSliderRW = RandomFloat(0, 200) * radiusVariance;
-	vSliderRB = RandomFloat(0, 200) * radiusVariance;
-	vSliderRO = RandomFloat(0, 200) * radiusVariance;
-	vSliderRK = RandomFloat(0, 200) * radiusVariance;
-	vSliderRC = RandomFloat(0, 200) * radiusVariance;
-	vSliderRD = RandomFloat(0, 200) * radiusVariance;
+	vSliderRG = RandomFloat(0, 500) * radiusVariance;
+	vSliderRR = RandomFloat(0, 500) * radiusVariance;
+	vSliderRW = RandomFloat(0, 500) * radiusVariance;
+	vSliderRB = RandomFloat(0, 500) * radiusVariance;
+	vSliderRO = RandomFloat(0, 500) * radiusVariance;
+	vSliderRK = RandomFloat(0, 500) * radiusVariance;
+	vSliderRC = RandomFloat(0, 500) * radiusVariance;
+	vSliderRD = RandomFloat(0, 500) * radiusVariance;
 
 	// WHITE
 	// numberSliderW = RandomFloat(0, 3000);
@@ -368,14 +746,14 @@ void ofApp::random()
 	powerSliderWC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderWD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderWG = RandomFloat(0, 200) * radiusVariance;
-	vSliderWR = RandomFloat(0, 200) * radiusVariance;
-	vSliderWW = RandomFloat(0, 200) * radiusVariance;
-	vSliderWB = RandomFloat(0, 200) * radiusVariance;
-	vSliderWO = RandomFloat(0, 200) * radiusVariance;
-	vSliderWK = RandomFloat(0, 200) * radiusVariance;
-	vSliderWC = RandomFloat(0, 200) * radiusVariance;
-	vSliderWD = RandomFloat(0, 200) * radiusVariance;
+	vSliderWG = RandomFloat(0, 500) * radiusVariance;
+	vSliderWR = RandomFloat(0, 500) * radiusVariance;
+	vSliderWW = RandomFloat(0, 500) * radiusVariance;
+	vSliderWB = RandomFloat(0, 500) * radiusVariance;
+	vSliderWO = RandomFloat(0, 500) * radiusVariance;
+	vSliderWK = RandomFloat(0, 500) * radiusVariance;
+	vSliderWC = RandomFloat(0, 500) * radiusVariance;
+	vSliderWD = RandomFloat(0, 500) * radiusVariance;
 
 	// BLUE
 	//numberSliderB = RandomFloat(0, 3000);
@@ -388,14 +766,14 @@ void ofApp::random()
 	powerSliderBC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderBD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderBG = RandomFloat(0, 200) * radiusVariance;
-	vSliderBR = RandomFloat(0, 200) * radiusVariance;
-	vSliderBW = RandomFloat(0, 200) * radiusVariance;
-	vSliderBB = RandomFloat(0, 200) * radiusVariance;
-	vSliderBO = RandomFloat(0, 200) * radiusVariance;
-	vSliderBK = RandomFloat(0, 200) * radiusVariance;
-	vSliderBC = RandomFloat(0, 200) * radiusVariance;
-	vSliderBD = RandomFloat(0, 200) * radiusVariance;
+	vSliderBG = RandomFloat(0, 500) * radiusVariance;
+	vSliderBR = RandomFloat(0, 500) * radiusVariance;
+	vSliderBW = RandomFloat(0, 500) * radiusVariance;
+	vSliderBB = RandomFloat(0, 500) * radiusVariance;
+	vSliderBO = RandomFloat(0, 500) * radiusVariance;
+	vSliderBK = RandomFloat(0, 500) * radiusVariance;
+	vSliderBC = RandomFloat(0, 500) * radiusVariance;
+	vSliderBD = RandomFloat(0, 500) * radiusVariance;
 
 	// ORANGE
 	//numberSliderO = RandomFloat(0, 3000);
@@ -408,14 +786,14 @@ void ofApp::random()
 	powerSliderOC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderOD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderOG = RandomFloat(0, 200) * radiusVariance;
-	vSliderOR = RandomFloat(0, 200) * radiusVariance;
-	vSliderOW = RandomFloat(0, 200) * radiusVariance;
-	vSliderOB = RandomFloat(0, 200) * radiusVariance;
-	vSliderOO = RandomFloat(0, 200) * radiusVariance;
-	vSliderOK = RandomFloat(0, 200) * radiusVariance;
-	vSliderOC = RandomFloat(0, 200) * radiusVariance;
-	vSliderOD = RandomFloat(0, 200) * radiusVariance;
+	vSliderOG = RandomFloat(0, 500) * radiusVariance;
+	vSliderOR = RandomFloat(0, 500) * radiusVariance;
+	vSliderOW = RandomFloat(0, 500) * radiusVariance;
+	vSliderOB = RandomFloat(0, 500) * radiusVariance;
+	vSliderOO = RandomFloat(0, 500) * radiusVariance;
+	vSliderOK = RandomFloat(0, 500) * radiusVariance;
+	vSliderOC = RandomFloat(0, 500) * radiusVariance;
+	vSliderOD = RandomFloat(0, 500) * radiusVariance;
 
 	// KHAKI
 	//numberSliderK = RandomFloat(0, 3000);
@@ -428,14 +806,14 @@ void ofApp::random()
 	powerSliderKC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderKD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderKG = RandomFloat(0, 200) * radiusVariance;
-	vSliderKR = RandomFloat(0, 200) * radiusVariance;
-	vSliderKW = RandomFloat(0, 200) * radiusVariance;
-	vSliderKB = RandomFloat(0, 200) * radiusVariance;
-	vSliderKO = RandomFloat(0, 200) * radiusVariance;
-	vSliderKK = RandomFloat(0, 200) * radiusVariance;
-	vSliderKC = RandomFloat(0, 200) * radiusVariance;
-	vSliderKD = RandomFloat(0, 200) * radiusVariance;
+	vSliderKG = RandomFloat(0, 500) * radiusVariance;
+	vSliderKR = RandomFloat(0, 500) * radiusVariance;
+	vSliderKW = RandomFloat(0, 500) * radiusVariance;
+	vSliderKB = RandomFloat(0, 500) * radiusVariance;
+	vSliderKO = RandomFloat(0, 500) * radiusVariance;
+	vSliderKK = RandomFloat(0, 500) * radiusVariance;
+	vSliderKC = RandomFloat(0, 500) * radiusVariance;
+	vSliderKD = RandomFloat(0, 500) * radiusVariance;
 
 	// CRIMSON
 	//numberSliderC = RandomFloat(0, 3000);
@@ -448,14 +826,14 @@ void ofApp::random()
 	powerSliderCC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderCD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderCG = RandomFloat(0, 200) * radiusVariance;
-	vSliderCR = RandomFloat(0, 200) * radiusVariance;
-	vSliderCW = RandomFloat(0, 200) * radiusVariance;
-	vSliderCB = RandomFloat(0, 200) * radiusVariance;
-	vSliderCO = RandomFloat(0, 200) * radiusVariance;
-	vSliderCK = RandomFloat(0, 200) * radiusVariance;
-	vSliderCC = RandomFloat(0, 200) * radiusVariance;
-	vSliderCD = RandomFloat(0, 200) * radiusVariance;
+	vSliderCG = RandomFloat(0, 500) * radiusVariance;
+	vSliderCR = RandomFloat(0, 500) * radiusVariance;
+	vSliderCW = RandomFloat(0, 500) * radiusVariance;
+	vSliderCB = RandomFloat(0, 500) * radiusVariance;
+	vSliderCO = RandomFloat(0, 500) * radiusVariance;
+	vSliderCK = RandomFloat(0, 500) * radiusVariance;
+	vSliderCC = RandomFloat(0, 500) * radiusVariance;
+	vSliderCD = RandomFloat(0, 500) * radiusVariance;
 
 	// DARK
 	//numberSliderD = RandomFloat(0, 3000);
@@ -468,14 +846,14 @@ void ofApp::random()
 	powerSliderDC = RandomFloat(-100, 100) * forceVariance;
 	powerSliderDD = RandomFloat(-100, 100) * forceVariance;
 
-	vSliderDG = RandomFloat(0, 200) * radiusVariance;
-	vSliderDR = RandomFloat(0, 200) * radiusVariance;
-	vSliderDW = RandomFloat(0, 200) * radiusVariance;
-	vSliderDB = RandomFloat(0, 200) * radiusVariance;
-	vSliderDO = RandomFloat(0, 200) * radiusVariance;
-	vSliderDK = RandomFloat(0, 200) * radiusVariance;
-	vSliderDC = RandomFloat(0, 200) * radiusVariance;
-	vSliderDD = RandomFloat(0, 200) * radiusVariance;
+	vSliderDG = RandomFloat(0, 500) * radiusVariance;
+	vSliderDR = RandomFloat(0, 500) * radiusVariance;
+	vSliderDW = RandomFloat(0, 500) * radiusVariance;
+	vSliderDB = RandomFloat(0, 500) * radiusVariance;
+	vSliderDO = RandomFloat(0, 500) * radiusVariance;
+	vSliderDK = RandomFloat(0, 500) * radiusVariance;
+	vSliderDC = RandomFloat(0, 500) * radiusVariance;
+	vSliderDD = RandomFloat(0, 500) * radiusVariance;
 }
 
 /// this is a cheap and quick way to save and load parameters (openFramework have betters ways but requires some additional library setups) 
@@ -507,15 +885,71 @@ void ofApp::saveSettings()
 		static_cast<float>(numberSliderK),
 		static_cast<float>(numberSliderC),
 		static_cast<float>(numberSliderD),
-		viscoSlider,
-		viscoSliderR,
-		viscoSliderG,
-		viscoSliderB,
-		viscoSliderW,
-		viscoSliderO,
-		viscoSliderK,
-		viscoSliderC,
-		viscoSliderD,
+		viscositySlider,
+		viscositySliderRR,
+		viscositySliderRG,
+		viscositySliderRB,
+		viscositySliderRW,
+		viscositySliderRO,
+		viscositySliderRK,
+		viscositySliderRC,
+		viscositySliderRD,
+		viscositySliderGR,
+		viscositySliderGG,
+		viscositySliderGB,
+		viscositySliderGW,
+		viscositySliderGO,
+		viscositySliderGK,
+		viscositySliderGC,
+		viscositySliderGD,
+		viscositySliderBR,
+		viscositySliderBG,
+		viscositySliderBB,
+		viscositySliderBW,
+		viscositySliderBO,
+		viscositySliderBK,
+		viscositySliderBC,
+		viscositySliderBD,
+		viscositySliderWR,
+		viscositySliderWG,
+		viscositySliderWB,
+		viscositySliderWW,
+		viscositySliderWO,
+		viscositySliderWK,
+		viscositySliderWC,
+		viscositySliderWD,
+		viscositySliderOR,
+		viscositySliderOG,
+		viscositySliderOB,
+		viscositySliderOW,
+		viscositySliderOO,
+		viscositySliderOK,
+		viscositySliderOC,
+		viscositySliderOD,
+		viscositySliderKR,
+		viscositySliderKG,
+		viscositySliderKB,
+		viscositySliderKW,
+		viscositySliderKO,
+		viscositySliderKK,
+		viscositySliderKC,
+		viscositySliderKD,
+		viscositySliderCR,
+		viscositySliderCG,
+		viscositySliderCB,
+		viscositySliderCW,
+		viscositySliderCO,
+		viscositySliderCK,
+		viscositySliderCC,
+		viscositySliderCD,
+		viscositySliderDR,
+		viscositySliderDG,
+		viscositySliderDB,
+		viscositySliderDW,
+		viscositySliderDO,
+		viscositySliderDK,
+		viscositySliderDC,
+		viscositySliderDD,
 		evoProbSlider,
 		evoAmountSlider,
 		probabilitySlider,
@@ -646,7 +1080,7 @@ void ofApp::loadSettings()
 		}
 	}
 
-	if (p.size() < 212)
+	if (p.size() < 268)
 	{
 		// better checks needed
 		ofSystemAlertDialog("Could not read the file!");
@@ -789,82 +1223,138 @@ void ofApp::loadSettings()
 		numberSliderK = static_cast<int>(p[133]);
 		numberSliderC = static_cast<int>(p[134]);
 		numberSliderD = static_cast<int>(p[135]);
-		viscoSlider = p[136];
-		viscoSliderR = p[137];
-		viscoSliderG = p[138];
-		viscoSliderB = p[139];
-		viscoSliderW = p[140];
-		viscoSliderO = p[141];
-		viscoSliderK = p[142];
-		viscoSliderC = p[143];
-		viscoSliderD = p[144];
-		evoProbSlider = p[145];
-		evoAmountSlider = p[146];
-		probabilitySlider = p[147];
-		probabilitySliderRR = p[148];
-		probabilitySliderRG = p[149];
-		probabilitySliderRB = p[150];
-		probabilitySliderRW = p[151];
-		probabilitySliderRO = p[152];
-		probabilitySliderRK = p[153];
-		probabilitySliderRC = p[154];
-		probabilitySliderRD = p[155];
-		probabilitySliderGR = p[156];
-		probabilitySliderGG = p[157];
-		probabilitySliderGB = p[158];
-		probabilitySliderGW = p[159];
-		probabilitySliderGO = p[160];
-		probabilitySliderGK = p[161];
-		probabilitySliderGC = p[162];
-		probabilitySliderGD = p[163];
-		probabilitySliderBR = p[164];
-		probabilitySliderBG = p[165];
-		probabilitySliderBB = p[166];
-		probabilitySliderBW = p[167];
-		probabilitySliderBO = p[168];
-		probabilitySliderBK = p[169];
-		probabilitySliderBC = p[170];
-		probabilitySliderBD = p[171];
-		probabilitySliderWR = p[172];
-		probabilitySliderWG = p[173];
-		probabilitySliderWB = p[174];
-		probabilitySliderWW = p[175];
-		probabilitySliderWO = p[176];
-		probabilitySliderWK = p[177];
-		probabilitySliderWC = p[178];
-		probabilitySliderWD = p[179];
-		probabilitySliderOR = p[180];
-		probabilitySliderOG = p[181];
-		probabilitySliderOB = p[182];
-		probabilitySliderOW = p[183];
-		probabilitySliderOO = p[184];
-		probabilitySliderOK = p[185];
-		probabilitySliderOC = p[186];
-		probabilitySliderOD = p[187];
-		probabilitySliderKR = p[188];
-		probabilitySliderKG = p[189];
-		probabilitySliderKB = p[190];
-		probabilitySliderKW = p[191];
-		probabilitySliderKO = p[192];
-		probabilitySliderKK = p[193];
-		probabilitySliderKC = p[194];
-		probabilitySliderKD = p[195];
-		probabilitySliderCR = p[196];
-		probabilitySliderCG = p[197];
-		probabilitySliderCB = p[198];
-		probabilitySliderCW = p[199];
-		probabilitySliderCO = p[200];
-		probabilitySliderCK = p[201];
-		probabilitySliderCC = p[202];
-		probabilitySliderCD = p[203];
-		probabilitySliderDR = p[204];
-		probabilitySliderDG = p[205];
-		probabilitySliderDB = p[206];
-		probabilitySliderDW = p[207];
-		probabilitySliderDO = p[208];
-		probabilitySliderDK = p[209];
-		probabilitySliderDC = p[210];
-		probabilitySliderDD = p[211];
+		viscositySlider = p[136];
+		viscositySliderRR = p[137];
+		viscositySliderRG = p[138];
+		viscositySliderRB = p[139];
+		viscositySliderRW = p[140];
+		viscositySliderRO = p[141];
+		viscositySliderRK = p[142];
+		viscositySliderRC = p[143];
+		viscositySliderRD = p[144];
+		viscositySliderGR = p[145];
+		viscositySliderGG = p[146];
+		viscositySliderGB = p[147];
+		viscositySliderGW = p[148];
+		viscositySliderGO = p[149];
+		viscositySliderGK = p[150];
+		viscositySliderGC = p[151];
+		viscositySliderGD = p[152];
+		viscositySliderBR = p[153];
+		viscositySliderBG = p[154];
+		viscositySliderBB = p[155];
+		viscositySliderBW = p[156];
+		viscositySliderBO = p[157];
+		viscositySliderBK = p[158];
+		viscositySliderBC = p[159];
+		viscositySliderBD = p[160];
+		viscositySliderWR = p[161];
+		viscositySliderWG = p[162];
+		viscositySliderWB = p[163];
+		viscositySliderWW = p[164];
+		viscositySliderWO = p[165];
+		viscositySliderWK = p[166];
+		viscositySliderWC = p[167];
+		viscositySliderWD = p[168];
+		viscositySliderOR = p[168];
+		viscositySliderOG = p[170];
+		viscositySliderOB = p[171];
+		viscositySliderOW = p[172];
+		viscositySliderOO = p[173];
+		viscositySliderOK = p[174];
+		viscositySliderOC = p[175];
+		viscositySliderOD = p[176];
+		viscositySliderKR = p[177];
+		viscositySliderKG = p[178];
+		viscositySliderKB = p[179];
+		viscositySliderKW = p[180];
+		viscositySliderKO = p[181];
+		viscositySliderKK = p[182];
+		viscositySliderKC = p[183];
+		viscositySliderKD = p[184];
+		viscositySliderCR = p[185];
+		viscositySliderCG = p[186];
+		viscositySliderCB = p[187];
+		viscositySliderCW = p[188];
+		viscositySliderCO = p[189];
+		viscositySliderCK = p[190];
+		viscositySliderCC = p[191];
+		viscositySliderCD = p[192];
+		viscositySliderDR = p[193];
+		viscositySliderDG = p[194];
+		viscositySliderDB = p[195];
+		viscositySliderDW = p[196];
+		viscositySliderDO = p[197];
+		viscositySliderDK = p[198];
+		viscositySliderDC = p[199];
+		viscositySliderDD = p[200];
+		evoProbSlider = p[201];
+		evoAmountSlider = p[202];
+		probabilitySlider = p[203];
+		probabilitySliderRR = p[204];
+		probabilitySliderRG = p[205];
+		probabilitySliderRB = p[206];
+		probabilitySliderRW = p[207];
+		probabilitySliderRO = p[208];
+		probabilitySliderRK = p[209];
+		probabilitySliderRC = p[210];
+		probabilitySliderRD = p[211];
+		probabilitySliderGR = p[212];
+		probabilitySliderGG = p[213];
+		probabilitySliderGB = p[214];
+		probabilitySliderGW = p[215];
+		probabilitySliderGO = p[216];
+		probabilitySliderGK = p[217];
+		probabilitySliderGC = p[218];
+		probabilitySliderGD = p[219];
+		probabilitySliderBR = p[220];
+		probabilitySliderBG = p[221];
+		probabilitySliderBB = p[222];
+		probabilitySliderBW = p[223];
+		probabilitySliderBO = p[224];
+		probabilitySliderBK = p[225];
+		probabilitySliderBC = p[226];
+		probabilitySliderBD = p[227];
+		probabilitySliderWR = p[228];
+		probabilitySliderWG = p[229];
+		probabilitySliderWB = p[230];
+		probabilitySliderWW = p[231];
+		probabilitySliderWO = p[232];
+		probabilitySliderWK = p[233];
+		probabilitySliderWC = p[234];
+		probabilitySliderWD = p[235];
+		probabilitySliderOR = p[236];
+		probabilitySliderOG = p[237];
+		probabilitySliderOB = p[238];
+		probabilitySliderOW = p[239];
+		probabilitySliderOO = p[240];
+		probabilitySliderOK = p[241];
+		probabilitySliderOC = p[242];
+		probabilitySliderOD = p[243];
+		probabilitySliderKR = p[244];
+		probabilitySliderKG = p[245];
+		probabilitySliderKB = p[246];
+		probabilitySliderKW = p[247];
+		probabilitySliderKO = p[248];
+		probabilitySliderKK = p[249];
+		probabilitySliderKC = p[250];
+		probabilitySliderKD = p[251];
+		probabilitySliderCR = p[252];
+		probabilitySliderCG = p[253];
+		probabilitySliderCB = p[254];
+		probabilitySliderCW = p[255];
+		probabilitySliderCO = p[256];
+		probabilitySliderCK = p[257];
+		probabilitySliderCC = p[258];
+		probabilitySliderCD = p[259];
+		probabilitySliderDR = p[260];
+		probabilitySliderDG = p[261];
+		probabilitySliderDB = p[262];
+		probabilitySliderDW = p[263];
+		probabilitySliderDO = p[264];
+		probabilitySliderDK = p[265];
+		probabilitySliderDC = p[266];
+		probabilitySliderDD = p[267];
 	}
 	restart();
 }
@@ -874,22 +1364,27 @@ void ofApp::loadSettings()
 void ofApp::setup()
 {
 	lastTime = clock();
-	ofSetWindowTitle("Particle Life - Eight Colors version 1.3");
+	ofSetWindowTitle("Particle Life - 8c64v64p version 1.4");
 	ofSetVerticalSync(false);
 
 	// Interface
 	gui.setup("Settings");
 	gui.loadFont("Arial", 12);
 	gui.setWidthElements(300.0f);
-
 	gui.add(fps.setup("FPS", "0"));
-
 	gui.add(resetButton.setup("Restart"));
-	gui.add(randomChoice.setup("Randomize (space bar)"));
-	gui.add(randomCount.setup("Randomize particle count (q)"));
 	gui.add(save.setup("Save Model"));
 	gui.add(load.setup("Load Model"));
 	gui.add(modelToggle.setup("Show Model", false));
+
+	rndGroup.setup("Randomize");
+	rndGroup.add(randomGeneral.setup("Randomize all parameters (space bar)"));
+	rndGroup.add(randomCount.setup("Randomize particle count (q)"));
+	rndGroup.add(randomVsc.setup("Randomize Viscosities (v)"));
+	rndGroup.add(randomProb.setup("Randomize Probabilities (p)"));
+	rndGroup.add(randomChoice.setup("Randomize IP (i)"));
+	gui.add(&rndGroup);
+	rndGroup.minimize();
 	
 
 	// Global Group
@@ -917,19 +1412,110 @@ void ofApp::setup()
 	gui.add(&qtyGroup);
 	qtyGroup.minimize();
 
-	// Viscosity Group
-	viscosityGroup.setup("Viscosity Parameters");
-	viscosityGroup.add(viscoSlider.setup("Viscosity/Friction", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderR.setup("Viscosity Red", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderG.setup("Viscosity Green", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderB.setup("Viscosity Blue", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderW.setup("Viscosity White", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderO.setup("Viscosity Orange", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderK.setup("Viscosity Khaki", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderC.setup("Viscosity Crimson", viscosity, 0, 1));
-	viscosityGroup.add(viscoSliderD.setup("Viscosity Dark", viscosity, 0, 1));
-	gui.add(&viscosityGroup);
-	viscosityGroup.minimize();
+	// ViscosityR Group
+	viscosityRGroup.setup("Viscosity Red");
+	viscosityRGroup.add(viscositySlider.setup("Viscosity/Friction", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRR.setup("Viscosity RR", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRG.setup("Viscosity RG", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRB.setup("Viscosity RB", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRW.setup("Viscosity RW", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRO.setup("Viscosity RO", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRK.setup("Viscosity RK", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRC.setup("Viscosity RC", viscosity, 0, 1));
+	viscosityRGroup.add(viscositySliderRD.setup("Viscosity RD", viscosity, 0, 1));
+	gui.add(&viscosityRGroup);
+	viscosityRGroup.minimize();
+
+	// ViscosityG Group
+	viscosityGGroup.setup("Viscosity Green");
+	viscosityGGroup.add(viscositySliderGR.setup("Viscosity GR", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGG.setup("Viscosity GG", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGB.setup("Viscosity GB", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGW.setup("Viscosity GW", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGO.setup("Viscosity GO", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGK.setup("Viscosity GK", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGC.setup("Viscosity GC", viscosity, 0, 1));
+	viscosityGGroup.add(viscositySliderGD.setup("Viscosity GD", viscosity, 0, 1));
+	gui.add(&viscosityGGroup);
+	viscosityGGroup.minimize();
+
+	// ViscosityB Group
+	viscosityBGroup.setup("Viscosity Blue");
+	viscosityBGroup.add(viscositySliderBR.setup("Viscosity BR", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBG.setup("Viscosity BG", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBB.setup("Viscosity BB", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBW.setup("Viscosity BW", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBO.setup("Viscosity BO", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBK.setup("Viscosity BK", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBC.setup("Viscosity BC", viscosity, 0, 1));
+	viscosityBGroup.add(viscositySliderBD.setup("Viscosity BD", viscosity, 0, 1));
+	gui.add(&viscosityBGroup);
+	viscosityBGroup.minimize();
+
+	// ViscosityW Group
+	viscosityWGroup.setup("Viscosity White");
+	viscosityWGroup.add(viscositySliderWR.setup("Viscosity WR", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWG.setup("Viscosity WG", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWB.setup("Viscosity WB", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWW.setup("Viscosity WW", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWO.setup("Viscosity WO", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWK.setup("Viscosity WK", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWC.setup("Viscosity WC", viscosity, 0, 1));
+	viscosityWGroup.add(viscositySliderWD.setup("Viscosity WD", viscosity, 0, 1));
+	gui.add(&viscosityWGroup);
+	viscosityWGroup.minimize();
+
+	// ViscosityO Group
+	viscosityOGroup.setup("Viscosity Orange");
+	viscosityOGroup.add(viscositySliderOR.setup("Viscosity OR", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOG.setup("Viscosity OG", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOB.setup("Viscosity OB", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOW.setup("Viscosity OW", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOO.setup("Viscosity OO", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOK.setup("Viscosity OK", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOC.setup("Viscosity OC", viscosity, 0, 1));
+	viscosityOGroup.add(viscositySliderOD.setup("Viscosity OD", viscosity, 0, 1));
+	gui.add(&viscosityOGroup);
+	viscosityOGroup.minimize();
+
+	// ViscosityK Group
+	viscosityKGroup.setup("Viscosity Khaki");
+	viscosityKGroup.add(viscositySliderKR.setup("Viscosity KR", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKG.setup("Viscosity KG", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKB.setup("Viscosity KB", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKW.setup("Viscosity KW", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKO.setup("Viscosity KO", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKK.setup("Viscosity KK", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKC.setup("Viscosity KC", viscosity, 0, 1));
+	viscosityKGroup.add(viscositySliderKD.setup("Viscosity KD", viscosity, 0, 1));
+	gui.add(&viscosityKGroup);
+	viscosityKGroup.minimize();
+
+	// ViscosityC Group
+	viscosityCGroup.setup("Viscosity Crimson");
+	viscosityCGroup.add(viscositySliderCR.setup("Viscosity CR", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCG.setup("Viscosity CG", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCB.setup("Viscosity CB", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCW.setup("Viscosity CW", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCO.setup("Viscosity CO", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCK.setup("Viscosity CK", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCC.setup("Viscosity CC", viscosity, 0, 1));
+	viscosityCGroup.add(viscositySliderCD.setup("Viscosity CD", viscosity, 0, 1));
+	gui.add(&viscosityCGroup);
+	viscosityCGroup.minimize();
+
+	// ViscosityD Group
+	viscosityDGroup.setup("Viscosity Dark");
+	viscosityDGroup.add(viscositySliderDR.setup("Viscosity DR", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDG.setup("Viscosity DG", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDB.setup("Viscosity DB", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDW.setup("Viscosity DW", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDO.setup("Viscosity DO", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDK.setup("Viscosity DK", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDC.setup("Viscosity DC", viscosity, 0, 1));
+	viscosityDGroup.add(viscositySliderDD.setup("Viscosity DD", viscosity, 0, 1));
+	gui.add(&viscosityDGroup);
+	viscosityDGroup.minimize();
 
 	// ProbabilityR Group
 	probabilityRGroup.setup("Interaction Probability % Red");
@@ -1237,15 +1823,71 @@ void ofApp::update()
 {
 	physic_begin = clock();
 	probability = probabilitySlider;
-	viscosity = viscoSlider;
-	viscosityR = viscoSliderR;
-	viscosityG = viscoSliderG;
-	viscosityW = viscoSliderW;
-	viscosityB = viscoSliderB;
-	viscosityO = viscoSliderO;
-	viscosityK = viscoSliderK;
-	viscosityC = viscoSliderC;
-	viscosityD = viscoSliderD;
+	viscosity = viscositySlider;
+	viscosityRR = viscositySliderRR;
+	viscosityRG = viscositySliderRG;
+	viscosityRW = viscositySliderRW;
+	viscosityRB = viscositySliderRB;
+	viscosityRO = viscositySliderRO;
+	viscosityRK = viscositySliderRK;
+	viscosityRC = viscositySliderRC;
+	viscosityRD = viscositySliderRD;
+	viscosityGR = viscositySliderGR;
+	viscosityGG = viscositySliderGG;
+	viscosityGW = viscositySliderGW;
+	viscosityGB = viscositySliderGB;
+	viscosityGO = viscositySliderGO;
+	viscosityGK = viscositySliderGK;
+	viscosityGC = viscositySliderGC;
+	viscosityGD = viscositySliderGD;
+	viscosityBR = viscositySliderBR;
+	viscosityBG = viscositySliderBG;
+	viscosityBW = viscositySliderBW;
+	viscosityBB = viscositySliderBB;
+	viscosityBO = viscositySliderBO;
+	viscosityBK = viscositySliderBK;
+	viscosityBC = viscositySliderBC;
+	viscosityBD = viscositySliderBD;
+	viscosityWR = viscositySliderWR;
+	viscosityWG = viscositySliderWG;
+	viscosityWW = viscositySliderWW;
+	viscosityWB = viscositySliderWB;
+	viscosityWO = viscositySliderWO;
+	viscosityWK = viscositySliderWK;
+	viscosityWC = viscositySliderWC;
+	viscosityWD = viscositySliderWD;
+	viscosityOR = viscositySliderOR;
+	viscosityOG = viscositySliderOG;
+	viscosityOW = viscositySliderOW;
+	viscosityOB = viscositySliderOB;
+	viscosityOO = viscositySliderOO;
+	viscosityOK = viscositySliderOK;
+	viscosityOC = viscositySliderOC;
+	viscosityOD = viscositySliderOD;
+	viscosityKR = viscositySliderKR;
+	viscosityKG = viscositySliderKG;
+	viscosityKW = viscositySliderKW;
+	viscosityKB = viscositySliderKB;
+	viscosityKO = viscositySliderKO;
+	viscosityKK = viscositySliderKK;
+	viscosityKC = viscositySliderKC;
+	viscosityKD = viscositySliderKD;
+	viscosityCR = viscositySliderCR;
+	viscosityCG = viscositySliderCG;
+	viscosityCW = viscositySliderCW;
+	viscosityCB = viscositySliderCB;
+	viscosityCO = viscositySliderCO;
+	viscosityCK = viscositySliderCK;
+	viscosityCC = viscositySliderCC;
+	viscosityCD = viscositySliderCD;
+	viscosityDR = viscositySliderDR;
+	viscosityDG = viscositySliderDG;
+	viscosityDW = viscositySliderDW;
+	viscosityDB = viscositySliderDB;
+	viscosityDO = viscositySliderDO;
+	viscosityDK = viscositySliderDK;
+	viscosityDC = viscositySliderDC;
+	viscosityDD = viscositySliderDD;
 
 	worldGravity = gravitySlider;
 	wallRepel = wallRepelSlider;
@@ -1384,15 +2026,79 @@ void ofApp::update()
 		vSliderDC = vSliderDC + ((ofRandom(2.0F) - 1.0F) * (vSliderDC.getMax() - vSliderDC.getMin()) * (evoAmount / 100.0F));
 		vSliderDD = vSliderDD + ((ofRandom(2.0F) - 1.0F) * (vSliderDD.getMax() - vSliderDD.getMin()) * (evoAmount / 100.0F));
 		
-		viscoSlider = viscoSlider + ((ofRandom(2.0F) - 1.0F) * (viscoSlider.getMax() - viscoSlider.getMin()) * (evoAmount / 100.0F));
-		viscoSliderR = viscoSliderR + ((ofRandom(2.0F) - 1.0F) * (viscoSliderR.getMax() - viscoSliderR.getMin()) * (evoAmount / 100.0F));
-		viscoSliderG = viscoSliderG + ((ofRandom(2.0F) - 1.0F) * (viscoSliderG.getMax() - viscoSliderG.getMin()) * (evoAmount / 100.0F));
-		viscoSliderB = viscoSliderB + ((ofRandom(2.0F) - 1.0F) * (viscoSliderB.getMax() - viscoSliderB.getMin()) * (evoAmount / 100.0F));
-		viscoSliderW = viscoSliderW + ((ofRandom(2.0F) - 1.0F) * (viscoSliderW.getMax() - viscoSliderW.getMin()) * (evoAmount / 100.0F));
-		viscoSliderO = viscoSliderO + ((ofRandom(2.0F) - 1.0F) * (viscoSliderO.getMax() - viscoSliderO.getMin()) * (evoAmount / 100.0F));
-		viscoSliderK = viscoSliderK + ((ofRandom(2.0F) - 1.0F) * (viscoSliderK.getMax() - viscoSliderK.getMin()) * (evoAmount / 100.0F));
-		viscoSliderC = viscoSliderC + ((ofRandom(2.0F) - 1.0F) * (viscoSliderC.getMax() - viscoSliderC.getMin()) * (evoAmount / 100.0F));
-		viscoSliderD = viscoSliderD + ((ofRandom(2.0F) - 1.0F) * (viscoSliderD.getMax() - viscoSliderD.getMin()) * (evoAmount / 100.0F));
+		viscositySlider = viscositySlider + ((ofRandom(2.0F) - 1.0F) * (viscositySlider.getMax() - viscositySlider.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderRR = viscositySliderRR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRR.getMax() - viscositySliderRR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRG = viscositySliderRG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRG.getMax() - viscositySliderRG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRB = viscositySliderRB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRB.getMax() - viscositySliderRB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRW = viscositySliderRW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRW.getMax() - viscositySliderRW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRO = viscositySliderRO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRO.getMax() - viscositySliderRO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRK = viscositySliderRK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRK.getMax() - viscositySliderRK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRC = viscositySliderRC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRC.getMax() - viscositySliderRC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderRD = viscositySliderRD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderRD.getMax() - viscositySliderRD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderGR = viscositySliderGR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGR.getMax() - viscositySliderGR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGG = viscositySliderGG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGG.getMax() - viscositySliderGG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGB = viscositySliderGB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGB.getMax() - viscositySliderGB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGW = viscositySliderGW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGW.getMax() - viscositySliderGW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGO = viscositySliderGO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGO.getMax() - viscositySliderGO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGK = viscositySliderGK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGK.getMax() - viscositySliderGK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGC = viscositySliderGC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGC.getMax() - viscositySliderGC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderGD = viscositySliderGD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderGD.getMax() - viscositySliderGD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderBR = viscositySliderBR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBR.getMax() - viscositySliderBR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBG = viscositySliderBG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBG.getMax() - viscositySliderBG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBB = viscositySliderBB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBB.getMax() - viscositySliderBB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBW = viscositySliderBW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBW.getMax() - viscositySliderBW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBO = viscositySliderBO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBO.getMax() - viscositySliderBO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBK = viscositySliderBK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBK.getMax() - viscositySliderBK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBC = viscositySliderBC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBC.getMax() - viscositySliderBC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderBD = viscositySliderBD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderBD.getMax() - viscositySliderBD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderWR = viscositySliderWR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWR.getMax() - viscositySliderWR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWG = viscositySliderWG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWG.getMax() - viscositySliderWG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWB = viscositySliderWB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWB.getMax() - viscositySliderWB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWW = viscositySliderWW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWW.getMax() - viscositySliderWW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWO = viscositySliderWO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWO.getMax() - viscositySliderWO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWK = viscositySliderWK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWK.getMax() - viscositySliderWK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWC = viscositySliderWC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWC.getMax() - viscositySliderWC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderWD = viscositySliderWD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderWD.getMax() - viscositySliderWD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderOR = viscositySliderOR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOR.getMax() - viscositySliderOR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOG = viscositySliderOG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOG.getMax() - viscositySliderOG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOB = viscositySliderOB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOB.getMax() - viscositySliderOB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOW = viscositySliderOW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOW.getMax() - viscositySliderOW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOO = viscositySliderOO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOO.getMax() - viscositySliderOO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOK = viscositySliderOK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOK.getMax() - viscositySliderOK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOC = viscositySliderOC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOC.getMax() - viscositySliderOC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderOD = viscositySliderOD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderOD.getMax() - viscositySliderOD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderKR = viscositySliderKR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKR.getMax() - viscositySliderKR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKG = viscositySliderKG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKG.getMax() - viscositySliderKG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKB = viscositySliderKB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKB.getMax() - viscositySliderKB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKW = viscositySliderKW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKW.getMax() - viscositySliderKW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKO = viscositySliderKO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKO.getMax() - viscositySliderKO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKK = viscositySliderKK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKK.getMax() - viscositySliderKK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKC = viscositySliderKC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKC.getMax() - viscositySliderKC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderKD = viscositySliderKD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderKD.getMax() - viscositySliderKD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderCR = viscositySliderCR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCR.getMax() - viscositySliderCR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCG = viscositySliderCG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCG.getMax() - viscositySliderCG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCB = viscositySliderCB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCB.getMax() - viscositySliderCB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCW = viscositySliderCW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCW.getMax() - viscositySliderCW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCO = viscositySliderCO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCO.getMax() - viscositySliderCO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCK = viscositySliderCK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCK.getMax() - viscositySliderCK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCC = viscositySliderCC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCC.getMax() - viscositySliderCC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderCD = viscositySliderCD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderCD.getMax() - viscositySliderCD.getMin()) * (evoAmount / 100.0F));
+
+		viscositySliderDR = viscositySliderDR + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDR.getMax() - viscositySliderDR.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDG = viscositySliderDG + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDG.getMax() - viscositySliderDG.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDB = viscositySliderDB + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDB.getMax() - viscositySliderDB.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDW = viscositySliderDW + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDW.getMax() - viscositySliderDW.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDO = viscositySliderDO + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDO.getMax() - viscositySliderDO.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDK = viscositySliderDK + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDK.getMax() - viscositySliderDK.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDC = viscositySliderDC + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDC.getMax() - viscositySliderDC.getMin()) * (evoAmount / 100.0F));
+		viscositySliderDD = viscositySliderDD + ((ofRandom(2.0F) - 1.0F) * (viscositySliderDD.getMax() - viscositySliderDD.getMin()) * (evoAmount / 100.0F));
 
 		probabilitySlider = probabilitySlider + ((ofRandom(2.0F) - 1.0F) * (probabilitySlider.getMax() - probabilitySlider.getMin()) * (evoAmount / 100.0F));
 
@@ -1616,16 +2322,79 @@ void ofApp::update()
 		if (probabilitySliderDC < 0.0F) probabilitySliderDC = 0;
 		if (probabilitySliderDD < 0.0F) probabilitySliderDD = 0;
 
-		if (viscoSlider < 0.0F) viscoSlider = 0;
+		if (viscositySlider < 0.0F) viscositySlider = 0;
 
-		if (viscoSliderR < 0.0F) viscoSliderR = 0;
-		if (viscoSliderG < 0.0F) viscoSliderG = 0;
-		if (viscoSliderB < 0.0F) viscoSliderB = 0;
-		if (viscoSliderW < 0.0F) viscoSliderW = 0;
-		if (viscoSliderO < 0.0F) viscoSliderO = 0;
-		if (viscoSliderK < 0.0F) viscoSliderK = 0;
-		if (viscoSliderC < 0.0F) viscoSliderC = 0;
-		if (viscoSliderD < 0.0F) viscoSliderD = 0;
+		if (viscositySliderRR < 0.0F) viscositySliderRR = 0;
+		if (viscositySliderRG < 0.0F) viscositySliderRG = 0;
+		if (viscositySliderRB < 0.0F) viscositySliderRB = 0;
+		if (viscositySliderRW < 0.0F) viscositySliderRW = 0;
+		if (viscositySliderRO < 0.0F) viscositySliderRO = 0;
+		if (viscositySliderRK < 0.0F) viscositySliderRK = 0;
+		if (viscositySliderRC < 0.0F) viscositySliderRC = 0;
+		if (viscositySliderRD < 0.0F) viscositySliderRD = 0;
+
+		if (viscositySliderGR < 0.0F) viscositySliderGR = 0;
+		if (viscositySliderGG < 0.0F) viscositySliderGG = 0;
+		if (viscositySliderGB < 0.0F) viscositySliderGB = 0;
+		if (viscositySliderGW < 0.0F) viscositySliderGW = 0;
+		if (viscositySliderGO < 0.0F) viscositySliderGO = 0;
+		if (viscositySliderGK < 0.0F) viscositySliderGK = 0;
+		if (viscositySliderGC < 0.0F) viscositySliderGC = 0;
+		if (viscositySliderGD < 0.0F) viscositySliderGD = 0;
+
+		if (viscositySliderBR < 0.0F) viscositySliderBR = 0;
+		if (viscositySliderBG < 0.0F) viscositySliderBG = 0;
+		if (viscositySliderBB < 0.0F) viscositySliderBB = 0;
+		if (viscositySliderBW < 0.0F) viscositySliderBW = 0;
+		if (viscositySliderBO < 0.0F) viscositySliderBO = 0;
+		if (viscositySliderBK < 0.0F) viscositySliderBK = 0;
+		if (viscositySliderBC < 0.0F) viscositySliderBC = 0;
+		if (viscositySliderBD < 0.0F) viscositySliderBD = 0;
+
+		if (viscositySliderWR < 0.0F) viscositySliderWR = 0;
+		if (viscositySliderWG < 0.0F) viscositySliderWG = 0;
+		if (viscositySliderWB < 0.0F) viscositySliderWB = 0;
+		if (viscositySliderWW < 0.0F) viscositySliderWW = 0;
+		if (viscositySliderWO < 0.0F) viscositySliderWO = 0;
+		if (viscositySliderWK < 0.0F) viscositySliderWK = 0;
+		if (viscositySliderWC < 0.0F) viscositySliderWC = 0;
+		if (viscositySliderWD < 0.0F) viscositySliderWD = 0;
+
+		if (viscositySliderOR < 0.0F) viscositySliderOR = 0;
+		if (viscositySliderOG < 0.0F) viscositySliderOG = 0;
+		if (viscositySliderOB < 0.0F) viscositySliderOB = 0;
+		if (viscositySliderOW < 0.0F) viscositySliderOW = 0;
+		if (viscositySliderOO < 0.0F) viscositySliderOO = 0;
+		if (viscositySliderOK < 0.0F) viscositySliderOK = 0;
+		if (viscositySliderOC < 0.0F) viscositySliderOC = 0;
+		if (viscositySliderOD < 0.0F) viscositySliderOD = 0;
+
+		if (viscositySliderKR < 0.0F) viscositySliderKR = 0;
+		if (viscositySliderKG < 0.0F) viscositySliderKG = 0;
+		if (viscositySliderKB < 0.0F) viscositySliderKB = 0;
+		if (viscositySliderKW < 0.0F) viscositySliderKW = 0;
+		if (viscositySliderKO < 0.0F) viscositySliderKO = 0;
+		if (viscositySliderKK < 0.0F) viscositySliderKK = 0;
+		if (viscositySliderKC < 0.0F) viscositySliderKC = 0;
+		if (viscositySliderKD < 0.0F) viscositySliderKD = 0;
+
+		if (viscositySliderCR < 0.0F) viscositySliderCR = 0;
+		if (viscositySliderCG < 0.0F) viscositySliderCG = 0;
+		if (viscositySliderCB < 0.0F) viscositySliderCB = 0;
+		if (viscositySliderCW < 0.0F) viscositySliderCW = 0;
+		if (viscositySliderCO < 0.0F) viscositySliderCO = 0;
+		if (viscositySliderCK < 0.0F) viscositySliderCK = 0;
+		if (viscositySliderCC < 0.0F) viscositySliderCC = 0;
+		if (viscositySliderCD < 0.0F) viscositySliderCD = 0;
+
+		if (viscositySliderDR < 0.0F) viscositySliderDR = 0;
+		if (viscositySliderDG < 0.0F) viscositySliderDG = 0;
+		if (viscositySliderDB < 0.0F) viscositySliderDB = 0;
+		if (viscositySliderDW < 0.0F) viscositySliderDW = 0;
+		if (viscositySliderDO < 0.0F) viscositySliderDO = 0;
+		if (viscositySliderDK < 0.0F) viscositySliderDK = 0;
+		if (viscositySliderDC < 0.0F) viscositySliderDC = 0;
+		if (viscositySliderDD < 0.0F) viscositySliderDD = 0;
 		
 		//if (numberSliderG < 0.0F) numberSliderG = 0;
 		//if (numberSliderR < 0.0F) numberSliderR = 0;
@@ -1637,70 +2406,70 @@ void ofApp::update()
 		//if (numberSliderD < 0.0F) numberSliderD = 0;
 		
 
-		if (vSliderRR > 200.0F) vSliderRR = 200.0F;
-		if (vSliderRG > 200.0F) vSliderRG = 200.0F;
-		if (vSliderRB > 200.0F) vSliderRB = 200.0F;
-		if (vSliderRW > 200.0F) vSliderRW = 200.0F;
-		if (vSliderRO > 200.0F) vSliderRO = 200.0F;
-		if (vSliderRK > 200.0F) vSliderRK = 200.0F;
-		if (vSliderRC > 200.0F) vSliderRC = 200.0F;
-		if (vSliderRD > 200.0F) vSliderRD = 200.0F;
-		if (vSliderGR > 200.0F) vSliderGR = 200.0F;
-		if (vSliderGG > 200.0F) vSliderGG = 200.0F;
-		if (vSliderGB > 200.0F) vSliderGB = 200.0F;
-		if (vSliderGW > 200.0F) vSliderGW = 200.0F;
-		if (vSliderGO > 200.0F) vSliderGO = 200.0F;
-		if (vSliderGK > 200.0F) vSliderGK = 200.0F;
-		if (vSliderGC > 200.0F) vSliderGC = 200.0F;
-		if (vSliderGD > 200.0F) vSliderGD = 200.0F;
-		if (vSliderBR > 200.0F) vSliderBR = 200.0F;
-		if (vSliderBG > 200.0F) vSliderBG = 200.0F;
-		if (vSliderBB > 200.0F) vSliderBB = 200.0F;
-		if (vSliderBW > 200.0F) vSliderBW = 200.0F;
-		if (vSliderBO > 200.0F) vSliderBO = 200.0F;
-		if (vSliderBK > 200.0F) vSliderBK = 200.0F;
-		if (vSliderBC > 200.0F) vSliderBC = 200.0F;
-		if (vSliderBD > 200.0F) vSliderBD = 200.0F;
-		if (vSliderWR > 200.0F) vSliderWR = 200.0F;
-		if (vSliderWG > 200.0F) vSliderWG = 200.0F;
-		if (vSliderWB > 200.0F) vSliderWB = 200.0F;
-		if (vSliderWW > 200.0F) vSliderWW = 200.0F;
-		if (vSliderWO > 200.0F) vSliderWO = 200.0F;
-		if (vSliderWK > 200.0F) vSliderWK = 200.0F;
-		if (vSliderWC > 200.0F) vSliderWC = 200.0F;
-		if (vSliderWD > 200.0F) vSliderWD = 200.0F;
-		if (vSliderOR > 200.0F) vSliderOR = 200.0F;
-		if (vSliderOG > 200.0F) vSliderOG = 200.0F;
-		if (vSliderOB > 200.0F) vSliderOB = 200.0F;
-		if (vSliderOW > 200.0F) vSliderOW = 200.0F;
-		if (vSliderOO > 200.0F) vSliderOO = 200.0F;
-		if (vSliderOK > 200.0F) vSliderOK = 200.0F;
-		if (vSliderOC > 200.0F) vSliderOC = 200.0F;
-		if (vSliderOD > 200.0F) vSliderOD = 200.0F;
-		if (vSliderKR > 200.0F) vSliderKR = 200.0F;
-		if (vSliderKG > 200.0F) vSliderKG = 200.0F;
-		if (vSliderKB > 200.0F) vSliderKB = 200.0F;
-		if (vSliderKW > 200.0F) vSliderKW = 200.0F;
-		if (vSliderKO > 200.0F) vSliderKO = 200.0F;
-		if (vSliderKK > 200.0F) vSliderKK = 200.0F;
-		if (vSliderKC > 200.0F) vSliderKC = 200.0F;
-		if (vSliderKD > 200.0F) vSliderKD = 200.0F;
-		if (vSliderCR > 200.0F) vSliderCR = 200.0F;
-		if (vSliderCG > 200.0F) vSliderCG = 200.0F;
-		if (vSliderCB > 200.0F) vSliderCB = 200.0F;
-		if (vSliderCW > 200.0F) vSliderCW = 200.0F;
-		if (vSliderCO > 200.0F) vSliderCO = 200.0F;
-		if (vSliderCK > 200.0F) vSliderCK = 200.0F;
-		if (vSliderCC > 200.0F) vSliderCC = 200.0F;
-		if (vSliderCD > 200.0F) vSliderCD = 200.0F;
-		if (vSliderDR > 200.0F) vSliderDR = 200.0F;
-		if (vSliderDG > 200.0F) vSliderDG = 200.0F;
-		if (vSliderDB > 200.0F) vSliderDB = 200.0F;
-		if (vSliderDW > 200.0F) vSliderDW = 200.0F;
-		if (vSliderDO > 200.0F) vSliderDO = 200.0F;
-		if (vSliderDK > 200.0F) vSliderDK = 200.0F;
-		if (vSliderDC > 200.0F) vSliderDC = 200.0F;
-		if (vSliderDD > 200.0F) vSliderDD = 200.0F;
+		if (vSliderRR > 500.0F) vSliderRR = 500.0F;
+		if (vSliderRG > 500.0F) vSliderRG = 500.0F;
+		if (vSliderRB > 500.0F) vSliderRB = 500.0F;
+		if (vSliderRW > 500.0F) vSliderRW = 500.0F;
+		if (vSliderRO > 500.0F) vSliderRO = 500.0F;
+		if (vSliderRK > 500.0F) vSliderRK = 500.0F;
+		if (vSliderRC > 500.0F) vSliderRC = 500.0F;
+		if (vSliderRD > 500.0F) vSliderRD = 500.0F;
+		if (vSliderGR > 500.0F) vSliderGR = 500.0F;
+		if (vSliderGG > 500.0F) vSliderGG = 500.0F;
+		if (vSliderGB > 500.0F) vSliderGB = 500.0F;
+		if (vSliderGW > 500.0F) vSliderGW = 500.0F;
+		if (vSliderGO > 500.0F) vSliderGO = 500.0F;
+		if (vSliderGK > 500.0F) vSliderGK = 500.0F;
+		if (vSliderGC > 500.0F) vSliderGC = 500.0F;
+		if (vSliderGD > 500.0F) vSliderGD = 500.0F;
+		if (vSliderBR > 500.0F) vSliderBR = 500.0F;
+		if (vSliderBG > 500.0F) vSliderBG = 500.0F;
+		if (vSliderBB > 500.0F) vSliderBB = 500.0F;
+		if (vSliderBW > 500.0F) vSliderBW = 500.0F;
+		if (vSliderBO > 500.0F) vSliderBO = 500.0F;
+		if (vSliderBK > 500.0F) vSliderBK = 500.0F;
+		if (vSliderBC > 500.0F) vSliderBC = 500.0F;
+		if (vSliderBD > 500.0F) vSliderBD = 500.0F;
+		if (vSliderWR > 500.0F) vSliderWR = 500.0F;
+		if (vSliderWG > 500.0F) vSliderWG = 500.0F;
+		if (vSliderWB > 500.0F) vSliderWB = 500.0F;
+		if (vSliderWW > 500.0F) vSliderWW = 500.0F;
+		if (vSliderWO > 500.0F) vSliderWO = 500.0F;
+		if (vSliderWK > 500.0F) vSliderWK = 500.0F;
+		if (vSliderWC > 500.0F) vSliderWC = 500.0F;
+		if (vSliderWD > 500.0F) vSliderWD = 500.0F;
+		if (vSliderOR > 500.0F) vSliderOR = 500.0F;
+		if (vSliderOG > 500.0F) vSliderOG = 500.0F;
+		if (vSliderOB > 500.0F) vSliderOB = 500.0F;
+		if (vSliderOW > 500.0F) vSliderOW = 500.0F;
+		if (vSliderOO > 500.0F) vSliderOO = 500.0F;
+		if (vSliderOK > 500.0F) vSliderOK = 500.0F;
+		if (vSliderOC > 500.0F) vSliderOC = 500.0F;
+		if (vSliderOD > 500.0F) vSliderOD = 500.0F;
+		if (vSliderKR > 500.0F) vSliderKR = 500.0F;
+		if (vSliderKG > 500.0F) vSliderKG = 500.0F;
+		if (vSliderKB > 500.0F) vSliderKB = 500.0F;
+		if (vSliderKW > 500.0F) vSliderKW = 500.0F;
+		if (vSliderKO > 500.0F) vSliderKO = 500.0F;
+		if (vSliderKK > 500.0F) vSliderKK = 500.0F;
+		if (vSliderKC > 500.0F) vSliderKC = 500.0F;
+		if (vSliderKD > 500.0F) vSliderKD = 500.0F;
+		if (vSliderCR > 500.0F) vSliderCR = 500.0F;
+		if (vSliderCG > 500.0F) vSliderCG = 500.0F;
+		if (vSliderCB > 500.0F) vSliderCB = 500.0F;
+		if (vSliderCW > 500.0F) vSliderCW = 500.0F;
+		if (vSliderCO > 500.0F) vSliderCO = 500.0F;
+		if (vSliderCK > 500.0F) vSliderCK = 500.0F;
+		if (vSliderCC > 500.0F) vSliderCC = 500.0F;
+		if (vSliderCD > 500.0F) vSliderCD = 500.0F;
+		if (vSliderDR > 500.0F) vSliderDR = 500.0F;
+		if (vSliderDG > 500.0F) vSliderDG = 500.0F;
+		if (vSliderDB > 500.0F) vSliderDB = 500.0F;
+		if (vSliderDW > 500.0F) vSliderDW = 500.0F;
+		if (vSliderDO > 500.0F) vSliderDO = 500.0F;
+		if (vSliderDK > 500.0F) vSliderDK = 500.0F;
+		if (vSliderDC > 500.0F) vSliderDC = 500.0F;
+		if (vSliderDD > 500.0F) vSliderDD = 500.0F;
 
 		if (probabilitySlider > 100.0F) probabilitySlider = 100.0F;
 
@@ -1776,16 +2545,79 @@ void ofApp::update()
 		if (probabilitySliderDC > 100.0F) probabilitySliderDC = 100.0F;
 		if (probabilitySliderDD > 100.0F) probabilitySliderDD = 100.0F;
 
-		if (viscoSlider > 1.0F) viscoSlider = 1.0F;
+		if (viscositySlider > 1.0F) viscositySlider = 1.0F;
 
-		if (viscoSliderR > 1.0F) viscoSliderR = 1.0F;
-		if (viscoSliderG > 1.0F) viscoSliderG = 1.0F;
-		if (viscoSliderB > 1.0F) viscoSliderB = 1.0F;
-		if (viscoSliderW > 1.0F) viscoSliderW = 1.0F;
-		if (viscoSliderO > 1.0F) viscoSliderO = 1.0F;
-		if (viscoSliderK > 1.0F) viscoSliderK = 1.0F;
-		if (viscoSliderC > 1.0F) viscoSliderC = 1.0F;
-		if (viscoSliderD > 1.0F) viscoSliderD = 1.0F;
+		if (viscositySliderRR > 1.0F) viscositySliderRR = 1.0F;
+		if (viscositySliderRG > 1.0F) viscositySliderRG = 1.0F;
+		if (viscositySliderRB > 1.0F) viscositySliderRB = 1.0F;
+		if (viscositySliderRW > 1.0F) viscositySliderRW = 1.0F;
+		if (viscositySliderRO > 1.0F) viscositySliderRO = 1.0F;
+		if (viscositySliderRK > 1.0F) viscositySliderRK = 1.0F;
+		if (viscositySliderRC > 1.0F) viscositySliderRC = 1.0F;
+		if (viscositySliderRD > 1.0F) viscositySliderRD = 1.0F;
+
+		if (viscositySliderGR > 1.0F) viscositySliderGR = 1.0F;
+		if (viscositySliderGG > 1.0F) viscositySliderGG = 1.0F;
+		if (viscositySliderGB > 1.0F) viscositySliderGB = 1.0F;
+		if (viscositySliderGW > 1.0F) viscositySliderGW = 1.0F;
+		if (viscositySliderGO > 1.0F) viscositySliderGO = 1.0F;
+		if (viscositySliderGK > 1.0F) viscositySliderGK = 1.0F;
+		if (viscositySliderGC > 1.0F) viscositySliderGC = 1.0F;
+		if (viscositySliderGD > 1.0F) viscositySliderGD = 1.0F;
+
+		if (viscositySliderBR > 1.0F) viscositySliderBR = 1.0F;
+		if (viscositySliderBG > 1.0F) viscositySliderBG = 1.0F;
+		if (viscositySliderBB > 1.0F) viscositySliderBB = 1.0F;
+		if (viscositySliderBW > 1.0F) viscositySliderBW = 1.0F;
+		if (viscositySliderBO > 1.0F) viscositySliderBO = 1.0F;
+		if (viscositySliderBK > 1.0F) viscositySliderBK = 1.0F;
+		if (viscositySliderBC > 1.0F) viscositySliderBC = 1.0F;
+		if (viscositySliderBD > 1.0F) viscositySliderBD = 1.0F;
+
+		if (viscositySliderWR > 1.0F) viscositySliderWR = 1.0F;
+		if (viscositySliderWG > 1.0F) viscositySliderWG = 1.0F;
+		if (viscositySliderWB > 1.0F) viscositySliderWB = 1.0F;
+		if (viscositySliderWW > 1.0F) viscositySliderWW = 1.0F;
+		if (viscositySliderWO > 1.0F) viscositySliderWO = 1.0F;
+		if (viscositySliderWK > 1.0F) viscositySliderWK = 1.0F;
+		if (viscositySliderWC > 1.0F) viscositySliderWC = 1.0F;
+		if (viscositySliderWD > 1.0F) viscositySliderWD = 1.0F;
+
+		if (viscositySliderOR > 1.0F) viscositySliderOR = 1.0F;
+		if (viscositySliderOG > 1.0F) viscositySliderOG = 1.0F;
+		if (viscositySliderOB > 1.0F) viscositySliderOB = 1.0F;
+		if (viscositySliderOW > 1.0F) viscositySliderOW = 1.0F;
+		if (viscositySliderOO > 1.0F) viscositySliderOO = 1.0F;
+		if (viscositySliderOK > 1.0F) viscositySliderOK = 1.0F;
+		if (viscositySliderOC > 1.0F) viscositySliderOC = 1.0F;
+		if (viscositySliderOD > 1.0F) viscositySliderOD = 1.0F;
+
+		if (viscositySliderKR > 1.0F) viscositySliderKR = 1.0F;
+		if (viscositySliderKG > 1.0F) viscositySliderKG = 1.0F;
+		if (viscositySliderKB > 1.0F) viscositySliderKB = 1.0F;
+		if (viscositySliderKW > 1.0F) viscositySliderKW = 1.0F;
+		if (viscositySliderKO > 1.0F) viscositySliderKO = 1.0F;
+		if (viscositySliderKK > 1.0F) viscositySliderKK = 1.0F;
+		if (viscositySliderKC > 1.0F) viscositySliderKC = 1.0F;
+		if (viscositySliderKD > 1.0F) viscositySliderKD = 1.0F;
+
+		if (viscositySliderCR > 1.0F) viscositySliderCR = 1.0F;
+		if (viscositySliderCG > 1.0F) viscositySliderCG = 1.0F;
+		if (viscositySliderCB > 1.0F) viscositySliderCB = 1.0F;
+		if (viscositySliderCW > 1.0F) viscositySliderCW = 1.0F;
+		if (viscositySliderCO > 1.0F) viscositySliderCO = 1.0F;
+		if (viscositySliderCK > 1.0F) viscositySliderCK = 1.0F;
+		if (viscositySliderCC > 1.0F) viscositySliderCC = 1.0F;
+		if (viscositySliderCD > 1.0F) viscositySliderCD = 1.0F;
+
+		if (viscositySliderDR > 1.0F) viscositySliderDR = 1.0F;
+		if (viscositySliderDG > 1.0F) viscositySliderDG = 1.0F;
+		if (viscositySliderDB > 1.0F) viscositySliderDB = 1.0F;
+		if (viscositySliderDW > 1.0F) viscositySliderDW = 1.0F;
+		if (viscositySliderDO > 1.0F) viscositySliderDO = 1.0F;
+		if (viscositySliderDK > 1.0F) viscositySliderDK = 1.0F;
+		if (viscositySliderDC > 1.0F) viscositySliderDC = 1.0F;
+		if (viscositySliderDD > 1.0F) viscositySliderDD = 1.0F;
 
 		//if (numberSliderG > 2000.0F) numberSliderG = 2000.0F;
 		//if (numberSliderR > 2000.0F) numberSliderR = 2000.0F;
@@ -1800,98 +2632,98 @@ void ofApp::update()
 
 	if (numberSliderR > 0)
 	{
-		interaction(&red, &red, powerSliderRR, vSliderRR, viscosityR, probabilityRR);
-		if (numberSliderG > 0) interaction(&red, &green, powerSliderRG, vSliderRG, viscosityR, probabilityRG);
-		if (numberSliderB > 0) interaction(&red, &blue, powerSliderRB, vSliderRB, viscosityR, probabilityRB);
-		if (numberSliderW > 0) interaction(&red, &white, powerSliderRW, vSliderRW, viscosityR, probabilityRW);
-		if (numberSliderO > 0) interaction(&red, &orange, powerSliderRO, vSliderRO, viscosityR, probabilityRO);
-		if (numberSliderK > 0) interaction(&red, &khaki, powerSliderRK, vSliderRK, viscosityR, probabilityRK);
-		if (numberSliderC > 0) interaction(&red, &crimson, powerSliderRC, vSliderRC, viscosityR, probabilityRC);
-		if (numberSliderD > 0) interaction(&red, &dark, powerSliderRD, vSliderRD, viscosityR, probabilityRD);
+		interaction(&red, &red, powerSliderRR, vSliderRR, viscosityRR, probabilityRR);
+		if (numberSliderG > 0) interaction(&red, &green, powerSliderRG, vSliderRG, viscosityRG, probabilityRG);
+		if (numberSliderB > 0) interaction(&red, &blue, powerSliderRB, vSliderRB, viscosityRB, probabilityRB);
+		if (numberSliderW > 0) interaction(&red, &white, powerSliderRW, vSliderRW, viscosityRW, probabilityRW);
+		if (numberSliderO > 0) interaction(&red, &orange, powerSliderRO, vSliderRO, viscosityRO, probabilityRO);
+		if (numberSliderK > 0) interaction(&red, &khaki, powerSliderRK, vSliderRK, viscosityRK, probabilityRK);
+		if (numberSliderC > 0) interaction(&red, &crimson, powerSliderRC, vSliderRC, viscosityRC, probabilityRC);
+		if (numberSliderD > 0) interaction(&red, &dark, powerSliderRD, vSliderRD, viscosityRD, probabilityRD);
 	}
 
 	if (numberSliderG > 0)
 	{
-		if (numberSliderR > 0) interaction(&green, &red, powerSliderGR, vSliderGR, viscosityG, probabilityGR);
-		interaction(&green, &green, powerSliderGG, vSliderGG, viscosityG, probabilityGG);
-		if (numberSliderB > 0) interaction(&green, &blue, powerSliderGB, vSliderGB, viscosityG, probabilityGB);
-		if (numberSliderW > 0) interaction(&green, &white, powerSliderGW, vSliderGW, viscosityG, probabilityGW);
-		if (numberSliderO > 0) interaction(&green, &orange, powerSliderGO, vSliderGO, viscosityG, probabilityGO);
-		if (numberSliderK > 0) interaction(&green, &khaki, powerSliderGK, vSliderGK, viscosityG, probabilityGK);
-		if (numberSliderC > 0) interaction(&green, &crimson, powerSliderGC, vSliderGC, viscosityG, probabilityGC);
-		if (numberSliderD > 0) interaction(&green, &dark, powerSliderGD, vSliderGD, viscosityG, probabilityGD);
+		if (numberSliderR > 0) interaction(&green, &red, powerSliderGR, vSliderGR, viscosityGR, probabilityGR);
+		interaction(&green, &green, powerSliderGG, vSliderGG, viscosityGG, probabilityGG);
+		if (numberSliderB > 0) interaction(&green, &blue, powerSliderGB, vSliderGB, viscosityGB, probabilityGB);
+		if (numberSliderW > 0) interaction(&green, &white, powerSliderGW, vSliderGW, viscosityGW, probabilityGW);
+		if (numberSliderO > 0) interaction(&green, &orange, powerSliderGO, vSliderGO, viscosityGO, probabilityGO);
+		if (numberSliderK > 0) interaction(&green, &khaki, powerSliderGK, vSliderGK, viscosityGK, probabilityGK);
+		if (numberSliderC > 0) interaction(&green, &crimson, powerSliderGC, vSliderGC, viscosityGC, probabilityGC);
+		if (numberSliderD > 0) interaction(&green, &dark, powerSliderGD, vSliderGD, viscosityGD, probabilityGD);
 	}
 
 	if (numberSliderB > 0)
 	{
-		if (numberSliderR > 0) interaction(&blue, &red, powerSliderBR, vSliderBR, viscosityB, probabilityBR);
-		if (numberSliderG > 0) interaction(&blue, &green, powerSliderBG, vSliderBG, viscosityB, probabilityBG);
-		interaction(&blue, &blue, powerSliderBB, vSliderBB, viscosityB, probabilityBB);
-		if (numberSliderW > 0) interaction(&blue, &white, powerSliderBW, vSliderBW, viscosityB, probabilityBW);
-		if (numberSliderO > 0) interaction(&blue, &orange, powerSliderBO, vSliderBO, viscosityB, probabilityBO);
-		if (numberSliderK > 0) interaction(&blue, &khaki, powerSliderBK, vSliderBK, viscosityB, probabilityBK);
-		if (numberSliderC > 0) interaction(&blue, &crimson, powerSliderBC, vSliderBC, viscosityB, probabilityBC);
-		if (numberSliderD > 0) interaction(&blue, &dark, powerSliderBD, vSliderBD, viscosityB, probabilityBD);
+		if (numberSliderR > 0) interaction(&blue, &red, powerSliderBR, vSliderBR, viscosityBR, probabilityBR);
+		if (numberSliderG > 0) interaction(&blue, &green, powerSliderBG, vSliderBG, viscosityBG, probabilityBG);
+		interaction(&blue, &blue, powerSliderBB, vSliderBB, viscosityBB, probabilityBB);
+		if (numberSliderW > 0) interaction(&blue, &white, powerSliderBW, vSliderBW, viscosityBW, probabilityBW);
+		if (numberSliderO > 0) interaction(&blue, &orange, powerSliderBO, vSliderBO, viscosityBO, probabilityBO);
+		if (numberSliderK > 0) interaction(&blue, &khaki, powerSliderBK, vSliderBK, viscosityBK, probabilityBK);
+		if (numberSliderC > 0) interaction(&blue, &crimson, powerSliderBC, vSliderBC, viscosityBC, probabilityBC);
+		if (numberSliderD > 0) interaction(&blue, &dark, powerSliderBD, vSliderBD, viscosityBD, probabilityBD);
 	}
 
 	if (numberSliderW > 0)
 	{
-		if (numberSliderR > 0) interaction(&white, &red, powerSliderWR, vSliderWR, viscosityW, probabilityWR);
-		if (numberSliderG > 0) interaction(&white, &green, powerSliderWG, vSliderWG, viscosityW, probabilityWG);
-		if (numberSliderB > 0) interaction(&white, &blue, powerSliderWB, vSliderWB, viscosityW, probabilityWB);
-		interaction(&white, &white, powerSliderWW, vSliderWW, viscosityW, probabilityWW);
-		if (numberSliderO > 0) interaction(&white, &orange, powerSliderWO, vSliderWO, viscosityW, probabilityWO);
-		if (numberSliderK > 0) interaction(&white, &khaki, powerSliderWK, vSliderWK, viscosityW, probabilityWK);
-		if (numberSliderC > 0) interaction(&white, &crimson, powerSliderWC, vSliderWC, viscosityW, probabilityWC);
-		if (numberSliderD > 0) interaction(&white, &dark, powerSliderWD, vSliderWD, viscosityW, probabilityWD);
+		if (numberSliderR > 0) interaction(&white, &red, powerSliderWR, vSliderWR, viscosityWR, probabilityWR);
+		if (numberSliderG > 0) interaction(&white, &green, powerSliderWG, vSliderWG, viscosityWG, probabilityWG);
+		if (numberSliderB > 0) interaction(&white, &blue, powerSliderWB, vSliderWB, viscosityWB, probabilityWB);
+		interaction(&white, &white, powerSliderWW, vSliderWW, viscosityWW, probabilityWW);
+		if (numberSliderO > 0) interaction(&white, &orange, powerSliderWO, vSliderWO, viscosityWO, probabilityWO);
+		if (numberSliderK > 0) interaction(&white, &khaki, powerSliderWK, vSliderWK, viscosityWK, probabilityWK);
+		if (numberSliderC > 0) interaction(&white, &crimson, powerSliderWC, vSliderWC, viscosityWC, probabilityWC);
+		if (numberSliderD > 0) interaction(&white, &dark, powerSliderWD, vSliderWD, viscosityWD, probabilityWD);
 	}
 
 	if (numberSliderO > 0)
 	{
-		if (numberSliderR > 0) interaction(&orange, &red, powerSliderOR, vSliderOR, viscosityO, probabilityOR);
-		if (numberSliderG > 0) interaction(&orange, &green, powerSliderOG, vSliderOG, viscosityO, probabilityOR);
-		if (numberSliderB > 0) interaction(&orange, &blue, powerSliderOB, vSliderOB, viscosityO, probabilityOB);
-		if (numberSliderW > 0) interaction(&orange, &white, powerSliderOW, vSliderOW, viscosityO, probabilityOW);
-		interaction(&orange, &orange, powerSliderOO, vSliderOO, viscosityO, probabilityOO);
-		if (numberSliderK > 0) interaction(&orange, &khaki, powerSliderOK, vSliderOK, viscosityO, probabilityOK);
-		if (numberSliderC > 0) interaction(&orange, &crimson, powerSliderOC, vSliderOC, viscosityO, probabilityOC);
-		if (numberSliderD > 0) interaction(&orange, &dark, powerSliderOD, vSliderOD, viscosityO, probabilityOD);
+		if (numberSliderR > 0) interaction(&orange, &red, powerSliderOR, vSliderOR, viscosityOR, probabilityOR);
+		if (numberSliderG > 0) interaction(&orange, &green, powerSliderOG, vSliderOG, viscosityOG, probabilityOR);
+		if (numberSliderB > 0) interaction(&orange, &blue, powerSliderOB, vSliderOB, viscosityOB, probabilityOB);
+		if (numberSliderW > 0) interaction(&orange, &white, powerSliderOW, vSliderOW, viscosityOW, probabilityOW);
+		interaction(&orange, &orange, powerSliderOO, vSliderOO, viscosityOO, probabilityOO);
+		if (numberSliderK > 0) interaction(&orange, &khaki, powerSliderOK, vSliderOK, viscosityOK, probabilityOK);
+		if (numberSliderC > 0) interaction(&orange, &crimson, powerSliderOC, vSliderOC, viscosityOC, probabilityOC);
+		if (numberSliderD > 0) interaction(&orange, &dark, powerSliderOD, vSliderOD, viscosityOD, probabilityOD);
 	}
 
 	if (numberSliderK > 0)
 	{
-		if (numberSliderR > 0) interaction(&khaki, &red, powerSliderKR, vSliderKR, viscosityK, probabilityKR);
-		if (numberSliderG > 0) interaction(&khaki, &green, powerSliderKG, vSliderKG, viscosityK, probabilityKG);
-		if (numberSliderB > 0) interaction(&khaki, &blue, powerSliderKB, vSliderKB, viscosityK, probabilityKB);
-		if (numberSliderW > 0) interaction(&khaki, &white, powerSliderKW, vSliderKW, viscosityK, probabilityKW);
-		if (numberSliderO > 0) interaction(&khaki, &orange, powerSliderKO, vSliderKO, viscosityK, probabilityKO);
-		interaction(&khaki, &khaki, powerSliderKK, vSliderKK, viscosityK, probabilityKK);
-		if (numberSliderC > 0) interaction(&khaki, &crimson, powerSliderKC, vSliderKC, viscosityK, probabilityKC);
-		if (numberSliderD > 0) interaction(&khaki, &dark, powerSliderKD, vSliderKD, viscosityK, probabilityKD);
+		if (numberSliderR > 0) interaction(&khaki, &red, powerSliderKR, vSliderKR, viscosityKR, probabilityKR);
+		if (numberSliderG > 0) interaction(&khaki, &green, powerSliderKG, vSliderKG, viscosityKG, probabilityKG);
+		if (numberSliderB > 0) interaction(&khaki, &blue, powerSliderKB, vSliderKB, viscosityKB, probabilityKB);
+		if (numberSliderW > 0) interaction(&khaki, &white, powerSliderKW, vSliderKW, viscosityKW, probabilityKW);
+		if (numberSliderO > 0) interaction(&khaki, &orange, powerSliderKO, vSliderKO, viscosityKO, probabilityKO);
+		interaction(&khaki, &khaki, powerSliderKK, vSliderKK, viscosityKK, probabilityKK);
+		if (numberSliderC > 0) interaction(&khaki, &crimson, powerSliderKC, vSliderKC, viscosityKC, probabilityKC);
+		if (numberSliderD > 0) interaction(&khaki, &dark, powerSliderKD, vSliderKD, viscosityKD, probabilityKD);
 	}
 
 	if (numberSliderC > 0)
 	{
-		if (numberSliderR > 0) interaction(&crimson, &red, powerSliderCR, vSliderCR, viscosityC, probabilityCR);
-		if (numberSliderG > 0) interaction(&crimson, &green, powerSliderCG, vSliderCG, viscosityC, probabilityCG);
-		if (numberSliderB > 0) interaction(&crimson, &blue, powerSliderCB, vSliderCB, viscosityC, probabilityCB);
-		if (numberSliderW > 0) interaction(&crimson, &white, powerSliderCW, vSliderCW, viscosityC, probabilityCW);
-		if (numberSliderO > 0) interaction(&crimson, &orange, powerSliderCO, vSliderCO, viscosityC, probabilityCO);
-		if (numberSliderK > 0) interaction(&crimson, &khaki, powerSliderCK, vSliderCK, viscosityC, probabilityCK);
-		interaction(&crimson, &crimson, powerSliderCC, vSliderCC, viscosityC, probabilityCC);
-		if (numberSliderD > 0) interaction(&crimson, &dark, powerSliderCD, vSliderCD, viscosityC, probabilityCD);
+		if (numberSliderR > 0) interaction(&crimson, &red, powerSliderCR, vSliderCR, viscosityCR, probabilityCR);
+		if (numberSliderG > 0) interaction(&crimson, &green, powerSliderCG, vSliderCG, viscosityCG, probabilityCG);
+		if (numberSliderB > 0) interaction(&crimson, &blue, powerSliderCB, vSliderCB, viscosityCB, probabilityCB);
+		if (numberSliderW > 0) interaction(&crimson, &white, powerSliderCW, vSliderCW, viscosityCW, probabilityCW);
+		if (numberSliderO > 0) interaction(&crimson, &orange, powerSliderCO, vSliderCO, viscosityCO, probabilityCO);
+		if (numberSliderK > 0) interaction(&crimson, &khaki, powerSliderCK, vSliderCK, viscosityCK, probabilityCK);
+		interaction(&crimson, &crimson, powerSliderCC, vSliderCC, viscosityCC, probabilityCC);
+		if (numberSliderD > 0) interaction(&crimson, &dark, powerSliderCD, vSliderCD, viscosityCD, probabilityCD);
 	}
 
 	if (numberSliderD > 0)
 	{
-		if (numberSliderR > 0) interaction(&dark, &red, powerSliderDR, vSliderDR, viscosityD, probabilityDR);
-		if (numberSliderG > 0) interaction(&dark, &green, powerSliderDG, vSliderDG, viscosityD, probabilityDG);
-		if (numberSliderB > 0) interaction(&dark, &blue, powerSliderDB, vSliderDB, viscosityD, probabilityDB);
-		if (numberSliderW > 0) interaction(&dark, &white, powerSliderDW, vSliderDW, viscosityD, probabilityDW);
-		if (numberSliderO > 0) interaction(&dark, &orange, powerSliderDO, vSliderDO, viscosityD, probabilityDO);
-		if (numberSliderK > 0) interaction(&dark, &khaki, powerSliderDK, vSliderDK, viscosityD, probabilityDK);
-		if (numberSliderC > 0) interaction(&dark, &crimson, powerSliderDC, vSliderDC, viscosityD, probabilityDC);
-		interaction(&dark, &dark, powerSliderDD, vSliderDD, viscosityD, probabilityDD);
+		if (numberSliderR > 0) interaction(&dark, &red, powerSliderDR, vSliderDR, viscosityDR, probabilityDR);
+		if (numberSliderG > 0) interaction(&dark, &green, powerSliderDG, vSliderDG, viscosityDG, probabilityDG);
+		if (numberSliderB > 0) interaction(&dark, &blue, powerSliderDB, vSliderDB, viscosityDB, probabilityDB);
+		if (numberSliderW > 0) interaction(&dark, &white, powerSliderDW, vSliderDW, viscosityDW, probabilityDW);
+		if (numberSliderO > 0) interaction(&dark, &orange, powerSliderDO, vSliderDO, viscosityDO, probabilityDO);
+		if (numberSliderK > 0) interaction(&dark, &khaki, powerSliderDK, vSliderDK, viscosityDK, probabilityDK);
+		if (numberSliderC > 0) interaction(&dark, &crimson, powerSliderDC, vSliderDC, viscosityDC, probabilityDC);
+		interaction(&dark, &dark, powerSliderDD, vSliderDD, viscosityDD, probabilityDD);
 	}
 
 	if (save) { saveSettings(); }
@@ -1928,8 +2760,11 @@ void ofApp::draw()
 	}
 
 	//Check for GUI interaction
-	if (resetButton) { restart(); }
-	if (randomChoice)
+	if (resetButton) 
+	{ 
+		restart(); 
+	}
+	if (randomGeneral)
 	{
 		random();
 		restart();
@@ -1938,6 +2773,18 @@ void ofApp::draw()
 	{
 		monads();
 		restart();
+	}
+	if (randomVsc)
+	{
+		rndvsc();
+	}
+	if (randomProb)
+	{
+		rndprob();
+	}
+	if (randomChoice)
+	{
+		rndir();
 	}
 	if (numberSliderW > 0) { Draw(&white); }
 	if (numberSliderR > 0) { Draw(&red); }
@@ -2026,5 +2873,17 @@ void ofApp::keyPressed(int key)
 	{
 		monads();
 		restart();
+	}
+	if (key == 'v')
+	{
+		rndvsc();
+	}
+	if (key == 'p')
+	{
+		rndprob();
+	}
+	if (key == 'i')
+	{
+		rndir();
 	}
 }

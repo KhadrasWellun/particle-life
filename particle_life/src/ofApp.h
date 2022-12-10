@@ -52,6 +52,9 @@ public:
 	void restart();
 	void random();
 	void monads();
+	void rndir();
+	void rndprob();
+	void rndvsc();
 	void saveSettings();
 	void loadSettings();
 	void interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float G, float radius, float viscosity, float probability);
@@ -59,7 +62,15 @@ public:
 	ofxPanel gui;
 
 	ofxGuiGroup globalGroup;
-	ofxGuiGroup viscosityGroup;
+	ofxGuiGroup rndGroup;
+	ofxGuiGroup viscosityRGroup;
+	ofxGuiGroup viscosityGGroup;
+	ofxGuiGroup viscosityBGroup;
+	ofxGuiGroup viscosityWGroup;
+	ofxGuiGroup viscosityOGroup;
+	ofxGuiGroup viscosityKGroup;
+	ofxGuiGroup viscosityCGroup;
+	ofxGuiGroup viscosityDGroup;
 	ofxGuiGroup probabilityRGroup;
 	ofxGuiGroup probabilityGGroup;
 	ofxGuiGroup probabilityBGroup;
@@ -81,8 +92,11 @@ public:
 
 	ofxButton resetButton;
 	ofxButton selectButton;
-	ofxButton randomChoice;
+	ofxButton randomGeneral;
 	ofxButton randomCount;
+	ofxButton randomChoice;
+	ofxButton randomProb;
+	ofxButton randomVsc;
 	ofxButton save;
 	ofxButton load;
 
@@ -100,6 +114,79 @@ public:
 	ofxToggle radiusToogle;
 	ofxLabel physicLabel;
 	//end of experimental
+
+	ofxFloatSlider viscositySlider;
+	ofxFloatSlider viscositySliderRR;
+	ofxFloatSlider viscositySliderRG;
+	ofxFloatSlider viscositySliderRB;
+	ofxFloatSlider viscositySliderRW;
+	ofxFloatSlider viscositySliderRO;
+	ofxFloatSlider viscositySliderRK;
+	ofxFloatSlider viscositySliderRC;
+	ofxFloatSlider viscositySliderRD;
+
+	ofxFloatSlider viscositySliderGR;
+	ofxFloatSlider viscositySliderGG;
+	ofxFloatSlider viscositySliderGB;
+	ofxFloatSlider viscositySliderGW;
+	ofxFloatSlider viscositySliderGO;
+	ofxFloatSlider viscositySliderGK;
+	ofxFloatSlider viscositySliderGC;
+	ofxFloatSlider viscositySliderGD;
+
+	ofxFloatSlider viscositySliderBR;
+	ofxFloatSlider viscositySliderBG;
+	ofxFloatSlider viscositySliderBB;
+	ofxFloatSlider viscositySliderBW;
+	ofxFloatSlider viscositySliderBO;
+	ofxFloatSlider viscositySliderBK;
+	ofxFloatSlider viscositySliderBC;
+	ofxFloatSlider viscositySliderBD;
+
+	ofxFloatSlider viscositySliderWR;
+	ofxFloatSlider viscositySliderWG;
+	ofxFloatSlider viscositySliderWB;
+	ofxFloatSlider viscositySliderWW;
+	ofxFloatSlider viscositySliderWO;
+	ofxFloatSlider viscositySliderWK;
+	ofxFloatSlider viscositySliderWC;
+	ofxFloatSlider viscositySliderWD;
+
+	ofxFloatSlider viscositySliderOR;
+	ofxFloatSlider viscositySliderOG;
+	ofxFloatSlider viscositySliderOB;
+	ofxFloatSlider viscositySliderOW;
+	ofxFloatSlider viscositySliderOO;
+	ofxFloatSlider viscositySliderOK;
+	ofxFloatSlider viscositySliderOC;
+	ofxFloatSlider viscositySliderOD;
+
+	ofxFloatSlider viscositySliderKR;
+	ofxFloatSlider viscositySliderKG;
+	ofxFloatSlider viscositySliderKB;
+	ofxFloatSlider viscositySliderKW;
+	ofxFloatSlider viscositySliderKO;
+	ofxFloatSlider viscositySliderKK;
+	ofxFloatSlider viscositySliderKC;
+	ofxFloatSlider viscositySliderKD;
+
+	ofxFloatSlider viscositySliderCR;
+	ofxFloatSlider viscositySliderCG;
+	ofxFloatSlider viscositySliderCB;
+	ofxFloatSlider viscositySliderCW;
+	ofxFloatSlider viscositySliderCO;
+	ofxFloatSlider viscositySliderCK;
+	ofxFloatSlider viscositySliderCC;
+	ofxFloatSlider viscositySliderCD;
+
+	ofxFloatSlider viscositySliderDR;
+	ofxFloatSlider viscositySliderDG;
+	ofxFloatSlider viscositySliderDB;
+	ofxFloatSlider viscositySliderDW;
+	ofxFloatSlider viscositySliderDO;
+	ofxFloatSlider viscositySliderDK;
+	ofxFloatSlider viscositySliderDC;
+	ofxFloatSlider viscositySliderDD;
 
 	ofxFloatSlider probabilitySlider;
 	ofxFloatSlider probabilitySliderRR;
@@ -264,16 +351,6 @@ public:
 	int pnumberSliderK = 1000;
 	int pnumberSliderC = 1000;
 	int pnumberSliderD = 1000;
-
-	ofxFloatSlider viscoSlider;
-	ofxFloatSlider viscoSliderR;
-	ofxFloatSlider viscoSliderG;
-	ofxFloatSlider viscoSliderW;
-	ofxFloatSlider viscoSliderB;
-	ofxFloatSlider viscoSliderO;
-	ofxFloatSlider viscoSliderK;
-	ofxFloatSlider viscoSliderC;
-	ofxFloatSlider viscoSliderD;
 
 	ofxFloatSlider gravitySlider;
 	ofxFloatSlider wallRepelSlider;
@@ -584,14 +661,78 @@ public:
 	int boundHeight = 900;
 
 	float viscosity = 0.5F;
-	float viscosityR = 0.2F;
-	float viscosityG = 0.3F;
-	float viscosityW = 0.4F;
-	float viscosityB = 0.5F;
-	float viscosityO = 0.6F;
-	float viscosityK = 0.7F;
-	float viscosityC = 0.8F;
-	float viscosityD = 0.9F;
+
+	float viscosityRR = 0.2F;
+	float viscosityRG = 0.3F;
+	float viscosityRW = 0.4F;
+	float viscosityRB = 0.5F;
+	float viscosityRO = 0.6F;
+	float viscosityRK = 0.7F;
+	float viscosityRC = 0.8F;
+	float viscosityRD = 0.9F;
+
+	float viscosityGR = 0.3F;
+	float viscosityGG = 0.4F;
+	float viscosityGW = 0.5F;
+	float viscosityGB = 0.6F;
+	float viscosityGO = 0.7F;
+	float viscosityGK = 0.8F;
+	float viscosityGC = 0.9F;
+	float viscosityGD = 0.2F;
+
+	float viscosityBR = 0.4F;
+	float viscosityBG = 0.5F;
+	float viscosityBW = 0.6F;
+	float viscosityBB = 0.7F;
+	float viscosityBO = 0.8F;
+	float viscosityBK = 0.9F;
+	float viscosityBC = 0.2F;
+	float viscosityBD = 0.3F;
+
+	float viscosityWR = 0.5F;
+	float viscosityWG = 0.6F;
+	float viscosityWW = 0.7F;
+	float viscosityWB = 0.8F;
+	float viscosityWO = 0.9F;
+	float viscosityWK = 0.2F;
+	float viscosityWC = 0.3F;
+	float viscosityWD = 0.4F;
+
+	float viscosityOR = 0.6F;
+	float viscosityOG = 0.7F;
+	float viscosityOW = 0.8F;
+	float viscosityOB = 0.9F;
+	float viscosityOO = 0.2F;
+	float viscosityOK = 0.3F;
+	float viscosityOC = 0.4F;
+	float viscosityOD = 0.5F;
+
+	float viscosityKR = 0.7F;
+	float viscosityKG = 0.8F;
+	float viscosityKW = 0.9F;
+	float viscosityKB = 0.2F;
+	float viscosityKO = 0.3F;
+	float viscosityKK = 0.4F;
+	float viscosityKC = 0.5F;
+	float viscosityKD = 0.6F;
+
+	float viscosityCR = 0.8F;
+	float viscosityCG = 0.9F;
+	float viscosityCW = 0.2F;
+	float viscosityCB = 0.3F;
+	float viscosityCO = 0.4F;
+	float viscosityCK = 0.5F;
+	float viscosityCC = 0.6F;
+	float viscosityCD = 0.7F;
+
+	float viscosityDR = 0.9F;
+	float viscosityDG = 0.2F;
+	float viscosityDW = 0.3F;
+	float viscosityDB = 0.4F;
+	float viscosityDO = 0.5F;
+	float viscosityDK = 0.6F;
+	float viscosityDC = 0.7F;
+	float viscosityDD = 0.8F;
 
 	float worldGravity = 0.0F;
 	float forceVariance = 0.7F;
