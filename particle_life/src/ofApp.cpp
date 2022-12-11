@@ -212,7 +212,7 @@ void ofApp::restart()
 	if (numberSliderO > 0) { orange = CreatePoints(numberSliderO, 250, 125, 10); }
 	if (numberSliderK > 0) { khaki = CreatePoints(numberSliderK, 240, 230, 140); }
 	if (numberSliderC > 0) { crimson = CreatePoints(numberSliderC, 220, 20, 60); }
-	if (numberSliderD > 0) { dark = CreatePoints(numberSliderC, 10, 10, 10); }
+	if (numberSliderD > 0) { dark = CreatePoints(numberSliderD, 10, 10, 10); }
 }
 
 
