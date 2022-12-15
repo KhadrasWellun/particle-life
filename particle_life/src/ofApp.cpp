@@ -1823,6 +1823,79 @@ void ofApp::update()
 {
 	physic_begin = clock();
 	probability = probabilitySlider;
+
+probabilityRR = probabilitySliderRR;
+probabilityRG = probabilitySliderRG;
+probabilityRB = probabilitySliderRB;
+probabilityRW = probabilitySliderRW;
+probabilityRO = probabilitySliderRO;
+probabilityRK = probabilitySliderRK;
+probabilityRC = probabilitySliderRC;
+probabilityRD = probabilitySliderRD;
+
+probabilityGR = probabilitySliderGR;
+probabilityGG = probabilitySliderGG;
+probabilityGB = probabilitySliderGB;
+probabilityGW = probabilitySliderGW;
+probabilityGO = probabilitySliderGO;
+probabilityGK = probabilitySliderGK;
+probabilityGC = probabilitySliderGC;
+probabilityGD = probabilitySliderGD;
+
+probabilityBR = probabilitySliderBR;
+probabilityBG = probabilitySliderBG;
+probabilityBB = probabilitySliderBB;
+probabilityBW = probabilitySliderBW;
+probabilityBO = probabilitySliderBO;
+probabilityBK = probabilitySliderBK;
+probabilityBC = probabilitySliderBC;
+probabilityBD = probabilitySliderBD;
+
+probabilityWR = probabilitySliderWR;
+probabilityWG = probabilitySliderWG;
+probabilityWB = probabilitySliderWB;
+probabilityWW = probabilitySliderWW;
+probabilityWO = probabilitySliderWO;
+probabilityWK = probabilitySliderWK;
+probabilityWC = probabilitySliderWC;
+probabilityWD = probabilitySliderWD;
+
+probabilityOR = probabilitySliderOR;
+probabilityOG = probabilitySliderOG;
+probabilityOB = probabilitySliderOB;
+probabilityOW = probabilitySliderOW;
+probabilityOO = probabilitySliderOO;
+probabilityOK = probabilitySliderOK;
+probabilityOC = probabilitySliderOC;
+probabilityOD = probabilitySliderOD;
+
+probabilityKR = probabilitySliderKR;
+probabilityKG = probabilitySliderKG;
+probabilityKB = probabilitySliderKB;
+probabilityKW = probabilitySliderKW;
+probabilityKO = probabilitySliderKO;
+probabilityKK = probabilitySliderKK;
+probabilityKC = probabilitySliderKC;
+probabilityKD = probabilitySliderKD;
+
+probabilityCR = probabilitySliderCR;
+probabilityCG = probabilitySliderCG;
+probabilityCB = probabilitySliderCB;
+probabilityCW = probabilitySliderCW;
+probabilityCO = probabilitySliderCO;
+probabilityCK = probabilitySliderCK;
+probabilityCC = probabilitySliderCC;
+probabilityCD = probabilitySliderCD;
+
+probabilityDR = probabilitySliderDR;
+probabilityDG = probabilitySliderDG;
+probabilityDB = probabilitySliderDB;
+probabilityDW = probabilitySliderDW;
+probabilityDO = probabilitySliderDO;
+probabilityDK = probabilitySliderDK;
+probabilityDC = probabilitySliderDC;
+probabilityDD = probabilitySliderDD;
+
 	viscosity = viscositySlider;
 	viscosityRR = viscositySliderRR;
 	viscosityRG = viscositySliderRG;
@@ -2795,13 +2868,13 @@ void ofApp::draw()
 	if (numberSliderC > 0) { Draw(&crimson); }
 	if (numberSliderD > 0) { Draw(&dark); }
 	if (numberSliderW < 0.0F) numberSliderW = 0;
-	if (numberSliderR < 0.0F) numberSliderW = 0;
-	if (numberSliderG < 0.0F) numberSliderW = 0;
-	if (numberSliderB < 0.0F) numberSliderW = 0;
-	if (numberSliderO < 0.0F) numberSliderW = 0;
-	if (numberSliderK < 0.0F) numberSliderW = 0;
-	if (numberSliderC < 0.0F) numberSliderW = 0;
-	if (numberSliderD < 0.0F) numberSliderW = 0;
+	if (numberSliderR < 0.0F) numberSliderR = 0;
+	if (numberSliderG < 0.0F) numberSliderG = 0;
+	if (numberSliderB < 0.0F) numberSliderB = 0;
+	if (numberSliderO < 0.0F) numberSliderO = 0;
+	if (numberSliderK < 0.0F) numberSliderK = 0;
+	if (numberSliderC < 0.0F) numberSliderC = 0;
+	if (numberSliderD < 0.0F) numberSliderD = 0;
 
 	//Draw GUI
 	if (modelToggle == true)
