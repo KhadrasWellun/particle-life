@@ -2,21 +2,52 @@
 ![GitHub](https://img.shields.io/github/license/hunar4321/life_code)
 
 # Artificial Universe with Particle Life Simulation
-A simple program to simulate Artificial Universes, with primitive Artificial Life, using simple rules of attraction and repulsion among atom-like particles, producing complex self-organzing life-like patterns.
 
-Each particle emits a number of coloured fields of attractive and repulsive forces, depending on how many colours are defined. In the case of my version, there are 8 particle colours, so each particle will emit 16 coloured force fields: 8 attractive and 8 repulsive. Each coloured force field has its own intensity and range of action.
+NEW 1.7 version!!!
+ - A new designed menu!
+ - 7 Neon colors!
+ - Renamed particle types with greek letters to be able to easy change the colors of the particles!
+ - Evolve Parameters with three categories: Interaction Evolve Parameters, Probability Evolve Parameters and Viscosity Evolve Parameters!
+ - Randomization of simulation parameters between user-defined minimum and maximum limits!
+ - Probability and viscosity for each type of interaction!
+ - Randomization of each category of parameters separately: particle number, viscosity, probability, interaction, and all these together!
+ 
+Interface (C++ version)
+--------------------------------------------------------
+![](images/1.7.0_Menu_1.jpg)
+--------------------------------------------------------
+![](images/1.7.0_Menu_2.jpg)
+--------------------------------------------------------
 
-Each coloured particle reacts only to the field of the same colour as itself.
+Interaction model
 
-The eighth colour is black. This is so that the black particles are camouflaged by the background which is also black. These black particles simulate dark matter.
+![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
 
-Every color interaction has its own viscosity. Being 64 color interactions there will be 64 viscosity parameters.
+--------------------------------------------------------
+Example Results
+--------------------------------------------------------
+![](images/001.jpg)
+-----------------------------------------------
+![](images/002.jpg)
+-----------------------------------------------
+![](images/003.jpg)
+-----------------------------------------------
+![](images/004.jpg)
+-----------------------------------------------
+![](images/005.jpg)
+-----------------------------------------------
+![](images/006.jpg)
+-----------------------------------------------
+![](images/007.jpg)
+-----------------------------------------------
 
-Every interaction between two colours has a certain probability of happening. Since there are 64 colours color interactions there will be 64 probability parameters.
+Some Interesting Patterns to Reproduce:
+-------------------------------------
+You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
 
-Each parameter evolves with a certain probability and percentage, set by the user.
-
-There are 5 types of randomizations: the number of particles per color, the interaction strengths (intensity and radius) between colors, the probabilities of interactions, the viscosity of colors and all these parameters together.
+![](images/Aliens_04.jpg)
+-----------------------------------------------
+![](images/Dark_Matter.jpg)
 
 The video tutorial and walkthrough are available below.
 
@@ -45,40 +76,6 @@ Click here for a live demo of my modified code (JavaScript):
   - 2d - https://khadraswellun.github.io/particle-life/particle_life.html
 
 I modified the maximum number of color to 12, I add randomization of all interaction force ranges (they never stay at 80 anymore). This link works on Smart TVs as well as mobile phones that have access to an internet browser. 
-
-Interface (C++ version)
---------------------------------------------------------
-![](images/Interface_1_4.jpg)
---------------------------------------------------------
-Interaction model
-
-![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
-
---------------------------------------------------------
-Example Results
---------------------------------------------------------
-![](images/Screen_20221210_01.jpg)
------------------------------------------------
-![](images/Screen_20221210_02.jpg)
------------------------------------------------
-![](images/Screen_20221210_03.jpg)
------------------------------------------------
-![](images/Screen_20221210_04.jpg)
------------------------------------------------
-![](images/Screen_20221210_05.jpg)
------------------------------------------------
-![](images/Screen_20221210_06.jpg)
------------------------------------------------
-![](images/Screen_20221210_07.jpg)
------------------------------------------------
-
-Some Interesting Patterns to Reproduce:
--------------------------------------
-You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
-
-![](images/Aliens_04.jpg)
------------------------------------------------
-![](images/Dark_Matter.jpg)
 
 To use:
 -------------
