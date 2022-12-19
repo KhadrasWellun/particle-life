@@ -18,12 +18,6 @@ Interface (C++ version)
 --------------------------------------------------------
 ![](images/1.7.0_Menu_2.jpg)
 --------------------------------------------------------
-
-Interaction model
-
-![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
-
---------------------------------------------------------
 Example Results
 --------------------------------------------------------
 ![](images/001.jpg)
@@ -63,6 +57,12 @@ https://youtu.be/0Kx4Y9TVMGg
 
 Some Examples Are Here (YouTube videos):
 -----------------------------------------------
+https://youtu.be/U4eHK6NZMdA
+-----------------------------------------------
+https://youtu.be/zr71NHZjzZU
+-----------------------------------------------
+https://youtu.be/5yPhzaXNpEA
+-----------------------------------------------
 https://youtu.be/97d9fkjQXFQ
 -----------------------------------------------
 https://youtu.be/b-afHvgact0
@@ -70,19 +70,22 @@ https://youtu.be/b-afHvgact0
 https://youtu.be/5G5Bnc5s7Kg
 -----------------------------------------------
 https://youtu.be/3rGuQ2XCYvc
+-----------------------------------------------
+Interaction model
 
+![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
+-----------------------------------------------
 Online Demo (JavaScript version):
--------------
-Click here for a live demo of original code (JavaScript): 
-  - 2d - https://hunar4321.github.io/particle-life/particle_life.html
-  - 3d - https://hunar4321.github.io/particle-life/particle_life_3d.html
-  
 -----------------------------------------------  
 Click here for a live demo of my modified code (JavaScript):
   - 2d - https://khadraswellun.github.io/particle-life/particle_life.html
 
 I modified the maximum number of color to 12, I add randomization of all interaction force ranges (they never stay at 80 anymore). This link works on Smart TVs as well as mobile phones that have access to an internet browser. 
-
+-------------
+Click here for a live demo of original code (JavaScript): 
+  - 2d - https://hunar4321.github.io/particle-life/particle_life.html
+  - 3d - https://hunar4321.github.io/particle-life/particle_life_3d.html
+ 
 To use:
 -------------
 Download this repo. unzip the file then go to /particle_life/bin/ folder and click on particle_life.exe
