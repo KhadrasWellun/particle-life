@@ -3,54 +3,57 @@
 
 # Artificial Universe with Particle Life Simulation
 
-NEW 1.7.4 version!!!
+NEW 1.7 version!!!
  - A new designed menu!
- - 7 random colors + 1 dark color!
- - I have renamed the particle type with Greek letters because each type has a random color every time the application is started!
+ - 7 Neon colors!
+ - Renamed particle types with greek letters to be able to easy change the colors of the particles!
  - Evolve Parameters with three categories: Interaction Evolve Parameters, Probability Evolve Parameters and Viscosity Evolve Parameters!
  - Randomization of simulation parameters between user-defined minimum and maximum limits!
  - Probability and viscosity for each type of interaction!
  - Randomization of each category of parameters separately: particle number, viscosity, probability, interaction, and all these together!
- - I've added a zero kelvin button, called Freeze!
- - I have added dark matter which can have two properties: either only attract or only repel other types of particles. Initially, dark matter does not interact with itself but only with other types of particles. However, I have added a separate button for randomising the parameters of dark matter to turn it into ordinary matter.
  
- 
-Interface (C++ version):
+Interface (C++ version)
 --------------------------------------------------------
-![](images/1.7.4_Menu_1.jpg)
+![](images/1.7.0_Menu_1.jpg)
 --------------------------------------------------------
-![](images/1.7.4_Menu_2.jpg)
+![](images/1.7.0_Menu_2.jpg)
 --------------------------------------------------------
-![](images/1.7.4_Menu_3.jpg)
+Example Results
 --------------------------------------------------------
+![](images/2023-01.jpeg)
+-----------------------------------------------
+![](images/2023-02.jpeg)
+-----------------------------------------------
+![](images/2023-03.jpeg)
+-----------------------------------------------
+![](images/001.jpg)
+-----------------------------------------------
+![](images/002.jpg)
+-----------------------------------------------
+![](images/003.jpg)
+-----------------------------------------------
+![](images/004.jpg)
+-----------------------------------------------
+![](images/005.jpg)
+-----------------------------------------------
+![](images/006.jpg)
+-----------------------------------------------
+![](images/007.jpg)
+-----------------------------------------------
+![](images/010.jpg)
+-----------------------------------------------
+![](images/011.jpg)
+-----------------------------------------------
+![](images/012.jpg)
+-----------------------------------------------
 
-Random colors:
---------------------------------------------------------
-![](images/ParticleLife1.7.4_00a.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_00b.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_00c.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_00d.jpg)
------------------------------------------------
+Some Interesting Patterns to Reproduce:
+-------------------------------------
+You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
 
-Some examples:
+![](images/Aliens_04.jpg)
 -----------------------------------------------
-![](images/ParticleLife1.7.4_01.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_02.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_03.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_04.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_05.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_06.jpg)
------------------------------------------------
-![](images/ParticleLife1.7.4_07.jpg)
------------------------------------------------
+![](images/Dark_Matter.jpg)
 
 The video tutorial and walkthrough are available below.
 
@@ -74,12 +77,10 @@ https://youtu.be/5G5Bnc5s7Kg
 -----------------------------------------------
 https://youtu.be/3rGuQ2XCYvc
 -----------------------------------------------
-
 Interaction model
 
 ![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
 -----------------------------------------------
-
 Online Demo (JavaScript version):
 -----------------------------------------------  
 Click here for a live demo of my modified code (JavaScript):
