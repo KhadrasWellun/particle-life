@@ -193,6 +193,16 @@ void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Gr
  */
 void ofApp::restart()
 {
+	if (numberSliderα > 0) { alpha = CreatePoints(numberSliderα, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderβ > 0) { betha = CreatePoints(numberSliderβ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderγ > 0) { gamma = CreatePoints(numberSliderγ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderδ > 0) { elta = CreatePoints(numberSliderδ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderε > 0) { epsilon = CreatePoints(numberSliderε, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderζ > 0) { zeta = CreatePoints(numberSliderζ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderη > 0) { eta = CreatePoints(numberSliderη, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, 0, 0, 0); }
+
+	/*
 	if (numberSliderα > 0) { alpha = CreatePoints(numberSliderα, 0, 0, ofRandom(64, 255)); }
 	if (numberSliderβ > 0) { betha = CreatePoints(numberSliderβ, 0, ofRandom(64, 255), 0); }
 	if (numberSliderγ > 0) { gamma = CreatePoints(numberSliderγ, ofRandom(64, 255), 0, 0); }
@@ -201,6 +211,7 @@ void ofApp::restart()
 	if (numberSliderζ > 0) { zeta = CreatePoints(numberSliderζ, 0, ofRandom(64, 255), ofRandom(64, 255)); }
 	if (numberSliderη > 0) { eta = CreatePoints(numberSliderη, ofRandom(64, 255), ofRandom(64, 255), ofRandom(64, 255)); }
 	if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, 0, 0, 0); }
+	*/
 }
 
 void ofApp::attractDark()
@@ -405,6 +416,319 @@ void ofApp::random()
 	numberSliderη = RandomInt(500, 2500);
 	numberSliderθ = RandomInt(1000, 4000);
 
+	viscositySlider = RandomFloat(minV, maxV);
+
+	viscositySliderαα = RandomFloat(minV, maxV);
+	viscositySliderαβ = RandomFloat(minV, maxV);
+	viscositySliderαδ = RandomFloat(minV, maxV);
+	viscositySliderαγ = RandomFloat(minV, maxV);
+	viscositySliderαε = RandomFloat(minV, maxV);
+	viscositySliderαζ = RandomFloat(minV, maxV);
+	viscositySliderαη = RandomFloat(minV, maxV);
+
+	viscositySliderβα = RandomFloat(minV, maxV);
+	viscositySliderββ = RandomFloat(minV, maxV);
+	viscositySliderβδ = RandomFloat(minV, maxV);
+	viscositySliderβγ = RandomFloat(minV, maxV);
+	viscositySliderβε = RandomFloat(minV, maxV);
+	viscositySliderβζ = RandomFloat(minV, maxV);
+	viscositySliderβη = RandomFloat(minV, maxV);
+
+	viscositySliderγα = RandomFloat(minV, maxV);
+	viscositySliderγβ = RandomFloat(minV, maxV);
+	viscositySliderγδ = RandomFloat(minV, maxV);
+	viscositySliderγγ = RandomFloat(minV, maxV);
+	viscositySliderγε = RandomFloat(minV, maxV);
+	viscositySliderγζ = RandomFloat(minV, maxV);
+	viscositySliderγη = RandomFloat(minV, maxV);
+
+	viscositySliderδα = RandomFloat(minV, maxV);
+	viscositySliderδβ = RandomFloat(minV, maxV);
+	viscositySliderδδ = RandomFloat(minV, maxV);
+	viscositySliderδγ = RandomFloat(minV, maxV);
+	viscositySliderδε = RandomFloat(minV, maxV);
+	viscositySliderδζ = RandomFloat(minV, maxV);
+	viscositySliderδη = RandomFloat(minV, maxV);
+
+	viscositySliderεα = RandomFloat(minV, maxV);
+	viscositySliderεβ = RandomFloat(minV, maxV);
+	viscositySliderεδ = RandomFloat(minV, maxV);
+	viscositySliderεγ = RandomFloat(minV, maxV);
+	viscositySliderεε = RandomFloat(minV, maxV);
+	viscositySliderεζ = RandomFloat(minV, maxV);
+	viscositySliderεη = RandomFloat(minV, maxV);
+
+	viscositySliderζα = RandomFloat(minV, maxV);
+	viscositySliderζβ = RandomFloat(minV, maxV);
+	viscositySliderζδ = RandomFloat(minV, maxV);
+	viscositySliderζγ = RandomFloat(minV, maxV);
+	viscositySliderζε = RandomFloat(minV, maxV);
+	viscositySliderζζ = RandomFloat(minV, maxV);
+	viscositySliderζη = RandomFloat(minV, maxV);
+
+	viscositySliderηα = RandomFloat(minV, maxV);
+	viscositySliderηβ = RandomFloat(minV, maxV);
+	viscositySliderηδ = RandomFloat(minV, maxV);
+	viscositySliderηγ = RandomFloat(minV, maxV);
+	viscositySliderηε = RandomFloat(minV, maxV);
+	viscositySliderηζ = RandomFloat(minV, maxV);
+	viscositySliderηη = RandomFloat(minV, maxV);
+
+	viscositySliderαθ = RandomFloat(minV, maxV);
+	viscositySliderβθ = RandomFloat(minV, maxV);
+	viscositySliderδθ = RandomFloat(minV, maxV);
+	viscositySliderγθ = RandomFloat(minV, maxV);
+	viscositySliderεθ = RandomFloat(minV, maxV);
+	viscositySliderζθ = RandomFloat(minV, maxV);
+	viscositySliderηθ = RandomFloat(minV, maxV);
+	viscositySliderθα = RandomFloat(minV, maxV);
+	viscositySliderθβ = RandomFloat(minV, maxV);
+	viscositySliderθδ = RandomFloat(minV, maxV);
+	viscositySliderθγ = RandomFloat(minV, maxV);
+	viscositySliderθε = RandomFloat(minV, maxV);
+	viscositySliderθζ = RandomFloat(minV, maxV);
+	viscositySliderθη = RandomFloat(minV, maxV);
+	viscositySliderθθ = RandomFloat(minV, maxV);
+
+	probabilitySlider = RandomFloat(minI, maxI);
+
+	probabilitySliderαα = RandomFloat(minI, maxI);
+	probabilitySliderαβ = RandomFloat(minI, maxI);
+	probabilitySliderαγ = RandomFloat(minI, maxI);
+	probabilitySliderαδ = RandomFloat(minI, maxI);
+	probabilitySliderαε = RandomFloat(minI, maxI);
+	probabilitySliderαζ = RandomFloat(minI, maxI);
+	probabilitySliderαη = RandomFloat(minI, maxI);
+
+	probabilitySliderβα = RandomFloat(minI, maxI);
+	probabilitySliderββ = RandomFloat(minI, maxI);
+	probabilitySliderβγ = RandomFloat(minI, maxI);
+	probabilitySliderβδ = RandomFloat(minI, maxI);
+	probabilitySliderβε = RandomFloat(minI, maxI);
+	probabilitySliderβζ = RandomFloat(minI, maxI);
+	probabilitySliderβη = RandomFloat(minI, maxI);
+
+	probabilitySliderγα = RandomFloat(minI, maxI);
+	probabilitySliderγβ = RandomFloat(minI, maxI);
+	probabilitySliderγγ = RandomFloat(minI, maxI);
+	probabilitySliderγδ = RandomFloat(minI, maxI);
+	probabilitySliderγε = RandomFloat(minI, maxI);
+	probabilitySliderγζ = RandomFloat(minI, maxI);
+	probabilitySliderγη = RandomFloat(minI, maxI);
+
+	probabilitySliderδα = RandomFloat(minI, maxI);
+	probabilitySliderδβ = RandomFloat(minI, maxI);
+	probabilitySliderδγ = RandomFloat(minI, maxI);
+	probabilitySliderδδ = RandomFloat(minI, maxI);
+	probabilitySliderδε = RandomFloat(minI, maxI);
+	probabilitySliderδζ = RandomFloat(minI, maxI);
+	probabilitySliderδη = RandomFloat(minI, maxI);
+
+	probabilitySliderεα = RandomFloat(minI, maxI);
+	probabilitySliderεβ = RandomFloat(minI, maxI);
+	probabilitySliderεγ = RandomFloat(minI, maxI);
+	probabilitySliderεδ = RandomFloat(minI, maxI);
+	probabilitySliderεε = RandomFloat(minI, maxI);
+	probabilitySliderεζ = RandomFloat(minI, maxI);
+	probabilitySliderεη = RandomFloat(minI, maxI);
+
+	probabilitySliderζα = RandomFloat(minI, maxI);
+	probabilitySliderζβ = RandomFloat(minI, maxI);
+	probabilitySliderζγ = RandomFloat(minI, maxI);
+	probabilitySliderζδ = RandomFloat(minI, maxI);
+	probabilitySliderζε = RandomFloat(minI, maxI);
+	probabilitySliderζζ = RandomFloat(minI, maxI);
+	probabilitySliderζη = RandomFloat(minI, maxI);
+
+	probabilitySliderηα = RandomFloat(minI, maxI);
+	probabilitySliderηβ = RandomFloat(minI, maxI);
+	probabilitySliderηγ = RandomFloat(minI, maxI);
+	probabilitySliderηδ = RandomFloat(minI, maxI);
+	probabilitySliderηε = RandomFloat(minI, maxI);
+	probabilitySliderηζ = RandomFloat(minI, maxI);
+	probabilitySliderηη = RandomFloat(minI, maxI);
+
+	probabilitySliderαθ = RandomFloat(minI, maxI);
+	probabilitySliderβθ = RandomFloat(minI, maxI);
+	probabilitySliderγθ = RandomFloat(minI, maxI);
+	probabilitySliderδθ = RandomFloat(minI, maxI);
+	probabilitySliderεθ = RandomFloat(minI, maxI);
+	probabilitySliderζθ = RandomFloat(minI, maxI);
+	probabilitySliderηθ = RandomFloat(minI, maxI);
+	probabilitySliderθα = RandomFloat(minI, maxI);
+	probabilitySliderθβ = RandomFloat(minI, maxI);
+	probabilitySliderθγ = RandomFloat(minI, maxI);
+	probabilitySliderθδ = RandomFloat(minI, maxI);
+	probabilitySliderθε = RandomFloat(minI, maxI);
+	probabilitySliderθζ = RandomFloat(minI, maxI);
+	probabilitySliderθη = RandomFloat(minI, maxI);
+	probabilitySliderθθ = RandomFloat(minI, maxI);
+
+	// Alpha
+	//numberSliderα = RandomFloat(minR, 3000);
+	powerSliderαα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderαβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Betha
+	//numberSliderβ = RandomFloat(minR, 3000);
+	powerSliderββ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderββ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderβα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderβδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderβγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderβε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderβζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderβη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Gamma
+	//numberSliderγ = RandomFloat(minR, 3000);
+	powerSliderγγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderγδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderγα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderγβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderγε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderγζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderγη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderγβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Delta
+	// numberSliderδ = RandomFloat(minR, 3000);
+	powerSliderδδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderδβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Epsilon
+	//numberSliderε = RandomFloat(minR, 3000);
+	powerSliderεγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderεβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Zeta
+	//numberSliderζ = RandomFloat(minR, 3000);
+	powerSliderζγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderζβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Etha
+	//numberSliderη = RandomFloat(minR, 3000);
+	powerSliderηγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderηβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηη = RandomFloat(minR, maxR) * radiusVariance;
+
+	// Tetha
+	//numberSliderθ = RandomFloat(minR, 3000);
+	powerSliderθγ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθδ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθα = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθβ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθε = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθζ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθη = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderθβ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθα = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθδ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθγ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθε = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθζ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθη = RandomFloat(minR, maxR) * radiusVariance;
+
+	powerSliderγθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderδθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderαθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderβθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderεθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderζθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderηθ = RandomFloat(minP, maxP) * forceVariance;
+	powerSliderθθ = RandomFloat(minP, maxP) * forceVariance;
+
+	vSliderβθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderαθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderδθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderγθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderεθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderζθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderηθ = RandomFloat(minR, maxR) * radiusVariance;
+	vSliderθθ = RandomFloat(minR, maxR) * radiusVariance;
+}
+
+void ofApp::rndrel()
+{
 	viscositySlider = RandomFloat(minV, maxV);
 
 	viscositySliderαα = RandomFloat(minV, maxV);
@@ -1919,7 +2243,7 @@ void ofApp::loadSettings()
 void ofApp::setup()
 {
 	lastTime = clock();
-	ofSetWindowTitle("Particle Life - 7+1c64v64p version 1.7.6");
+	ofSetWindowTitle("Particle Life - 7+1c64v64p version 1.7.6.5");
 	ofSetVerticalSync(true);
 
 	// Interface
@@ -1936,6 +2260,7 @@ void ofApp::setup()
 
 	rndGroup.setup("Randomize");
 	rndGroup.add(randomGeneral.setup("Randomize all parameters (space bar)"));
+	rndGroup.add(randomRelations.setup("Randomize all interactions (a)"));
 	rndGroup.add(randomCount.setup("Randomize particle count (q)"));
 	rndGroup.add(randomVsc.setup("Randomize Viscosities (v)"));
 	rndGroup.add(randomProb.setup("Randomize Probabilities (p)"));
@@ -1973,10 +2298,10 @@ void ofApp::setup()
 
 	// MinMax Group
 	MinMaxGroup.setup("MinMax");
-	MinMaxGroup.add(minPowerSlider.setup("minimum power", minP, -200, 200));
-	MinMaxGroup.add(maxPowerSlider.setup("maximum power", maxP, -200, 200));
-	MinMaxGroup.add(minRangeSlider.setup("minimum range", minR, 0, 500));
-	MinMaxGroup.add(maxRangeSlider.setup("maximum range", maxR, 0, 500));
+	MinMaxGroup.add(minPowerSlider.setup("minimum power", minP, -100, 100));
+	MinMaxGroup.add(maxPowerSlider.setup("maximum power", maxP, -100, 100));
+	MinMaxGroup.add(minRangeSlider.setup("minimum range", minR, 0, 300));
+	MinMaxGroup.add(maxRangeSlider.setup("maximum range", maxR, 0, 300));
 	MinMaxGroup.add(minViscoSlider.setup("minimum viscosity", minV, 0.0, 1.0));
 	MinMaxGroup.add(maxViscoSlider.setup("maximum viscosity", maxV, 0.0, 1.0));
 	MinMaxGroup.add(minProbSlider.setup("minimum probability", minI, 0, 100));
@@ -2629,6 +2954,10 @@ void ofApp::draw()
 		random();
 		restart();
 	}
+	if (randomRelations)
+	{
+		rndrel();
+	}
 	if (randomCount)
 	{
 		monads();
@@ -2676,6 +3005,10 @@ void ofApp::keyPressed(int key)
 	{
 		random();
 		restart();
+	}
+	if (key == 'a')
+	{
+		rndrel();
 	}
 	if (key == 'j')
 	{

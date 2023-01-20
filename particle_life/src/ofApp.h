@@ -32,7 +32,7 @@ struct point
 	void draw() const
 	{
 		ofSetColor(r, g, b, 100); //set particle color + some alpha
-		ofDrawCircle(x, y, 1.5F); //draw a point at x,y coordinates, the size of a 1.5 pixels
+		ofDrawCircle(x, y, 2.25F); //draw a point at x,y coordinates, the size of a 2.25 pixels
 	}
 };
 
@@ -51,6 +51,7 @@ public:
 	void keyPressed(int key) override;
 	void restart();
 	void random();
+	void rndrel();
 	void monads();
 	void rndir();
 	void rndprob();
@@ -88,6 +89,7 @@ public:
 	ofxButton load;
 
 	ofxButton randomGeneral;
+	ofxButton randomRelations;
 	ofxButton randomCount;
 	ofxButton randomChoice;
 	ofxButton randomProb;
@@ -123,11 +125,11 @@ public:
 	float maxR = 300.0;
 	ofxFloatSlider minViscoSlider;
 	ofxFloatSlider maxViscoSlider;
-	float minV = 0.5;
+	float minV = 0.0;
 	float maxV = 1.0;
 	ofxFloatSlider minProbSlider;
 	ofxFloatSlider maxProbSlider;
-	float minI = 80.0;
+	float minI = 0.0;
 	float maxI = 100.0;
 	ofxToggle radiusToogle;
 	ofxLabel physicLabel;
@@ -761,43 +763,43 @@ public:
 	float wallRepel = 20.0F;
 
 	vector<ofxFloatSlider*> powersliders = {
-		&powerSliderαα, &powerSliderαβ, &powerSliderαγ, &powerSliderαδ,
-		&powerSliderβα, &powerSliderββ, &powerSliderβγ, &powerSliderβδ,
-		&powerSliderγα, &powerSliderγβ, &powerSliderγγ, &powerSliderγδ,
-		&powerSliderδα, &powerSliderδβ, &powerSliderδγ, &powerSliderδδ,
-		&powerSliderεε, &powerSliderεζ, &powerSliderεη, &powerSliderεθ,
-		&powerSliderζε, &powerSliderζζ, &powerSliderζη, &powerSliderζθ,
-		&powerSliderηε, &powerSliderηζ, &powerSliderηη, &powerSliderηθ,
-		&powerSliderθε, &powerSliderθζ, &powerSliderθη, &powerSliderθθ,
+		&powerSliderαα, &powerSliderαβ, &powerSliderαγ, &powerSliderαδ,	&powerSliderαε, &powerSliderαζ, &powerSliderαη, &powerSliderαθ,
+		&powerSliderβα, &powerSliderββ, &powerSliderβγ, &powerSliderβδ, &powerSliderβε, &powerSliderβζ, &powerSliderβη, &powerSliderβθ,
+		&powerSliderγα, &powerSliderγβ, &powerSliderγγ, &powerSliderγδ, &powerSliderγε, &powerSliderγζ, &powerSliderγη, &powerSliderγθ,
+		&powerSliderδα, &powerSliderδβ, &powerSliderδγ, &powerSliderδδ, &powerSliderδε, &powerSliderδζ, &powerSliderδη, &powerSliderδθ,
+		&powerSliderεα, &powerSliderεβ, &powerSliderεγ, &powerSliderεδ, &powerSliderεε, &powerSliderεζ, &powerSliderεη, &powerSliderεθ,
+		&powerSliderζα, &powerSliderζβ, &powerSliderζγ, &powerSliderζδ, &powerSliderζε, &powerSliderζζ, &powerSliderζη, &powerSliderζθ,
+		&powerSliderηα, &powerSliderηβ, &powerSliderηγ, &powerSliderηδ, &powerSliderηε, &powerSliderηζ, &powerSliderηη, &powerSliderηθ,
+		&powerSliderθα, &powerSliderθβ, &powerSliderθγ, &powerSliderθδ, &powerSliderθε, &powerSliderθζ, &powerSliderθη, &powerSliderθθ,
 	};
 	vector<ofxFloatSlider*> vsliders = {
-		&vSliderαα, &vSliderαβ, &vSliderαγ, &vSliderαδ,
-		&vSliderβα, &vSliderββ, &vSliderβγ, &vSliderβδ,
-		&vSliderγα, &vSliderγβ, &vSliderγγ, &vSliderγδ,
-		&vSliderδα, &vSliderδβ, &vSliderδγ, &vSliderδδ,
-		&vSliderεε, &vSliderεζ, &vSliderεη, &vSliderεθ,
-		&vSliderζε, &vSliderζζ, &vSliderζη, &vSliderζθ,
-		&vSliderηε, &vSliderηζ, &vSliderηη, &vSliderηθ,
-		&vSliderθε, &vSliderθζ, &vSliderθη, &vSliderθθ,
+		&vSliderαα, &vSliderαβ, &vSliderαγ, &vSliderαδ, &vSliderαε, &vSliderαζ, &vSliderαη, &vSliderαθ,
+		&vSliderβα, &vSliderββ, &vSliderβγ, &vSliderβδ, &vSliderβε, &vSliderβζ, &vSliderβη, &vSliderβθ,
+		&vSliderγα, &vSliderγβ, &vSliderγγ, &vSliderγδ, &vSliderγε, &vSliderγζ, &vSliderγη, &vSliderγθ,
+		&vSliderδα, &vSliderδβ, &vSliderδγ, &vSliderδδ, &vSliderδε, &vSliderδζ, &vSliderδη, &vSliderδθ,
+		&vSliderεα, &vSliderεβ, &vSliderεγ, &vSliderεδ, &vSliderεε, &vSliderεζ, &vSliderεη, &vSliderεθ,
+		&vSliderζα, &vSliderζβ, &vSliderζγ, &vSliderζδ, &vSliderζε, &vSliderζζ, &vSliderζη, &vSliderζθ,
+		&vSliderηα, &vSliderηβ, &vSliderηγ, &vSliderηδ, &vSliderηε, &vSliderηζ, &vSliderηη, &vSliderηθ,
+		&vSliderθα, &vSliderθβ, &vSliderθγ, &vSliderθδ, &vSliderθε, &vSliderθζ, &vSliderθη, &vSliderθθ,
 	};
 	vector<ofxFloatSlider*> viscositysliders = {
-		&viscositySliderαα, &viscositySliderαβ, &viscositySliderαγ, &viscositySliderαδ,
-		&viscositySliderβα, &viscositySliderββ, &viscositySliderβγ, &viscositySliderβδ,
-		&viscositySliderγα, &viscositySliderγβ, &viscositySliderγγ, &viscositySliderγδ,
-		&viscositySliderδα, &viscositySliderδβ, &viscositySliderδγ, &viscositySliderδδ,
-		&viscositySliderεε, &viscositySliderεζ, &viscositySliderεη, &viscositySliderεθ,
-		&viscositySliderζε, &viscositySliderζζ, &viscositySliderζη, &viscositySliderζθ,
-		&viscositySliderηε, &viscositySliderηζ, &viscositySliderηη, &viscositySliderηθ,
-		&viscositySliderθε, &viscositySliderθζ, &viscositySliderθη, &viscositySliderθθ,
+		&viscositySliderαα, &viscositySliderαβ, &viscositySliderαγ, &viscositySliderαδ, &viscositySliderαε, &viscositySliderαζ, &viscositySliderαη, &viscositySliderαθ,
+		&viscositySliderβα, &viscositySliderββ, &viscositySliderβγ, &viscositySliderβδ, &viscositySliderβε, &viscositySliderβζ, &viscositySliderβη, &viscositySliderβθ,
+		&viscositySliderγα, &viscositySliderγβ, &viscositySliderγγ, &viscositySliderγδ, &viscositySliderγε, &viscositySliderγζ, &viscositySliderγη, &viscositySliderγθ,
+		&viscositySliderδα, &viscositySliderδβ, &viscositySliderδγ, &viscositySliderδδ, &viscositySliderδε, &viscositySliderδζ, &viscositySliderδη, &viscositySliderδθ,
+		&viscositySliderεα, &viscositySliderεβ, &viscositySliderεγ, &viscositySliderεδ, &viscositySliderεε, &viscositySliderεζ, &viscositySliderεη, &viscositySliderεθ,
+		&viscositySliderζα, &viscositySliderζβ, &viscositySliderζγ, &viscositySliderζδ, &viscositySliderζε, &viscositySliderζζ, &viscositySliderζη, &viscositySliderζθ,
+		&viscositySliderηα, &viscositySliderηβ, &viscositySliderηγ, &viscositySliderηδ, &viscositySliderηε, &viscositySliderηζ, &viscositySliderηη, &viscositySliderηθ,
+		&viscositySliderθα, &viscositySliderθβ, &viscositySliderθγ, &viscositySliderθδ, &viscositySliderθε, &viscositySliderθζ, &viscositySliderθη, &viscositySliderθθ,
 	};
 	vector<ofxFloatSlider*> probabilitysliders = {
-		&probabilitySliderαα, &probabilitySliderαβ, &probabilitySliderαγ, &probabilitySliderαδ,
-		&probabilitySliderβα, &probabilitySliderββ, &probabilitySliderβγ, &probabilitySliderβδ,
-		&probabilitySliderγα, &probabilitySliderγβ, &probabilitySliderγγ, &probabilitySliderγδ,
-		&probabilitySliderδα, &probabilitySliderδβ, &probabilitySliderδγ, &probabilitySliderδδ,
-		&probabilitySliderεε, &probabilitySliderεζ, &probabilitySliderεη, &probabilitySliderεθ,
-		&probabilitySliderζε, &probabilitySliderζζ, &probabilitySliderζη, &probabilitySliderζθ,
-		&probabilitySliderηε, &probabilitySliderηζ, &probabilitySliderηη, &probabilitySliderηθ,
-		&probabilitySliderθε, &probabilitySliderθζ, &probabilitySliderθη, &probabilitySliderθθ,
+		&probabilitySliderαα, &probabilitySliderαβ, &probabilitySliderαγ, &probabilitySliderαδ, &probabilitySliderαε, &probabilitySliderαζ, &probabilitySliderαη, &probabilitySliderαθ,
+		&probabilitySliderβα, &probabilitySliderββ, &probabilitySliderβγ, &probabilitySliderβδ, &probabilitySliderβε, &probabilitySliderβζ, &probabilitySliderβη, &probabilitySliderβθ,
+		&probabilitySliderγα, &probabilitySliderγβ, &probabilitySliderγγ, &probabilitySliderγδ, &probabilitySliderγε, &probabilitySliderγζ, &probabilitySliderγη, &probabilitySliderγθ,
+		&probabilitySliderδα, &probabilitySliderδβ, &probabilitySliderδγ, &probabilitySliderδδ, &probabilitySliderδε, &probabilitySliderδζ, &probabilitySliderδη, &probabilitySliderδθ,
+		&probabilitySliderεα, &probabilitySliderεβ, &probabilitySliderεγ, &probabilitySliderεδ, &probabilitySliderεε, &probabilitySliderεζ, &probabilitySliderεη, &probabilitySliderεθ,
+		&probabilitySliderζα, &probabilitySliderζβ, &probabilitySliderζγ, &probabilitySliderζδ, &probabilitySliderζε, &probabilitySliderζζ, &probabilitySliderζη, &probabilitySliderζθ,
+		&probabilitySliderηα, &probabilitySliderηβ, &probabilitySliderηγ, &probabilitySliderηδ, &probabilitySliderηε, &probabilitySliderηζ, &probabilitySliderηη, &probabilitySliderηθ,
+		&probabilitySliderθα, &probabilitySliderθβ, &probabilitySliderθγ, &probabilitySliderθδ, &probabilitySliderθε, &probabilitySliderθζ, &probabilitySliderθη, &probabilitySliderθθ,
 	};
 };
