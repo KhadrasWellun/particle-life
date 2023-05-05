@@ -127,12 +127,12 @@ public:
 	float ViscoRepelEvoAmount = 0.3;
 	ofxFloatSlider minAttractPowerSlider;
 	ofxFloatSlider maxAttractPowerSlider;
-	float minAttP = -50.0;
-	float maxAttP = 50.0;
+	float minAttP = 0;
+	float maxAttP = 100.0;
 	ofxFloatSlider minRepelPowerSlider;
 	ofxFloatSlider maxRepelPowerSlider;
-	float minRepP = -50.0;
-	float maxRepP = 50.0;
+	float minRepP = -100.0;
+	float maxRepP = 0.0;
 	ofxFloatSlider minAttractRangeSlider;
 	ofxFloatSlider maxAttractRangeSlider;
 	float minAttR = 0.0;

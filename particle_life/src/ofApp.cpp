@@ -3693,16 +3693,16 @@ void ofApp::setup()
 
 	// MinMax Group
 	MinMaxGroup.setup("MinMax");
-	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, -50, 50));
-	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, -50, 50));
+	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, 0, 50));
+	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, 0, 50));
 	MinMaxGroup.add(minAttractRangeSlider.setup("Attract minimum range", minAttR, 0, 100));
 	MinMaxGroup.add(maxAttractRangeSlider.setup("Attract maximum range", maxAttR, 0, 100));
 	MinMaxGroup.add(minAttractViscoSlider.setup("Attract minimum viscosity", minAttV, 0.0, 1.0));
 	MinMaxGroup.add(maxAttractViscoSlider.setup("Attract maximum viscosity", maxAttV, 0.0, 1.0));
 	MinMaxGroup.add(minAttractProbSlider.setup("Attract minimum probability", minAttI, 0, 100));
 	MinMaxGroup.add(maxAttractProbSlider.setup("Attract maximum probability", maxAttI, 0, 100));
-	MinMaxGroup.add(minRepelPowerSlider.setup("Repel minimum power", minRepP, -50, 50));
-	MinMaxGroup.add(maxRepelPowerSlider.setup("Repel maximum power", maxRepP, -50, 50));
+	MinMaxGroup.add(minRepelPowerSlider.setup("Repel minimum power", minRepP, -50, 0));
+	MinMaxGroup.add(maxRepelPowerSlider.setup("Repel maximum power", maxRepP, -50, 0));
 	MinMaxGroup.add(minRepelRangeSlider.setup("Repel minimum range", minRepR, 0, 100));
 	MinMaxGroup.add(maxRepelRangeSlider.setup("Repel maximum range", maxRepR, 0, 100));
 	MinMaxGroup.add(minRepelViscoSlider.setup("Repel minimum viscosity", minRepV, 0.0, 1.0));
