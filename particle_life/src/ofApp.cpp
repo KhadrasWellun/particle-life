@@ -11,10 +11,23 @@ std::string physic_text;
 
 //Simulation parameters
 int cntFps = 0;
-float minP = -200;
-float maxP = 200;
-float minR = 0;
-float maxR = 500;
+float minAttP = -50;
+float maxAttP = 50;
+float minAttR = 0;
+float maxAttR = 100;
+float minRepP = -50;
+float maxRepP = 50;
+float minRepR = 0;
+float maxRepR = 100;
+float minAttV = 0.7;
+float maxAttV = 1.0;
+float minRepV = 0.7;
+float maxRepV = 1.0;
+float minAttI = 0.7;
+float maxAttI = 100.0;
+float minRepI = 0.7;
+float maxRepI = 100.0;
+
 clock_t now, lastTime, delta;
 clock_t physic_begin, physic_delta;
 
@@ -101,96 +114,97 @@ std::vector<point> CreatePoints(const int num, const int r, const int g, const i
  * @param G gravity coefficient
  * @param radius radius of interaction
  */
-void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Group2, const float G, const float radius, const float viscosity, const float probability)
+
+void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float attractForce, float repelForce, float attractRadius, float repelRadius, float attractViscosity, float repelViscosity, float attractProbability, float repelProbability)
 {
-	const float g = G / -100;	//Gravity coefficient
-	const auto group1size = Group1->size();
-	const auto group2size = Group2->size();
+	// const float g = G / -100;	//Gravity coefficient
+
 	const bool radius_toggle = radiusToogle;
 
 	boundHeight = ofGetHeight();
 	boundWidth = ofGetWidth();
 
+
+	const auto group1size = Group1->size();
+	const auto group2size = Group2->size();
+	std::random_device rd;
 #pragma omp parallel
 	{
-		std::random_device rd;
 #pragma omp for
-		for (auto i = 0; i < group1size; i++)
-		{
-			if (rd() % 100 < probability) {
-				auto& p1 = (*Group1)[i];
-				float fx = 0;
-				float fy = 0;
+		for (auto i = 0; i < group1size; i++) {
+			auto& p1 = (*Group1)[i];
+			float fx = 0;
+			float fy = 0;
 
-				//This inner loop is, of course, where most of the CPU time is spent. Everything else is cheap
-				for (auto j = 0; j < group2size; j++)
-				{
-					const auto& p2 = (*Group2)[j];
+			for (auto j = 0; j < group2size; j++) {
+				const auto& p2 = (*Group2)[j];
 
-					// you don't need sqrt to compare distance. (you need it to compute the actual distance however)
-					const auto dx = p1.x - p2.x;
-					const auto dy = p1.y - p2.y;
-					const auto r = dx * dx + dy * dy;
+				const auto dx = p1.x - p2.x;
+				const auto dy = p1.y - p2.y;
+				const auto r = dx * dx + dy * dy;
 
-					//Calculate the force in given bounds. 
-					if ((r < radius * radius || radius_toggle) && r != 0.0F)
-					{
-						fx += (dx / std::sqrt(dx * dx + dy * dy));
-						fy += (dy / std::sqrt(dx * dx + dy * dy));
+				if (r < attractRadius * attractRadius && r != 0.0F) {
+					if (rd() % 100 < attractProbability) {
+						fx += (dx / std::sqrt(r)) * attractForce;
+						fy += (dy / std::sqrt(r)) * attractForce;
 					}
 				}
-				
-					//Calculate new velocity
-					p1.vx = (p1.vx + (fx * g)) * (1 - viscosity);
-					p1.vy = (p1.vy + (fy * g)) * (1 - viscosity) + worldGravity;
-				
-				// Wall Repel
-				if (wallRepel > 0.0F)
-				{
-					if (p1.x < wallRepel) p1.vx += (wallRepel - p1.x) * 0.1;
-					if (p1.y < wallRepel) p1.vy += (wallRepel - p1.y) * 0.1;
-					if (p1.x > boundWidth - wallRepel) p1.vx += (boundWidth - wallRepel - p1.x) * 0.1;
-					if (p1.y > boundHeight - wallRepel) p1.vy += (boundHeight - wallRepel - p1.y) * 0.1;
-				}
-
-				//Update position based on velocity
-				p1.x += p1.vx;
-				p1.y += p1.vy;
-
-				//Checking for canvas bounds
-				if (boundsToggle)
-				{
-					if (p1.x < 0)
-					{
-						p1.vx *= -1;
-						p1.x = 0;
-					}
-					if (p1.x > boundWidth)
-					{
-						p1.vx *= -1;
-						p1.x = boundWidth;
-					}
-					if (p1.y < 0)
-					{
-						p1.vy *= -1;
-						p1.y = 0;
-					}
-					if (p1.y > boundHeight)
-					{
-						p1.vy *= -1;
-						p1.y = boundHeight;
+				else if (r < repelRadius * repelRadius && r != 0.0F) {
+					if (rd() % 100 < repelProbability) {
+						fx -= (dx / std::sqrt(r)) * repelForce;
+						fy -= (dy / std::sqrt(r)) * repelForce;
 					}
 				}
 			}
+
+			float forceViscosity = (fx > 0) ? attractViscosity : repelViscosity;
+			p1.vx = (p1.vx + fx) * (1 - forceViscosity);
+			p1.vy = (p1.vy + fy) * (1 - forceViscosity) + worldGravity;
+
+			// Add the rest of the code for wall repel, updating position, and checking for canvas bounds
+			// ...
+			// Wall Repel
+			if (wallRepel > 0.0F)
+			{
+				if (p1.x < wallRepel) p1.vx += (wallRepel - p1.x) * 0.1;
+				if (p1.y < wallRepel) p1.vy += (wallRepel - p1.y) * 0.1;
+				if (p1.x > boundWidth - wallRepel) p1.vx += (boundWidth - wallRepel - p1.x) * 0.1;
+				if (p1.y > boundHeight - wallRepel) p1.vy += (boundHeight - wallRepel - p1.y) * 0.1;
+			}
+
+			//Update position based on velocity
+			p1.x += p1.vx;
+			p1.y += p1.vy;
+
+			//Checking for canvas bounds
+			if (boundsToggle)
+				// Checking for canvas bounds and implementing toroidal wrapping
+			{
+				if (p1.x < 0)
+				{
+					p1.x += boundWidth;
+				}
+				else if (p1.x > boundWidth)
+				{
+					p1.x -= boundWidth;
+				}
+
+				if (p1.y < 0)
+				{
+					p1.y += boundHeight;
+				}
+				else if (p1.y > boundHeight)
+				{
+					p1.y -= boundHeight;
+				}
+			}
+
+			//Acest cod verifică dacă o particulă a ieșit din limitele ecranului pe oricare dintre margini și ajustează coordonatele în consecință pentru a crea efectul de wrapping toroidal.
+
 		}
+
 	}
 }
-
-/* omp end parallel */
-
-/**
- * @brief Generate new sets of points
- */
 void ofApp::restart()
 {
 	if (numberSliderα > 0) { alpha = CreatePoints(numberSliderα, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
@@ -200,1487 +214,2461 @@ void ofApp::restart()
 	if (numberSliderε > 0) { epsilon = CreatePoints(numberSliderε, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
 	if (numberSliderζ > 0) { zeta = CreatePoints(numberSliderζ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
 	if (numberSliderη > 0) { eta = CreatePoints(numberSliderη, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, 0, 0, 0); }
-
-	/*
-	if (numberSliderα > 0) { alpha = CreatePoints(numberSliderα, 0, 0, ofRandom(64, 255)); }
-	if (numberSliderβ > 0) { betha = CreatePoints(numberSliderβ, 0, ofRandom(64, 255), 0); }
-	if (numberSliderγ > 0) { gamma = CreatePoints(numberSliderγ, ofRandom(64, 255), 0, 0); }
-	if (numberSliderδ > 0) { elta = CreatePoints(numberSliderδ, ofRandom(64, 255), ofRandom(64, 255), 0); }
-	if (numberSliderε > 0) { epsilon = CreatePoints(numberSliderε, ofRandom(64, 255), 0, ofRandom(64, 255)); }
-	if (numberSliderζ > 0) { zeta = CreatePoints(numberSliderζ, 0, ofRandom(64, 255), ofRandom(64, 255)); }
-	if (numberSliderη > 0) { eta = CreatePoints(numberSliderη, ofRandom(64, 255), ofRandom(64, 255), ofRandom(64, 255)); }
-	if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, 0, 0, 0); }
-	*/
+	if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
 }
-
-void ofApp::attractDark()
+	
+	void ofApp::random()
 {
-	// Tetha
+	AttractEvoProbSlider = RandomFloat(0.1, 1.5);
+	AttractEvoAmountSlider = RandomFloat(0.1, 3);
+	ProbAttractEvoProbSlider = RandomFloat(0.1, 1.5);
+	ProbAttractEvoAmountSlider = RandomFloat(0.1, 3);
+	ViscoAttractEvoProbSlider = RandomFloat(0.1, 1.5);
+	ViscoAttractEvoAmountSlider = RandomFloat(0.1, 3);
+	RepelEvoProbSlider = RandomFloat(0.1, 1.5);
+	RepelEvoAmountSlider = RandomFloat(0.1, 3);
+	ProbRepelEvoProbSlider = RandomFloat(0.1, 1.5);
+	ProbRepelEvoAmountSlider = RandomFloat(0.1, 3);
+	ViscoRepelEvoProbSlider = RandomFloat(0.1, 1.5);
+	ViscoRepelEvoAmountSlider = RandomFloat(0.1, 3);
 
-	probabilitySliderθα = 30;
-	probabilitySliderθβ = 30;
-	probabilitySliderθγ = 30;
-	probabilitySliderθδ = 30;
-	probabilitySliderθε = 30;
-	probabilitySliderθζ = 30;
-	probabilitySliderθη = 30;
 
-	viscositySliderθα = 30;
-	viscositySliderθβ = 30;
-	viscositySliderθδ = 30;
-	viscositySliderθγ = 30;
-	viscositySliderθε = 30;
-	viscositySliderθζ = 30;
-	viscositySliderθη = 30;
+	numberSliderβ = RandomInt(500, 2000);
+	numberSliderα = RandomInt(500, 2000);
+	numberSliderδ = RandomInt(500, 2000);
+	numberSliderγ = RandomInt(500, 2000);
+	numberSliderε = RandomInt(500, 2000);
+	numberSliderζ = RandomInt(500, 2000);
+	numberSliderη = RandomInt(500, 2000);
+	numberSliderθ = RandomInt(500, 2000);
 
-	powerSliderθγ = 10;
-	powerSliderθδ = 10;
-	powerSliderθα = 10;
-	powerSliderθβ = 10;
-	powerSliderθε = 10;
-	powerSliderθζ = 10;
-	powerSliderθη = 10;
-	powerSliderθθ = 0;
+	viscositySlider = RandomFloat(minAttV, maxAttV);
+	probabilitySlider = RandomFloat(minAttI, maxAttI);
 
-	vSliderθβ = 300;
-	vSliderθα = 300;
-	vSliderθδ = 300;
-	vSliderθγ = 300;
-	vSliderθε = 300;
-	vSliderθζ = 300;
-	vSliderθη = 300;
-	vSliderθθ = 0;
+	ViscosityAttractSliderαα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαθ = RandomFloat(minAttV, maxAttV);
 
-	powerSliderγθ = 0;
-	powerSliderδθ = 0;
-	powerSliderαθ = 0;
-	powerSliderβθ = 0;
-	powerSliderεθ = 0;
-	powerSliderζθ = 0;
-	powerSliderηθ = 0;
+	ViscosityAttractSliderβα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderββ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβθ = RandomFloat(minAttV, maxAttV);
 
-	vSliderβθ = 0;
-	vSliderαθ = 0;
-	vSliderδθ = 0;
-	vSliderγθ = 0;
-	vSliderεθ = 0;
-	vSliderζθ = 0;
-	vSliderηθ = 0;
-}
+	ViscosityAttractSliderγα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγθ = RandomFloat(minAttV, maxAttV);
 
-void ofApp::repulseDark()
-{
-	// Tetha
+	ViscosityAttractSliderδα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδθ = RandomFloat(minAttV, maxAttV);
 
-	probabilitySliderθα = 30;
-	probabilitySliderθβ = 30;
-	probabilitySliderθγ = 30;
-	probabilitySliderθδ = 30;
-	probabilitySliderθε = 30;
-	probabilitySliderθζ = 30;
-	probabilitySliderθη = 30;
+	ViscosityAttractSliderεα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderθα = 30;
-	viscositySliderθβ = 30;
-	viscositySliderθδ = 30;
-	viscositySliderθγ = 30;
-	viscositySliderθε = 30;
-	viscositySliderθζ = 30;
-	viscositySliderθη = 30;
+	ViscosityAttractSliderζα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζθ = RandomFloat(minAttV, maxAttV);
 
-	powerSliderθγ = -10;
-	powerSliderθδ = -10;
-	powerSliderθα = -10;
-	powerSliderθβ = -10;
-	powerSliderθε = -10;
-	powerSliderθζ = -10;
-	powerSliderθη = -10;
-	powerSliderθθ = 0;
+	ViscosityAttractSliderηα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηθ = RandomFloat(minAttV, maxAttV);
+		
+	ViscosityAttractSliderθα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθθ = RandomFloat(minAttV, maxAttV);
 
-	vSliderθβ = 300;
-	vSliderθα = 300;
-	vSliderθδ = 300;
-	vSliderθγ = 300;
-	vSliderθε = 300;
-	vSliderθζ = 300;
-	vSliderθη = 300;
-	vSliderθθ = 0;
+	ProbAttractSliderαα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαθ = RandomFloat(minAttI, maxAttI);
 
-	powerSliderγθ = 0;
-	powerSliderδθ = 0;
-	powerSliderαθ = 0;
-	powerSliderβθ = 0;
-	powerSliderεθ = 0;
-	powerSliderζθ = 0;
-	powerSliderηθ = 0;
+	ProbAttractSliderβα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderββ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβθ = RandomFloat(minAttI, maxAttI);
 
-	vSliderβθ = 0;
-	vSliderαθ = 0;
-	vSliderδθ = 0;
-	vSliderγθ = 0;
-	vSliderεθ = 0;
-	vSliderζθ = 0;
-	vSliderηθ = 0;
-}
+	ProbAttractSliderγα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγθ = RandomFloat(minAttI, maxAttI);
 
-void ofApp::rndDark()
-{
+	ProbAttractSliderδα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδθ = RandomFloat(minAttI, maxAttI);
+
+	ProbAttractSliderεα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεθ = RandomFloat(minAttI, maxAttI);
+
+	ProbAttractSliderζα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζθ = RandomFloat(minAttI, maxAttI);
+
+	ProbAttractSliderηα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηθ = RandomFloat(minAttI, maxAttI);
+
+	ProbAttractSliderθα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθθ = RandomFloat(minAttI, maxAttI);
+
+	ViscosityRepelSliderαα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderβα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderββ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderγα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderδα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderεα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderζα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderηα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderθα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθθ = RandomFloat(minRepV, maxRepV);
+
+	ProbRepelSliderαα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderβα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderββ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderγα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderδα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderεα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderζα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderηα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηθ = RandomFloat(minRepI, maxRepI);
+		
+	ProbRepelSliderθα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθθ = RandomFloat(minRepI, maxRepI);
+
+	// Alpha
+	AttractPowerSliderαα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderαβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderαα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderαβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
+	// Betha
+	
+	AttractPowerSliderβα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderββ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderββ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderβα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderββ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderββ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
+	// Gamma
+	
+	AttractPowerSliderγα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderγβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderγα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderγβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
+	// Delta
+	
+	AttractPowerSliderδα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderδβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderδα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderδβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
+	// Epsilon
+	
+	AttractPowerSliderεα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderεβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderεα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderεβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
+	// Zeta
+	
+	AttractPowerSliderζα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderζβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderζα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderζβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
+	// Etha
+	
+	AttractPowerSliderηα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderηβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderηα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderηβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+
 	// Tetha
 	
-	probabilitySliderαθ = RandomFloat(minI, maxI);
-	probabilitySliderβθ = RandomFloat(minI, maxI);
-	probabilitySliderγθ = RandomFloat(minI, maxI);
-	probabilitySliderδθ = RandomFloat(minI, maxI);
-	probabilitySliderεθ = RandomFloat(minI, maxI);
-	probabilitySliderζθ = RandomFloat(minI, maxI);
-	probabilitySliderηθ = RandomFloat(minI, maxI);
-	probabilitySliderθα = RandomFloat(minI, maxI);
-	probabilitySliderθβ = RandomFloat(minI, maxI);
-	probabilitySliderθγ = RandomFloat(minI, maxI);
-	probabilitySliderθδ = RandomFloat(minI, maxI);
-	probabilitySliderθε = RandomFloat(minI, maxI);
-	probabilitySliderθζ = RandomFloat(minI, maxI);
-	probabilitySliderθη = RandomFloat(minI, maxI);
-	probabilitySliderθθ = RandomFloat(minI, maxI);
+	AttractPowerSliderθα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 
-	viscositySliderαθ = RandomFloat(minV, maxV);
-	viscositySliderβθ = RandomFloat(minV, maxV);
-	viscositySliderδθ = RandomFloat(minV, maxV);
-	viscositySliderγθ = RandomFloat(minV, maxV);
-	viscositySliderεθ = RandomFloat(minV, maxV);
-	viscositySliderζθ = RandomFloat(minV, maxV);
-	viscositySliderηθ = RandomFloat(minV, maxV);
-	viscositySliderθα = RandomFloat(minV, maxV);
-	viscositySliderθβ = RandomFloat(minV, maxV);
-	viscositySliderθδ = RandomFloat(minV, maxV);
-	viscositySliderθγ = RandomFloat(minV, maxV);
-	viscositySliderθε = RandomFloat(minV, maxV);
-	viscositySliderθζ = RandomFloat(minV, maxV);
-	viscositySliderθη = RandomFloat(minV, maxV);
-	viscositySliderθθ = RandomFloat(minV, maxV);
+	AttractDistanceSliderθβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
 
-	powerSliderθγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθη = RandomFloat(minP, maxP) * forceVariance;
+	RepelPowerSliderθα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
 
-	vSliderθβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθη = RandomFloat(minR, maxR) * radiusVariance;
-
-	powerSliderγθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθθ = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderβθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθθ = RandomFloat(minR, maxR) * radiusVariance;
+	RepelDistanceSliderθβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 }
-
-/**
- * @brief Generate initial simulation parameters
- */
-void ofApp::random()
-{
-	InteractionEvoProbSlider = RandomFloat(0.1, 1.5);
-	InteractionEvoAmountSlider = RandomFloat(0.1, 3);
-	ProbabilityEvoProbSlider = RandomFloat(0.1, 1.5);
-	ProbabilityEvoAmountSlider = RandomFloat(0.1, 3);
-	ViscosityEvoProbSlider = RandomFloat(0.1, 1.5);
-	ViscosityEvoAmountSlider = RandomFloat(0.1, 3);
-
-	numberSliderβ = RandomInt(500, 2500);
-	numberSliderα = RandomInt(500, 2500);
-	numberSliderδ = RandomInt(500, 2500);
-	numberSliderγ = RandomInt(500, 2500);
-	numberSliderε = RandomInt(500, 2500);
-	numberSliderζ = RandomInt(500, 2500);
-	numberSliderη = RandomInt(500, 2500);
-	numberSliderθ = RandomInt(1000, 4000);
-
-	viscositySlider = RandomFloat(minV, maxV);
-
-	viscositySliderαα = RandomFloat(minV, maxV);
-	viscositySliderαβ = RandomFloat(minV, maxV);
-	viscositySliderαδ = RandomFloat(minV, maxV);
-	viscositySliderαγ = RandomFloat(minV, maxV);
-	viscositySliderαε = RandomFloat(minV, maxV);
-	viscositySliderαζ = RandomFloat(minV, maxV);
-	viscositySliderαη = RandomFloat(minV, maxV);
-
-	viscositySliderβα = RandomFloat(minV, maxV);
-	viscositySliderββ = RandomFloat(minV, maxV);
-	viscositySliderβδ = RandomFloat(minV, maxV);
-	viscositySliderβγ = RandomFloat(minV, maxV);
-	viscositySliderβε = RandomFloat(minV, maxV);
-	viscositySliderβζ = RandomFloat(minV, maxV);
-	viscositySliderβη = RandomFloat(minV, maxV);
-
-	viscositySliderγα = RandomFloat(minV, maxV);
-	viscositySliderγβ = RandomFloat(minV, maxV);
-	viscositySliderγδ = RandomFloat(minV, maxV);
-	viscositySliderγγ = RandomFloat(minV, maxV);
-	viscositySliderγε = RandomFloat(minV, maxV);
-	viscositySliderγζ = RandomFloat(minV, maxV);
-	viscositySliderγη = RandomFloat(minV, maxV);
-
-	viscositySliderδα = RandomFloat(minV, maxV);
-	viscositySliderδβ = RandomFloat(minV, maxV);
-	viscositySliderδδ = RandomFloat(minV, maxV);
-	viscositySliderδγ = RandomFloat(minV, maxV);
-	viscositySliderδε = RandomFloat(minV, maxV);
-	viscositySliderδζ = RandomFloat(minV, maxV);
-	viscositySliderδη = RandomFloat(minV, maxV);
-
-	viscositySliderεα = RandomFloat(minV, maxV);
-	viscositySliderεβ = RandomFloat(minV, maxV);
-	viscositySliderεδ = RandomFloat(minV, maxV);
-	viscositySliderεγ = RandomFloat(minV, maxV);
-	viscositySliderεε = RandomFloat(minV, maxV);
-	viscositySliderεζ = RandomFloat(minV, maxV);
-	viscositySliderεη = RandomFloat(minV, maxV);
-
-	viscositySliderζα = RandomFloat(minV, maxV);
-	viscositySliderζβ = RandomFloat(minV, maxV);
-	viscositySliderζδ = RandomFloat(minV, maxV);
-	viscositySliderζγ = RandomFloat(minV, maxV);
-	viscositySliderζε = RandomFloat(minV, maxV);
-	viscositySliderζζ = RandomFloat(minV, maxV);
-	viscositySliderζη = RandomFloat(minV, maxV);
-
-	viscositySliderηα = RandomFloat(minV, maxV);
-	viscositySliderηβ = RandomFloat(minV, maxV);
-	viscositySliderηδ = RandomFloat(minV, maxV);
-	viscositySliderηγ = RandomFloat(minV, maxV);
-	viscositySliderηε = RandomFloat(minV, maxV);
-	viscositySliderηζ = RandomFloat(minV, maxV);
-	viscositySliderηη = RandomFloat(minV, maxV);
-
-	viscositySliderαθ = RandomFloat(minV, maxV);
-	viscositySliderβθ = RandomFloat(minV, maxV);
-	viscositySliderδθ = RandomFloat(minV, maxV);
-	viscositySliderγθ = RandomFloat(minV, maxV);
-	viscositySliderεθ = RandomFloat(minV, maxV);
-	viscositySliderζθ = RandomFloat(minV, maxV);
-	viscositySliderηθ = RandomFloat(minV, maxV);
-	viscositySliderθα = RandomFloat(minV, maxV);
-	viscositySliderθβ = RandomFloat(minV, maxV);
-	viscositySliderθδ = RandomFloat(minV, maxV);
-	viscositySliderθγ = RandomFloat(minV, maxV);
-	viscositySliderθε = RandomFloat(minV, maxV);
-	viscositySliderθζ = RandomFloat(minV, maxV);
-	viscositySliderθη = RandomFloat(minV, maxV);
-	viscositySliderθθ = RandomFloat(minV, maxV);
-
-	probabilitySlider = RandomFloat(minI, maxI);
-
-	probabilitySliderαα = RandomFloat(minI, maxI);
-	probabilitySliderαβ = RandomFloat(minI, maxI);
-	probabilitySliderαγ = RandomFloat(minI, maxI);
-	probabilitySliderαδ = RandomFloat(minI, maxI);
-	probabilitySliderαε = RandomFloat(minI, maxI);
-	probabilitySliderαζ = RandomFloat(minI, maxI);
-	probabilitySliderαη = RandomFloat(minI, maxI);
-
-	probabilitySliderβα = RandomFloat(minI, maxI);
-	probabilitySliderββ = RandomFloat(minI, maxI);
-	probabilitySliderβγ = RandomFloat(minI, maxI);
-	probabilitySliderβδ = RandomFloat(minI, maxI);
-	probabilitySliderβε = RandomFloat(minI, maxI);
-	probabilitySliderβζ = RandomFloat(minI, maxI);
-	probabilitySliderβη = RandomFloat(minI, maxI);
-
-	probabilitySliderγα = RandomFloat(minI, maxI);
-	probabilitySliderγβ = RandomFloat(minI, maxI);
-	probabilitySliderγγ = RandomFloat(minI, maxI);
-	probabilitySliderγδ = RandomFloat(minI, maxI);
-	probabilitySliderγε = RandomFloat(minI, maxI);
-	probabilitySliderγζ = RandomFloat(minI, maxI);
-	probabilitySliderγη = RandomFloat(minI, maxI);
-
-	probabilitySliderδα = RandomFloat(minI, maxI);
-	probabilitySliderδβ = RandomFloat(minI, maxI);
-	probabilitySliderδγ = RandomFloat(minI, maxI);
-	probabilitySliderδδ = RandomFloat(minI, maxI);
-	probabilitySliderδε = RandomFloat(minI, maxI);
-	probabilitySliderδζ = RandomFloat(minI, maxI);
-	probabilitySliderδη = RandomFloat(minI, maxI);
-
-	probabilitySliderεα = RandomFloat(minI, maxI);
-	probabilitySliderεβ = RandomFloat(minI, maxI);
-	probabilitySliderεγ = RandomFloat(minI, maxI);
-	probabilitySliderεδ = RandomFloat(minI, maxI);
-	probabilitySliderεε = RandomFloat(minI, maxI);
-	probabilitySliderεζ = RandomFloat(minI, maxI);
-	probabilitySliderεη = RandomFloat(minI, maxI);
-
-	probabilitySliderζα = RandomFloat(minI, maxI);
-	probabilitySliderζβ = RandomFloat(minI, maxI);
-	probabilitySliderζγ = RandomFloat(minI, maxI);
-	probabilitySliderζδ = RandomFloat(minI, maxI);
-	probabilitySliderζε = RandomFloat(minI, maxI);
-	probabilitySliderζζ = RandomFloat(minI, maxI);
-	probabilitySliderζη = RandomFloat(minI, maxI);
-
-	probabilitySliderηα = RandomFloat(minI, maxI);
-	probabilitySliderηβ = RandomFloat(minI, maxI);
-	probabilitySliderηγ = RandomFloat(minI, maxI);
-	probabilitySliderηδ = RandomFloat(minI, maxI);
-	probabilitySliderηε = RandomFloat(minI, maxI);
-	probabilitySliderηζ = RandomFloat(minI, maxI);
-	probabilitySliderηη = RandomFloat(minI, maxI);
-
-	probabilitySliderαθ = RandomFloat(minI, maxI);
-	probabilitySliderβθ = RandomFloat(minI, maxI);
-	probabilitySliderγθ = RandomFloat(minI, maxI);
-	probabilitySliderδθ = RandomFloat(minI, maxI);
-	probabilitySliderεθ = RandomFloat(minI, maxI);
-	probabilitySliderζθ = RandomFloat(minI, maxI);
-	probabilitySliderηθ = RandomFloat(minI, maxI);
-	probabilitySliderθα = RandomFloat(minI, maxI);
-	probabilitySliderθβ = RandomFloat(minI, maxI);
-	probabilitySliderθγ = RandomFloat(minI, maxI);
-	probabilitySliderθδ = RandomFloat(minI, maxI);
-	probabilitySliderθε = RandomFloat(minI, maxI);
-	probabilitySliderθζ = RandomFloat(minI, maxI);
-	probabilitySliderθη = RandomFloat(minI, maxI);
-	probabilitySliderθθ = RandomFloat(minI, maxI);
-
-	// Alpha
-	//numberSliderα = RandomFloat(minR, 3000);
-	powerSliderαα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderαβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Betha
-	//numberSliderβ = RandomFloat(minR, 3000);
-	powerSliderββ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderββ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Gamma
-	//numberSliderγ = RandomFloat(minR, 3000);
-	powerSliderγγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderγβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Delta
-	// numberSliderδ = RandomFloat(minR, 3000);
-	powerSliderδδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderδβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Epsilon
-	//numberSliderε = RandomFloat(minR, 3000);
-	powerSliderεγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderεβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Zeta
-	//numberSliderζ = RandomFloat(minR, 3000);
-	powerSliderζγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderζβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Etha
-	//numberSliderη = RandomFloat(minR, 3000);
-	powerSliderηγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderηβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηη = RandomFloat(minR, maxR) * radiusVariance;
-
-	// Tetha
-	//numberSliderθ = RandomFloat(minR, 3000);
-	powerSliderθγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθη = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderθβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθη = RandomFloat(minR, maxR) * radiusVariance;
-
-	powerSliderγθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθθ = RandomFloat(minP, maxP) * forceVariance;
-
-	vSliderβθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθθ = RandomFloat(minR, maxR) * radiusVariance;
-}
-
 void ofApp::rndrel()
 {
-	viscositySlider = RandomFloat(minV, maxV);
+	viscositySlider = RandomFloat(minAttV, maxAttV);
+	probabilitySlider = RandomFloat(minAttI, maxAttI);
 
-	viscositySliderαα = RandomFloat(minV, maxV);
-	viscositySliderαβ = RandomFloat(minV, maxV);
-	viscositySliderαδ = RandomFloat(minV, maxV);
-	viscositySliderαγ = RandomFloat(minV, maxV);
-	viscositySliderαε = RandomFloat(minV, maxV);
-	viscositySliderαζ = RandomFloat(minV, maxV);
-	viscositySliderαη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderαα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderβα = RandomFloat(minV, maxV);
-	viscositySliderββ = RandomFloat(minV, maxV);
-	viscositySliderβδ = RandomFloat(minV, maxV);
-	viscositySliderβγ = RandomFloat(minV, maxV);
-	viscositySliderβε = RandomFloat(minV, maxV);
-	viscositySliderβζ = RandomFloat(minV, maxV);
-	viscositySliderβη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderβα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderββ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderγα = RandomFloat(minV, maxV);
-	viscositySliderγβ = RandomFloat(minV, maxV);
-	viscositySliderγδ = RandomFloat(minV, maxV);
-	viscositySliderγγ = RandomFloat(minV, maxV);
-	viscositySliderγε = RandomFloat(minV, maxV);
-	viscositySliderγζ = RandomFloat(minV, maxV);
-	viscositySliderγη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderγα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderδα = RandomFloat(minV, maxV);
-	viscositySliderδβ = RandomFloat(minV, maxV);
-	viscositySliderδδ = RandomFloat(minV, maxV);
-	viscositySliderδγ = RandomFloat(minV, maxV);
-	viscositySliderδε = RandomFloat(minV, maxV);
-	viscositySliderδζ = RandomFloat(minV, maxV);
-	viscositySliderδη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderδα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderεα = RandomFloat(minV, maxV);
-	viscositySliderεβ = RandomFloat(minV, maxV);
-	viscositySliderεδ = RandomFloat(minV, maxV);
-	viscositySliderεγ = RandomFloat(minV, maxV);
-	viscositySliderεε = RandomFloat(minV, maxV);
-	viscositySliderεζ = RandomFloat(minV, maxV);
-	viscositySliderεη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderεα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderζα = RandomFloat(minV, maxV);
-	viscositySliderζβ = RandomFloat(minV, maxV);
-	viscositySliderζδ = RandomFloat(minV, maxV);
-	viscositySliderζγ = RandomFloat(minV, maxV);
-	viscositySliderζε = RandomFloat(minV, maxV);
-	viscositySliderζζ = RandomFloat(minV, maxV);
-	viscositySliderζη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderζα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderηα = RandomFloat(minV, maxV);
-	viscositySliderηβ = RandomFloat(minV, maxV);
-	viscositySliderηδ = RandomFloat(minV, maxV);
-	viscositySliderηγ = RandomFloat(minV, maxV);
-	viscositySliderηε = RandomFloat(minV, maxV);
-	viscositySliderηζ = RandomFloat(minV, maxV);
-	viscositySliderηη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderηα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderαθ = RandomFloat(minV, maxV);
-	viscositySliderβθ = RandomFloat(minV, maxV);
-	viscositySliderδθ = RandomFloat(minV, maxV);
-	viscositySliderγθ = RandomFloat(minV, maxV);
-	viscositySliderεθ = RandomFloat(minV, maxV);
-	viscositySliderζθ = RandomFloat(minV, maxV);
-	viscositySliderηθ = RandomFloat(minV, maxV);
-	viscositySliderθα = RandomFloat(minV, maxV);
-	viscositySliderθβ = RandomFloat(minV, maxV);
-	viscositySliderθδ = RandomFloat(minV, maxV);
-	viscositySliderθγ = RandomFloat(minV, maxV);
-	viscositySliderθε = RandomFloat(minV, maxV);
-	viscositySliderθζ = RandomFloat(minV, maxV);
-	viscositySliderθη = RandomFloat(minV, maxV);
-	viscositySliderθθ = RandomFloat(minV, maxV);
+	ViscosityAttractSliderθα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθθ = RandomFloat(minAttV, maxAttV);
 
-	probabilitySlider = RandomFloat(minI, maxI);
+	ProbAttractSliderαα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderαα = RandomFloat(minI, maxI);
-	probabilitySliderαβ = RandomFloat(minI, maxI);
-	probabilitySliderαγ = RandomFloat(minI, maxI);
-	probabilitySliderαδ = RandomFloat(minI, maxI);
-	probabilitySliderαε = RandomFloat(minI, maxI);
-	probabilitySliderαζ = RandomFloat(minI, maxI);
-	probabilitySliderαη = RandomFloat(minI, maxI);
+	ProbAttractSliderβα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderββ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderβα = RandomFloat(minI, maxI);
-	probabilitySliderββ = RandomFloat(minI, maxI);
-	probabilitySliderβγ = RandomFloat(minI, maxI);
-	probabilitySliderβδ = RandomFloat(minI, maxI);
-	probabilitySliderβε = RandomFloat(minI, maxI);
-	probabilitySliderβζ = RandomFloat(minI, maxI);
-	probabilitySliderβη = RandomFloat(minI, maxI);
+	ProbAttractSliderγα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderγα = RandomFloat(minI, maxI);
-	probabilitySliderγβ = RandomFloat(minI, maxI);
-	probabilitySliderγγ = RandomFloat(minI, maxI);
-	probabilitySliderγδ = RandomFloat(minI, maxI);
-	probabilitySliderγε = RandomFloat(minI, maxI);
-	probabilitySliderγζ = RandomFloat(minI, maxI);
-	probabilitySliderγη = RandomFloat(minI, maxI);
+	ProbAttractSliderδα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderδα = RandomFloat(minI, maxI);
-	probabilitySliderδβ = RandomFloat(minI, maxI);
-	probabilitySliderδγ = RandomFloat(minI, maxI);
-	probabilitySliderδδ = RandomFloat(minI, maxI);
-	probabilitySliderδε = RandomFloat(minI, maxI);
-	probabilitySliderδζ = RandomFloat(minI, maxI);
-	probabilitySliderδη = RandomFloat(minI, maxI);
+	ProbAttractSliderεα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderεα = RandomFloat(minI, maxI);
-	probabilitySliderεβ = RandomFloat(minI, maxI);
-	probabilitySliderεγ = RandomFloat(minI, maxI);
-	probabilitySliderεδ = RandomFloat(minI, maxI);
-	probabilitySliderεε = RandomFloat(minI, maxI);
-	probabilitySliderεζ = RandomFloat(minI, maxI);
-	probabilitySliderεη = RandomFloat(minI, maxI);
+	ProbAttractSliderζα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderζα = RandomFloat(minI, maxI);
-	probabilitySliderζβ = RandomFloat(minI, maxI);
-	probabilitySliderζγ = RandomFloat(minI, maxI);
-	probabilitySliderζδ = RandomFloat(minI, maxI);
-	probabilitySliderζε = RandomFloat(minI, maxI);
-	probabilitySliderζζ = RandomFloat(minI, maxI);
-	probabilitySliderζη = RandomFloat(minI, maxI);
+	ProbAttractSliderηα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderηα = RandomFloat(minI, maxI);
-	probabilitySliderηβ = RandomFloat(minI, maxI);
-	probabilitySliderηγ = RandomFloat(minI, maxI);
-	probabilitySliderηδ = RandomFloat(minI, maxI);
-	probabilitySliderηε = RandomFloat(minI, maxI);
-	probabilitySliderηζ = RandomFloat(minI, maxI);
-	probabilitySliderηη = RandomFloat(minI, maxI);
+	ProbAttractSliderθα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderαθ = RandomFloat(minI, maxI);
-	probabilitySliderβθ = RandomFloat(minI, maxI);
-	probabilitySliderγθ = RandomFloat(minI, maxI);
-	probabilitySliderδθ = RandomFloat(minI, maxI);
-	probabilitySliderεθ = RandomFloat(minI, maxI);
-	probabilitySliderζθ = RandomFloat(minI, maxI);
-	probabilitySliderηθ = RandomFloat(minI, maxI);
-	probabilitySliderθα = RandomFloat(minI, maxI);
-	probabilitySliderθβ = RandomFloat(minI, maxI);
-	probabilitySliderθγ = RandomFloat(minI, maxI);
-	probabilitySliderθδ = RandomFloat(minI, maxI);
-	probabilitySliderθε = RandomFloat(minI, maxI);
-	probabilitySliderθζ = RandomFloat(minI, maxI);
-	probabilitySliderθη = RandomFloat(minI, maxI);
-	probabilitySliderθθ = RandomFloat(minI, maxI);
+	ViscosityRepelSliderαα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderβα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderββ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderγα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderδα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderεα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderζα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderηα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderθα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθθ = RandomFloat(minRepV, maxRepV);
+
+	ProbRepelSliderαα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderβα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderββ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderγα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderδα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderεα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderζα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderηα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderθα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθθ = RandomFloat(minRepI, maxRepI);
 
 	// Alpha
-	//numberSliderα = RandomFloat(minR, 3000);
-	powerSliderαα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαη = RandomFloat(minP, maxP) * forceVariance;
+	AttractPowerSliderαα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 
-	vSliderαβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractDistanceSliderαβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderαα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderαβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Betha
-	//numberSliderβ = RandomFloat(minR, 3000);
-	powerSliderββ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderββ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderβα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderββ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderββ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderβα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderββ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderββ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Gamma
-	//numberSliderγ = RandomFloat(minR, 3000);
-	powerSliderγγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderγβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderγα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderγβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderγα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderγβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Delta
-	// numberSliderδ = RandomFloat(minR, 3000);
-	powerSliderδδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderδβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderδα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderδβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderδα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderδβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Epsilon
-	//numberSliderε = RandomFloat(minR, 3000);
-	powerSliderεγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderεβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderεα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderεβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderεα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderεβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Zeta
-	//numberSliderζ = RandomFloat(minR, 3000);
-	powerSliderζγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderζβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderζα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderζβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderζα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderζβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Etha
-	//numberSliderη = RandomFloat(minR, 3000);
-	powerSliderηγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderηβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderηα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderηβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderηα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderηβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Tetha
-	//numberSliderθ = RandomFloat(minR, 3000);
-	powerSliderθγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderθβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderθα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 
-	powerSliderγθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθθ = RandomFloat(minP, maxP) * forceVariance;
+	AttractDistanceSliderθβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
 
-	vSliderβθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθθ = RandomFloat(minR, maxR) * radiusVariance;
+	RepelPowerSliderθα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderθβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;	
 }
-
 void ofApp::monads() {
-	numberSliderβ = RandomInt(500, 2500);
-	numberSliderα = RandomInt(500, 2500);
-	numberSliderδ = RandomInt(500, 2500);
-	numberSliderγ = RandomInt(500, 2500);
-	numberSliderε = RandomInt(500, 2500);
-	numberSliderζ = RandomInt(500, 2500);
-	numberSliderη = RandomInt(500, 2500);
-	numberSliderθ = RandomInt(1000, 4000);
+	numberSliderβ = RandomInt(500, 2000);
+	numberSliderα = RandomInt(500, 2000);
+	numberSliderδ = RandomInt(500, 2000);
+	numberSliderγ = RandomInt(500, 2000);
+	numberSliderε = RandomInt(500, 2000);
+	numberSliderζ = RandomInt(500, 2000);
+	numberSliderη = RandomInt(500, 2000);
+	numberSliderθ = RandomInt(500, 2000);
 }
 void ofApp::rndvsc() {
-	viscositySlider = RandomFloat(minV, maxV);
+	viscositySlider = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderαα = RandomFloat(minV, maxV);
-	viscositySliderαβ = RandomFloat(minV, maxV);
-	viscositySliderαδ = RandomFloat(minV, maxV);
-	viscositySliderαγ = RandomFloat(minV, maxV);
-	viscositySliderαε = RandomFloat(minV, maxV);
-	viscositySliderαζ = RandomFloat(minV, maxV);
-	viscositySliderαη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderαα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderαθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderβα = RandomFloat(minV, maxV);
-	viscositySliderββ = RandomFloat(minV, maxV);
-	viscositySliderβδ = RandomFloat(minV, maxV);
-	viscositySliderβγ = RandomFloat(minV, maxV);
-	viscositySliderβε = RandomFloat(minV, maxV);
-	viscositySliderβζ = RandomFloat(minV, maxV);
-	viscositySliderβη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderβα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderββ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderβθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderγα = RandomFloat(minV, maxV);
-	viscositySliderγβ = RandomFloat(minV, maxV);
-	viscositySliderγδ = RandomFloat(minV, maxV);
-	viscositySliderγγ = RandomFloat(minV, maxV);
-	viscositySliderγε = RandomFloat(minV, maxV);
-	viscositySliderγζ = RandomFloat(minV, maxV);
-	viscositySliderγη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderγα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderγθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderδα = RandomFloat(minV, maxV);
-	viscositySliderδβ = RandomFloat(minV, maxV);
-	viscositySliderδδ = RandomFloat(minV, maxV);
-	viscositySliderδγ = RandomFloat(minV, maxV);
-	viscositySliderδε = RandomFloat(minV, maxV);
-	viscositySliderδζ = RandomFloat(minV, maxV);
-	viscositySliderδη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderδα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderδθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderεα = RandomFloat(minV, maxV);
-	viscositySliderεβ = RandomFloat(minV, maxV);
-	viscositySliderεδ = RandomFloat(minV, maxV);
-	viscositySliderεγ = RandomFloat(minV, maxV);
-	viscositySliderεε = RandomFloat(minV, maxV);
-	viscositySliderεζ = RandomFloat(minV, maxV);
-	viscositySliderεη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderεα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderεθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderζα = RandomFloat(minV, maxV);
-	viscositySliderζβ = RandomFloat(minV, maxV);
-	viscositySliderζδ = RandomFloat(minV, maxV);
-	viscositySliderζγ = RandomFloat(minV, maxV);
-	viscositySliderζε = RandomFloat(minV, maxV);
-	viscositySliderζζ = RandomFloat(minV, maxV);
-	viscositySliderζη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderζα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderζθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderηα = RandomFloat(minV, maxV);
-	viscositySliderηβ = RandomFloat(minV, maxV);
-	viscositySliderηδ = RandomFloat(minV, maxV);
-	viscositySliderηγ = RandomFloat(minV, maxV);
-	viscositySliderηε = RandomFloat(minV, maxV);
-	viscositySliderηζ = RandomFloat(minV, maxV);
-	viscositySliderηη = RandomFloat(minV, maxV);
+	ViscosityAttractSliderηα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderηθ = RandomFloat(minAttV, maxAttV);
 
-	viscositySliderαθ = RandomFloat(minV, maxV);
-	viscositySliderβθ = RandomFloat(minV, maxV);
-	viscositySliderδθ = RandomFloat(minV, maxV);
-	viscositySliderγθ = RandomFloat(minV, maxV);
-	viscositySliderεθ = RandomFloat(minV, maxV);
-	viscositySliderζθ = RandomFloat(minV, maxV);
-	viscositySliderηθ = RandomFloat(minV, maxV);
-	viscositySliderθα = RandomFloat(minV, maxV);
-	viscositySliderθβ = RandomFloat(minV, maxV);
-	viscositySliderθδ = RandomFloat(minV, maxV);
-	viscositySliderθγ = RandomFloat(minV, maxV);
-	viscositySliderθε = RandomFloat(minV, maxV);
-	viscositySliderθζ = RandomFloat(minV, maxV);
-	viscositySliderθη = RandomFloat(minV, maxV);
-	viscositySliderθθ = RandomFloat(minV, maxV);
+	ViscosityAttractSliderθα = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθβ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθδ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθγ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθε = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθζ = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθη = RandomFloat(minAttV, maxAttV);
+	ViscosityAttractSliderθθ = RandomFloat(minAttV, maxAttV);
+
+	ViscosityRepelSliderαα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderαθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderβα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderββ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderβθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderγα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderγθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderδα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderδθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderεα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderεθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderζα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderζθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderηα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderηθ = RandomFloat(minRepV, maxRepV);
+
+	ViscosityRepelSliderθα = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθβ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθδ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθγ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθε = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθζ = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθη = RandomFloat(minRepV, maxRepV);
+	ViscosityRepelSliderθθ = RandomFloat(minRepV, maxRepV);
 }
 void ofApp::rndprob() {
-	probabilitySlider = RandomFloat(minI, maxI);
+	probabilitySlider = RandomFloat(minAttI, maxAttI);
+	
+	ProbAttractSliderαα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderαθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderαα = RandomFloat(minI, maxI);
-	probabilitySliderαβ = RandomFloat(minI, maxI);
-	probabilitySliderαγ = RandomFloat(minI, maxI);
-	probabilitySliderαδ = RandomFloat(minI, maxI);
-	probabilitySliderαε = RandomFloat(minI, maxI);
-	probabilitySliderαζ = RandomFloat(minI, maxI);
-	probabilitySliderαη = RandomFloat(minI, maxI);
+	ProbAttractSliderβα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderββ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderβθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderβα = RandomFloat(minI, maxI);
-	probabilitySliderββ = RandomFloat(minI, maxI);
-	probabilitySliderβγ = RandomFloat(minI, maxI);
-	probabilitySliderβδ = RandomFloat(minI, maxI);
-	probabilitySliderβε = RandomFloat(minI, maxI);
-	probabilitySliderβζ = RandomFloat(minI, maxI);
-	probabilitySliderβη = RandomFloat(minI, maxI);
+	ProbAttractSliderγα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderγθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderγα = RandomFloat(minI, maxI);
-	probabilitySliderγβ = RandomFloat(minI, maxI);
-	probabilitySliderγγ = RandomFloat(minI, maxI);
-	probabilitySliderγδ = RandomFloat(minI, maxI);
-	probabilitySliderγε = RandomFloat(minI, maxI);
-	probabilitySliderγζ = RandomFloat(minI, maxI);
-	probabilitySliderγη = RandomFloat(minI, maxI);
+	ProbAttractSliderδα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderδθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderδα = RandomFloat(minI, maxI);
-	probabilitySliderδβ = RandomFloat(minI, maxI);
-	probabilitySliderδγ = RandomFloat(minI, maxI);
-	probabilitySliderδδ = RandomFloat(minI, maxI);
-	probabilitySliderδε = RandomFloat(minI, maxI);
-	probabilitySliderδζ = RandomFloat(minI, maxI);
-	probabilitySliderδη = RandomFloat(minI, maxI);
+	ProbAttractSliderεα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderεθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderεα = RandomFloat(minI, maxI);
-	probabilitySliderεβ = RandomFloat(minI, maxI);
-	probabilitySliderεγ = RandomFloat(minI, maxI);
-	probabilitySliderεδ = RandomFloat(minI, maxI);
-	probabilitySliderεε = RandomFloat(minI, maxI);
-	probabilitySliderεζ = RandomFloat(minI, maxI);
-	probabilitySliderεη = RandomFloat(minI, maxI);
+	ProbAttractSliderζα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderζθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderζα = RandomFloat(minI, maxI);
-	probabilitySliderζβ = RandomFloat(minI, maxI);
-	probabilitySliderζγ = RandomFloat(minI, maxI);
-	probabilitySliderζδ = RandomFloat(minI, maxI);
-	probabilitySliderζε = RandomFloat(minI, maxI);
-	probabilitySliderζζ = RandomFloat(minI, maxI);
-	probabilitySliderζη = RandomFloat(minI, maxI);
+	ProbAttractSliderηα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderηθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderηα = RandomFloat(minI, maxI);
-	probabilitySliderηβ = RandomFloat(minI, maxI);
-	probabilitySliderηγ = RandomFloat(minI, maxI);
-	probabilitySliderηδ = RandomFloat(minI, maxI);
-	probabilitySliderηε = RandomFloat(minI, maxI);
-	probabilitySliderηζ = RandomFloat(minI, maxI);
-	probabilitySliderηη = RandomFloat(minI, maxI);
+	ProbAttractSliderθα = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθβ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθγ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθδ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθε = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθζ = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθη = RandomFloat(minAttI, maxAttI);
+	ProbAttractSliderθθ = RandomFloat(minAttI, maxAttI);
 
-	probabilitySliderαθ = RandomFloat(minI, maxI);
-	probabilitySliderβθ = RandomFloat(minI, maxI);
-	probabilitySliderγθ = RandomFloat(minI, maxI);
-	probabilitySliderδθ = RandomFloat(minI, maxI);
-	probabilitySliderεθ = RandomFloat(minI, maxI);
-	probabilitySliderζθ = RandomFloat(minI, maxI);
-	probabilitySliderηθ = RandomFloat(minI, maxI);
-	probabilitySliderθα = RandomFloat(minI, maxI);
-	probabilitySliderθβ = RandomFloat(minI, maxI);
-	probabilitySliderθγ = RandomFloat(minI, maxI);
-	probabilitySliderθδ = RandomFloat(minI, maxI);
-	probabilitySliderθε = RandomFloat(minI, maxI);
-	probabilitySliderθζ = RandomFloat(minI, maxI);
-	probabilitySliderθη = RandomFloat(minI, maxI);
-	probabilitySliderθθ = RandomFloat(minI, maxI);
+	ProbRepelSliderαα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderαθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderβα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderββ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderβθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderγα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderγθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderδα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderδθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderεα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderεθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderζα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderζθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderηα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderηθ = RandomFloat(minRepI, maxRepI);
+
+	ProbRepelSliderθα = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθβ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθγ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθδ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθε = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθζ = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθη = RandomFloat(minRepI, maxRepI);
+	ProbRepelSliderθθ = RandomFloat(minRepI, maxRepI);
 }
 void ofApp::rndir() {
 	// Alpha
-	//numberSliderα = RandomFloat(minR, 3000);
-	powerSliderαα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαη = RandomFloat(minP, maxP) * forceVariance;
+	AttractPowerSliderαα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderαθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 
-	vSliderαβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractDistanceSliderαβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderαθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderαα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderαθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderαβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderαθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Betha
-	//numberSliderβ = RandomFloat(minR, 3000);
-	powerSliderββ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderββ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderβη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderβα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderββ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderβθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderββ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderβθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderβα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderββ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderβθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderββ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderβθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Gamma
-	//numberSliderγ = RandomFloat(minR, 3000);
-	powerSliderγγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderγη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderγβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderγα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderγθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderγβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderγθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderγα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderγθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderγβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderγθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Delta
-	// numberSliderδ = RandomFloat(minR, 3000);
-	powerSliderδδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderδβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderδα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderδθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderδβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderδθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderδα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderδθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderδβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderδθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Epsilon
-	//numberSliderε = RandomFloat(minR, 3000);
-	powerSliderεγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderεβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderεα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderεθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderεβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderεθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderεα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderεθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderεβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderεθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Zeta
-	//numberSliderζ = RandomFloat(minR, 3000);
-	powerSliderζγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderζβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderζα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderζθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderζβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderζθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderζα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderζθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderζβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderζθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Etha
-	//numberSliderη = RandomFloat(minR, 3000);
-	powerSliderηγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderηβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderηα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderηθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+
+	AttractDistanceSliderηβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderηθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+
+	RepelPowerSliderηα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderηθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderηβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderηθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Tetha
-	//numberSliderθ = RandomFloat(minR, 3000);
-	powerSliderθγ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθδ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθα = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθβ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθε = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθζ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθη = RandomFloat(minP, maxP) * forceVariance;
 
-	vSliderθβ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθα = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθδ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθγ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθε = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθζ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθη = RandomFloat(minR, maxR) * radiusVariance;
+	AttractPowerSliderθα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθγ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθε = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθζ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθη = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
+	AttractPowerSliderθθ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 
-	powerSliderγθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderδθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderαθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderβθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderεθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderζθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderηθ = RandomFloat(minP, maxP) * forceVariance;
-	powerSliderθθ = RandomFloat(minP, maxP) * forceVariance;
+	AttractDistanceSliderθβ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθα = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθδ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθγ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθε = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθζ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθη = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
+	AttractDistanceSliderθθ = RandomFloat(minAttR, maxAttR) * AttractRadiusVariance;
 
-	vSliderβθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderαθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderδθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderγθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderεθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderζθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderηθ = RandomFloat(minR, maxR) * radiusVariance;
-	vSliderθθ = RandomFloat(minR, maxR) * radiusVariance;
+	RepelPowerSliderθα = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθβ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθδ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθγ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθε = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθζ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθη = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+	RepelPowerSliderθθ = RandomFloat(minRepP, maxRepP) * RepelForceVariance;
+
+	RepelDistanceSliderθβ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθα = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθδ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθγ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
+	RepelDistanceSliderθθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 }
-
 void ofApp::freeze() {
-	InteractionEvoProbSlider = 0.3;
-	InteractionEvoAmountSlider = 0.3;
-	ProbabilityEvoProbSlider = 0.2;
-	ProbabilityEvoAmountSlider = 0.2;
-	ViscosityEvoProbSlider = 0.1;
-	ViscosityEvoAmountSlider = 0.1;
+	AttractEvoProbSlider = 0;
+	AttractEvoAmountSlider = 0;
+	ProbAttractEvoProbSlider = 0;
+	ProbAttractEvoAmountSlider = 0;
+	ViscoAttractEvoProbSlider = 0;
+	ViscoAttractEvoAmountSlider = 0;
+	RepelEvoProbSlider = 0;
+	RepelEvoAmountSlider = 0;
+	ProbRepelEvoProbSlider = 0;
+	ProbRepelEvoAmountSlider = 0;
+	ViscoRepelEvoProbSlider = 0;
+	ViscoRepelEvoAmountSlider = 0;
 
 	viscositySlider = 100;
 
-	viscositySliderαα = 100;
-	viscositySliderαβ = 100;
-	viscositySliderαδ = 100;
-	viscositySliderαγ = 100;
-	viscositySliderαε = 100;
-	viscositySliderαζ = 100;
-	viscositySliderαη = 100;
+	ViscosityAttractSliderαα = 100;
+	ViscosityAttractSliderαβ = 100;
+	ViscosityAttractSliderαδ = 100;
+	ViscosityAttractSliderαγ = 100;
+	ViscosityAttractSliderαε = 100;
+	ViscosityAttractSliderαζ = 100;
+	ViscosityAttractSliderαη = 100;
 
-	viscositySliderβα = 100;
-	viscositySliderββ = 100;
-	viscositySliderβδ = 100;
-	viscositySliderβγ = 100;
-	viscositySliderβε = 100;
-	viscositySliderβζ = 100;
-	viscositySliderβη = 100;
+	ViscosityAttractSliderβα = 100;
+	ViscosityAttractSliderββ = 100;
+	ViscosityAttractSliderβδ = 100;
+	ViscosityAttractSliderβγ = 100;
+	ViscosityAttractSliderβε = 100;
+	ViscosityAttractSliderβζ = 100;
+	ViscosityAttractSliderβη = 100;
 
-	viscositySliderγα = 100;
-	viscositySliderγβ = 100;
-	viscositySliderγδ = 100;
-	viscositySliderγγ = 100;
-	viscositySliderγε = 100;
-	viscositySliderγζ = 100;
-	viscositySliderγη = 100;
+	ViscosityAttractSliderγα = 100;
+	ViscosityAttractSliderγβ = 100;
+	ViscosityAttractSliderγδ = 100;
+	ViscosityAttractSliderγγ = 100;
+	ViscosityAttractSliderγε = 100;
+	ViscosityAttractSliderγζ = 100;
+	ViscosityAttractSliderγη = 100;
 
-	viscositySliderδα = 100;
-	viscositySliderδβ = 100;
-	viscositySliderδδ = 100;
-	viscositySliderδγ = 100;
-	viscositySliderδε = 100;
-	viscositySliderδζ = 100;
-	viscositySliderδη = 100;
+	ViscosityAttractSliderδα = 100;
+	ViscosityAttractSliderδβ = 100;
+	ViscosityAttractSliderδδ = 100;
+	ViscosityAttractSliderδγ = 100;
+	ViscosityAttractSliderδε = 100;
+	ViscosityAttractSliderδζ = 100;
+	ViscosityAttractSliderδη = 100;
 
-	viscositySliderεα = 100;
-	viscositySliderεβ = 100;
-	viscositySliderεδ = 100;
-	viscositySliderεγ = 100;
-	viscositySliderεε = 100;
-	viscositySliderεζ = 100;
-	viscositySliderεη = 100;
+	ViscosityAttractSliderεα = 100;
+	ViscosityAttractSliderεβ = 100;
+	ViscosityAttractSliderεδ = 100;
+	ViscosityAttractSliderεγ = 100;
+	ViscosityAttractSliderεε = 100;
+	ViscosityAttractSliderεζ = 100;
+	ViscosityAttractSliderεη = 100;
 
-	viscositySliderζα = 100;
-	viscositySliderζβ = 100;
-	viscositySliderζδ = 100;
-	viscositySliderζγ = 100;
-	viscositySliderζε = 100;
-	viscositySliderζζ = 100;
-	viscositySliderζη = 100;
+	ViscosityAttractSliderζα = 100;
+	ViscosityAttractSliderζβ = 100;
+	ViscosityAttractSliderζδ = 100;
+	ViscosityAttractSliderζγ = 100;
+	ViscosityAttractSliderζε = 100;
+	ViscosityAttractSliderζζ = 100;
+	ViscosityAttractSliderζη = 100;
 
-	viscositySliderηα = 100;
-	viscositySliderηβ = 100;
-	viscositySliderηδ = 100;
-	viscositySliderηγ = 100;
-	viscositySliderηε = 100;
-	viscositySliderηζ = 100;
-	viscositySliderηη = 100;
+	ViscosityAttractSliderηα = 100;
+	ViscosityAttractSliderηβ = 100;
+	ViscosityAttractSliderηδ = 100;
+	ViscosityAttractSliderηγ = 100;
+	ViscosityAttractSliderηε = 100;
+	ViscosityAttractSliderηζ = 100;
+	ViscosityAttractSliderηη = 100;
 
-	viscositySliderαθ = 100;
-	viscositySliderβθ = 100;
-	viscositySliderδθ = 100;
-	viscositySliderγθ = 100;
-	viscositySliderεθ = 100;
-	viscositySliderζθ = 100;
-	viscositySliderηθ = 100;
-	viscositySliderθα = 100;
-	viscositySliderθβ = 100;
-	viscositySliderθδ = 100;
-	viscositySliderθγ = 100;
-	viscositySliderθε = 100;
-	viscositySliderθζ = 100;
-	viscositySliderθη = 100;
-	viscositySliderθθ = 100;
+	ViscosityAttractSliderαθ = 100;
+	ViscosityAttractSliderβθ = 100;
+	ViscosityAttractSliderδθ = 100;
+	ViscosityAttractSliderγθ = 100;
+	ViscosityAttractSliderεθ = 100;
+	ViscosityAttractSliderζθ = 100;
+	ViscosityAttractSliderηθ = 100;
+	ViscosityAttractSliderθα = 100;
+	ViscosityAttractSliderθβ = 100;
+	ViscosityAttractSliderθδ = 100;
+	ViscosityAttractSliderθγ = 100;
+	ViscosityAttractSliderθε = 100;
+	ViscosityAttractSliderθζ = 100;
+	ViscosityAttractSliderθη = 100;
+	ViscosityAttractSliderθθ = 100;
+
+	ViscosityRepelSliderαα = 100;
+	ViscosityRepelSliderαβ = 100;
+	ViscosityRepelSliderαδ = 100;
+	ViscosityRepelSliderαγ = 100;
+	ViscosityRepelSliderαε = 100;
+	ViscosityRepelSliderαζ = 100;
+	ViscosityRepelSliderαη = 100;
+
+	ViscosityRepelSliderβα = 100;
+	ViscosityRepelSliderββ = 100;
+	ViscosityRepelSliderβδ = 100;
+	ViscosityRepelSliderβγ = 100;
+	ViscosityRepelSliderβε = 100;
+	ViscosityRepelSliderβζ = 100;
+	ViscosityRepelSliderβη = 100;
+
+	ViscosityRepelSliderγα = 100;
+	ViscosityRepelSliderγβ = 100;
+	ViscosityRepelSliderγδ = 100;
+	ViscosityRepelSliderγγ = 100;
+	ViscosityRepelSliderγε = 100;
+	ViscosityRepelSliderγζ = 100;
+	ViscosityRepelSliderγη = 100;
+
+	ViscosityRepelSliderδα = 100;
+	ViscosityRepelSliderδβ = 100;
+	ViscosityRepelSliderδδ = 100;
+	ViscosityRepelSliderδγ = 100;
+	ViscosityRepelSliderδε = 100;
+	ViscosityRepelSliderδζ = 100;
+	ViscosityRepelSliderδη = 100;
+
+	ViscosityRepelSliderεα = 100;
+	ViscosityRepelSliderεβ = 100;
+	ViscosityRepelSliderεδ = 100;
+	ViscosityRepelSliderεγ = 100;
+	ViscosityRepelSliderεε = 100;
+	ViscosityRepelSliderεζ = 100;
+	ViscosityRepelSliderεη = 100;
+
+	ViscosityRepelSliderζα = 100;
+	ViscosityRepelSliderζβ = 100;
+	ViscosityRepelSliderζδ = 100;
+	ViscosityRepelSliderζγ = 100;
+	ViscosityRepelSliderζε = 100;
+	ViscosityRepelSliderζζ = 100;
+	ViscosityRepelSliderζη = 100;
+
+	ViscosityRepelSliderηα = 100;
+	ViscosityRepelSliderηβ = 100;
+	ViscosityRepelSliderηδ = 100;
+	ViscosityRepelSliderηγ = 100;
+	ViscosityRepelSliderηε = 100;
+	ViscosityRepelSliderηζ = 100;
+	ViscosityRepelSliderηη = 100;
+
+	ViscosityRepelSliderαθ = 100;
+	ViscosityRepelSliderβθ = 100;
+	ViscosityRepelSliderδθ = 100;
+	ViscosityRepelSliderγθ = 100;
+	ViscosityRepelSliderεθ = 100;
+	ViscosityRepelSliderζθ = 100;
+	ViscosityRepelSliderηθ = 100;
+	ViscosityRepelSliderθα = 100;
+	ViscosityRepelSliderθβ = 100;
+	ViscosityRepelSliderθδ = 100;
+	ViscosityRepelSliderθγ = 100;
+	ViscosityRepelSliderθε = 100;
+	ViscosityRepelSliderθζ = 100;
+	ViscosityRepelSliderθη = 100;
+	ViscosityRepelSliderθθ = 100;
 
 	probabilitySlider = 0;
 
-	probabilitySliderαα = 0;
-	probabilitySliderαβ = 0;
-	probabilitySliderαγ = 0;
-	probabilitySliderαδ = 0;
-	probabilitySliderαε = 0;
-	probabilitySliderαζ = 0;
-	probabilitySliderαη = 0;
+	ProbAttractSliderαα = 0;
+	ProbAttractSliderαβ = 0;
+	ProbAttractSliderαγ = 0;
+	ProbAttractSliderαδ = 0;
+	ProbAttractSliderαε = 0;
+	ProbAttractSliderαζ = 0;
+	ProbAttractSliderαη = 0;
 
-	probabilitySliderβα = 0;
-	probabilitySliderββ = 0;
-	probabilitySliderβγ = 0;
-	probabilitySliderβδ = 0;
-	probabilitySliderβε = 0;
-	probabilitySliderβζ = 0;
-	probabilitySliderβη = 0;
+	ProbAttractSliderβα = 0;
+	ProbAttractSliderββ = 0;
+	ProbAttractSliderβγ = 0;
+	ProbAttractSliderβδ = 0;
+	ProbAttractSliderβε = 0;
+	ProbAttractSliderβζ = 0;
+	ProbAttractSliderβη = 0;
 
-	probabilitySliderγα = 0;
-	probabilitySliderγβ = 0;
-	probabilitySliderγγ = 0;
-	probabilitySliderγδ = 0;
-	probabilitySliderγε = 0;
-	probabilitySliderγζ = 0;
-	probabilitySliderγη = 0;
+	ProbAttractSliderγα = 0;
+	ProbAttractSliderγβ = 0;
+	ProbAttractSliderγγ = 0;
+	ProbAttractSliderγδ = 0;
+	ProbAttractSliderγε = 0;
+	ProbAttractSliderγζ = 0;
+	ProbAttractSliderγη = 0;
 
-	probabilitySliderδα = 0;
-	probabilitySliderδβ = 0;
-	probabilitySliderδγ = 0;
-	probabilitySliderδδ = 0;
-	probabilitySliderδε = 0;
-	probabilitySliderδζ = 0;
-	probabilitySliderδη = 0;
+	ProbAttractSliderδα = 0;
+	ProbAttractSliderδβ = 0;
+	ProbAttractSliderδγ = 0;
+	ProbAttractSliderδδ = 0;
+	ProbAttractSliderδε = 0;
+	ProbAttractSliderδζ = 0;
+	ProbAttractSliderδη = 0;
 
-	probabilitySliderεα = 0;
-	probabilitySliderεβ = 0;
-	probabilitySliderεγ = 0;
-	probabilitySliderεδ = 0;
-	probabilitySliderεε = 0;
-	probabilitySliderεζ = 0;
-	probabilitySliderεη = 0;
+	ProbAttractSliderεα = 0;
+	ProbAttractSliderεβ = 0;
+	ProbAttractSliderεγ = 0;
+	ProbAttractSliderεδ = 0;
+	ProbAttractSliderεε = 0;
+	ProbAttractSliderεζ = 0;
+	ProbAttractSliderεη = 0;
 
-	probabilitySliderζα = 0;
-	probabilitySliderζβ = 0;
-	probabilitySliderζγ = 0;
-	probabilitySliderζδ = 0;
-	probabilitySliderζε = 0;
-	probabilitySliderζζ = 0;
-	probabilitySliderζη = 0;
+	ProbAttractSliderζα = 0;
+	ProbAttractSliderζβ = 0;
+	ProbAttractSliderζγ = 0;
+	ProbAttractSliderζδ = 0;
+	ProbAttractSliderζε = 0;
+	ProbAttractSliderζζ = 0;
+	ProbAttractSliderζη = 0;
 
-	probabilitySliderηα = 0;
-	probabilitySliderηβ = 0;
-	probabilitySliderηγ = 0;
-	probabilitySliderηδ = 0;
-	probabilitySliderηε = 0;
-	probabilitySliderηζ = 0;
-	probabilitySliderηη = 0;
+	ProbAttractSliderηα = 0;
+	ProbAttractSliderηβ = 0;
+	ProbAttractSliderηγ = 0;
+	ProbAttractSliderηδ = 0;
+	ProbAttractSliderηε = 0;
+	ProbAttractSliderηζ = 0;
+	ProbAttractSliderηη = 0;
 
-	probabilitySliderαθ = 0;
-	probabilitySliderβθ = 0;
-	probabilitySliderγθ = 0;
-	probabilitySliderδθ = 0;
-	probabilitySliderεθ = 0;
-	probabilitySliderζθ = 0;
-	probabilitySliderηθ = 0;
-	probabilitySliderθα = 0;
-	probabilitySliderθβ = 0;
-	probabilitySliderθγ = 0;
-	probabilitySliderθδ = 0;
-	probabilitySliderθε = 0;
-	probabilitySliderθζ = 0;
-	probabilitySliderθη = 0;
-	probabilitySliderθθ = 0;
+	ProbAttractSliderαθ = 0;
+	ProbAttractSliderβθ = 0;
+	ProbAttractSliderγθ = 0;
+	ProbAttractSliderδθ = 0;
+	ProbAttractSliderεθ = 0;
+	ProbAttractSliderζθ = 0;
+	ProbAttractSliderηθ = 0;
+	ProbAttractSliderθα = 0;
+	ProbAttractSliderθβ = 0;
+	ProbAttractSliderθγ = 0;
+	ProbAttractSliderθδ = 0;
+	ProbAttractSliderθε = 0;
+	ProbAttractSliderθζ = 0;
+	ProbAttractSliderθη = 0;
+	ProbAttractSliderθθ = 0;
+
+	ProbRepelSliderαα = 0;
+	ProbRepelSliderαβ = 0;
+	ProbRepelSliderαγ = 0;
+	ProbRepelSliderαδ = 0;
+	ProbRepelSliderαε = 0;
+	ProbRepelSliderαζ = 0;
+	ProbRepelSliderαη = 0;
+
+	ProbRepelSliderβα = 0;
+	ProbRepelSliderββ = 0;
+	ProbRepelSliderβγ = 0;
+	ProbRepelSliderβδ = 0;
+	ProbRepelSliderβε = 0;
+	ProbRepelSliderβζ = 0;
+	ProbRepelSliderβη = 0;
+
+	ProbRepelSliderγα = 0;
+	ProbRepelSliderγβ = 0;
+	ProbRepelSliderγγ = 0;
+	ProbRepelSliderγδ = 0;
+	ProbRepelSliderγε = 0;
+	ProbRepelSliderγζ = 0;
+	ProbRepelSliderγη = 0;
+
+	ProbRepelSliderδα = 0;
+	ProbRepelSliderδβ = 0;
+	ProbRepelSliderδγ = 0;
+	ProbRepelSliderδδ = 0;
+	ProbRepelSliderδε = 0;
+	ProbRepelSliderδζ = 0;
+	ProbRepelSliderδη = 0;
+
+	ProbRepelSliderεα = 0;
+	ProbRepelSliderεβ = 0;
+	ProbRepelSliderεγ = 0;
+	ProbRepelSliderεδ = 0;
+	ProbRepelSliderεε = 0;
+	ProbRepelSliderεζ = 0;
+	ProbRepelSliderεη = 0;
+
+	ProbRepelSliderζα = 0;
+	ProbRepelSliderζβ = 0;
+	ProbRepelSliderζγ = 0;
+	ProbRepelSliderζδ = 0;
+	ProbRepelSliderζε = 0;
+	ProbRepelSliderζζ = 0;
+	ProbRepelSliderζη = 0;
+
+	ProbRepelSliderηα = 0;
+	ProbRepelSliderηβ = 0;
+	ProbRepelSliderηγ = 0;
+	ProbRepelSliderηδ = 0;
+	ProbRepelSliderηε = 0;
+	ProbRepelSliderηζ = 0;
+	ProbRepelSliderηη = 0;
+
+	ProbRepelSliderαθ = 0;
+	ProbRepelSliderβθ = 0;
+	ProbRepelSliderγθ = 0;
+	ProbRepelSliderδθ = 0;
+	ProbRepelSliderεθ = 0;
+	ProbRepelSliderζθ = 0;
+	ProbRepelSliderηθ = 0;
+	ProbRepelSliderθα = 0;
+	ProbRepelSliderθβ = 0;
+	ProbRepelSliderθγ = 0;
+	ProbRepelSliderθδ = 0;
+	ProbRepelSliderθε = 0;
+	ProbRepelSliderθζ = 0;
+	ProbRepelSliderθη = 0;
+	ProbRepelSliderθθ = 0;
 
 	// Betha
 
-	powerSliderββ = 0;
-	powerSliderβα = 0;
-	powerSliderβδ = 0;
-	powerSliderβγ = 0;
-	powerSliderβε = 0;
-	powerSliderβζ = 0;
-	powerSliderβη = 0;
+	AttractPowerSliderββ = 0;
+	AttractPowerSliderβα = 0;
+	AttractPowerSliderβδ = 0;
+	AttractPowerSliderβγ = 0;
+	AttractPowerSliderβε = 0;
+	AttractPowerSliderβζ = 0;
+	AttractPowerSliderβη = 0;
 
-	vSliderββ = 0;
-	vSliderβα = 0;
-	vSliderβδ = 0;
-	vSliderβγ = 0;
-	vSliderβε = 0;
-	vSliderβζ = 0;
-	vSliderβη = 0;
+	AttractDistanceSliderββ = 0;
+	AttractDistanceSliderβα = 0;
+	AttractDistanceSliderβδ = 0;
+	AttractDistanceSliderβγ = 0;
+	AttractDistanceSliderβε = 0;
+	AttractDistanceSliderβζ = 0;
+	AttractDistanceSliderβη = 0;
 
 	// Alpha
-	
-	powerSliderαα = 0;
-	powerSliderαβ = 0;
-	powerSliderαδ = 0;
-	powerSliderαγ = 0;
-	powerSliderαε = 0;
-	powerSliderαζ = 0;
-	powerSliderαη = 0;
 
-	vSliderαβ = 0;
-	vSliderαα = 0;
-	vSliderαδ = 0;
-	vSliderαγ = 0;
-	vSliderαε = 0;
-	vSliderαζ = 0;
-	vSliderαη = 0;
+	AttractPowerSliderαα = 0;
+	AttractPowerSliderαβ = 0;
+	AttractPowerSliderαδ = 0;
+	AttractPowerSliderαγ = 0;
+	AttractPowerSliderαε = 0;
+	AttractPowerSliderαζ = 0;
+	AttractPowerSliderαη = 0;
+
+	AttractDistanceSliderαβ = 0;
+	AttractDistanceSliderαα = 0;
+	AttractDistanceSliderαδ = 0;
+	AttractDistanceSliderαγ = 0;
+	AttractDistanceSliderαε = 0;
+	AttractDistanceSliderαζ = 0;
+	AttractDistanceSliderαη = 0;
 
 	// Delta
-	
-	powerSliderδδ = 0;
-	powerSliderδα = 0;
-	powerSliderδβ = 0;
-	powerSliderδγ = 0;
-	powerSliderδε = 0;
-	powerSliderδζ = 0;
-	powerSliderδη = 0;
 
-	vSliderδβ = 0;
-	vSliderδα = 0;
-	vSliderδδ = 0;
-	vSliderδγ = 0;
-	vSliderδε = 0;
-	vSliderδζ = 0;
-	vSliderδη = 0;
+	AttractPowerSliderδδ = 0;
+	AttractPowerSliderδα = 0;
+	AttractPowerSliderδβ = 0;
+	AttractPowerSliderδγ = 0;
+	AttractPowerSliderδε = 0;
+	AttractPowerSliderδζ = 0;
+	AttractPowerSliderδη = 0;
+
+	AttractDistanceSliderδβ = 0;
+	AttractDistanceSliderδα = 0;
+	AttractDistanceSliderδδ = 0;
+	AttractDistanceSliderδγ = 0;
+	AttractDistanceSliderδε = 0;
+	AttractDistanceSliderδζ = 0;
+	AttractDistanceSliderδη = 0;
 
 	// Gamma
-	
-	powerSliderγγ = 0;
-	powerSliderγδ = 0;
-	powerSliderγα = 0;
-	powerSliderγβ = 0;
-	powerSliderγε = 0;
-	powerSliderγζ = 0;
-	powerSliderγη = 0;
 
-	vSliderγβ = 0;
-	vSliderγα = 0;
-	vSliderγδ = 0;
-	vSliderγγ = 0;
-	vSliderγε = 0;
-	vSliderγζ = 0;
-	vSliderγη = 0;
+	AttractPowerSliderγγ = 0;
+	AttractPowerSliderγδ = 0;
+	AttractPowerSliderγα = 0;
+	AttractPowerSliderγβ = 0;
+	AttractPowerSliderγε = 0;
+	AttractPowerSliderγζ = 0;
+	AttractPowerSliderγη = 0;
+
+	AttractDistanceSliderγβ = 0;
+	AttractDistanceSliderγα = 0;
+	AttractDistanceSliderγδ = 0;
+	AttractDistanceSliderγγ = 0;
+	AttractDistanceSliderγε = 0;
+	AttractDistanceSliderγζ = 0;
+	AttractDistanceSliderγη = 0;
 
 	// Epsilon
-	
-	powerSliderεγ = 0;
-	powerSliderεδ = 0;
-	powerSliderεα = 0;
-	powerSliderεβ = 0;
-	powerSliderεε = 0;
-	powerSliderεζ = 0;
-	powerSliderεη = 0;
 
-	vSliderεβ = 0;
-	vSliderεα = 0;
-	vSliderεδ = 0;
-	vSliderεγ = 0;
-	vSliderεε = 0;
-	vSliderεζ = 0;
-	vSliderεη = 0;
+	AttractPowerSliderεγ = 0;
+	AttractPowerSliderεδ = 0;
+	AttractPowerSliderεα = 0;
+	AttractPowerSliderεβ = 0;
+	AttractPowerSliderεε = 0;
+	AttractPowerSliderεζ = 0;
+	AttractPowerSliderεη = 0;
+
+	AttractDistanceSliderεβ = 0;
+	AttractDistanceSliderεα = 0;
+	AttractDistanceSliderεδ = 0;
+	AttractDistanceSliderεγ = 0;
+	AttractDistanceSliderεε = 0;
+	AttractDistanceSliderεζ = 0;
+	AttractDistanceSliderεη = 0;
 
 	// Zetha
-	
-	powerSliderζγ = 0;
-	powerSliderζδ = 0;
-	powerSliderζα = 0;
-	powerSliderζβ = 0;
-	powerSliderζε = 0;
-	powerSliderζζ = 0;
-	powerSliderζη = 0;
 
-	vSliderζβ = 0;
-	vSliderζα = 0;
-	vSliderζδ = 0;
-	vSliderζγ = 0;
-	vSliderζε = 0;
-	vSliderζζ = 0;
-	vSliderζη = 0;
+	AttractPowerSliderζγ = 0;
+	AttractPowerSliderζδ = 0;
+	AttractPowerSliderζα = 0;
+	AttractPowerSliderζβ = 0;
+	AttractPowerSliderζε = 0;
+	AttractPowerSliderζζ = 0;
+	AttractPowerSliderζη = 0;
 
-	// Etha
-	
-	powerSliderηγ = 0;
-	powerSliderηδ = 0;
-	powerSliderηα = 0;
-	powerSliderηβ = 0;
-	powerSliderηε = 0;
-	powerSliderηζ = 0;
-	powerSliderηη = 0;
-
-	vSliderηβ = 0;
-	vSliderηα = 0;
-	vSliderηδ = 0;
-	vSliderηγ = 0;
-	vSliderηε = 0;
-	vSliderηζ = 0;
-	vSliderηη = 0;
+	AttractDistanceSliderζβ = 0;
+	AttractDistanceSliderζα = 0;
+	AttractDistanceSliderζδ = 0;
+	AttractDistanceSliderζγ = 0;
+	AttractDistanceSliderζε = 0;
+	AttractDistanceSliderζζ = 0;
+	AttractDistanceSliderζη = 0;
 
 	// Etha
 
-	powerSliderθγ = 0;
-	powerSliderθδ = 0;
-	powerSliderθα = 0;
-	powerSliderθβ = 0;
-	powerSliderθε = 0;
-	powerSliderθζ = 0;
-	powerSliderθη = 0;
-	powerSliderθθ = 0;
+	AttractPowerSliderηγ = 0;
+	AttractPowerSliderηδ = 0;
+	AttractPowerSliderηα = 0;
+	AttractPowerSliderηβ = 0;
+	AttractPowerSliderηε = 0;
+	AttractPowerSliderηζ = 0;
+	AttractPowerSliderηη = 0;
 
-	vSliderθβ = 0;
-	vSliderθα = 0;
-	vSliderθδ = 0;
-	vSliderθγ = 0;
-	vSliderθε = 0;
-	vSliderθζ = 0;
-	vSliderθη = 0;
-	vSliderθθ = 0;
+	AttractDistanceSliderηβ = 0;
+	AttractDistanceSliderηα = 0;
+	AttractDistanceSliderηδ = 0;
+	AttractDistanceSliderηγ = 0;
+	AttractDistanceSliderηε = 0;
+	AttractDistanceSliderηζ = 0;
+	AttractDistanceSliderηη = 0;
 
-	powerSliderγθ = 0;
-	powerSliderδθ = 0;
-	powerSliderαθ = 0;
-	powerSliderβθ = 0;
-	powerSliderεθ = 0;
-	powerSliderζθ = 0;
-	powerSliderηθ = 0;
+	// Etha
 
-	vSliderβθ = 0;
-	vSliderαθ = 0;
-	vSliderδθ = 0;
-	vSliderγθ = 0;
-	vSliderεθ = 0;
-	vSliderζθ = 0;
-	vSliderηθ = 0;
+	AttractPowerSliderθγ = 0;
+	AttractPowerSliderθδ = 0;
+	AttractPowerSliderθα = 0;
+	AttractPowerSliderθβ = 0;
+	AttractPowerSliderθε = 0;
+	AttractPowerSliderθζ = 0;
+	AttractPowerSliderθη = 0;
+	AttractPowerSliderθθ = 0;
+
+	AttractDistanceSliderθβ = 0;
+	AttractDistanceSliderθα = 0;
+	AttractDistanceSliderθδ = 0;
+	AttractDistanceSliderθγ = 0;
+	AttractDistanceSliderθε = 0;
+	AttractDistanceSliderθζ = 0;
+	AttractDistanceSliderθη = 0;
+	AttractDistanceSliderθθ = 0;
+
+	AttractPowerSliderγθ = 0;
+	AttractPowerSliderδθ = 0;
+	AttractPowerSliderαθ = 0;
+	AttractPowerSliderβθ = 0;
+	AttractPowerSliderεθ = 0;
+	AttractPowerSliderζθ = 0;
+	AttractPowerSliderηθ = 0;
+
+	AttractDistanceSliderβθ = 0;
+	AttractDistanceSliderαθ = 0;
+	AttractDistanceSliderδθ = 0;
+	AttractDistanceSliderγθ = 0;
+	AttractDistanceSliderεθ = 0;
+	AttractDistanceSliderζθ = 0;
+	AttractDistanceSliderηθ = 0;
+
+	// Betha
+
+	RepelPowerSliderββ = 0;
+	RepelPowerSliderβα = 0;
+	RepelPowerSliderβδ = 0;
+	RepelPowerSliderβγ = 0;
+	RepelPowerSliderβε = 0;
+	RepelPowerSliderβζ = 0;
+	RepelPowerSliderβη = 0;
+
+	RepelDistanceSliderββ = 0;
+	RepelDistanceSliderβα = 0;
+	RepelDistanceSliderβδ = 0;
+	RepelDistanceSliderβγ = 0;
+	RepelDistanceSliderβε = 0;
+	RepelDistanceSliderβζ = 0;
+	RepelDistanceSliderβη = 0;
+
+	// Alpha
+
+	RepelPowerSliderαα = 0;
+	RepelPowerSliderαβ = 0;
+	RepelPowerSliderαδ = 0;
+	RepelPowerSliderαγ = 0;
+	RepelPowerSliderαε = 0;
+	RepelPowerSliderαζ = 0;
+	RepelPowerSliderαη = 0;
+
+	RepelDistanceSliderαβ = 0;
+	RepelDistanceSliderαα = 0;
+	RepelDistanceSliderαδ = 0;
+	RepelDistanceSliderαγ = 0;
+	RepelDistanceSliderαε = 0;
+	RepelDistanceSliderαζ = 0;
+	RepelDistanceSliderαη = 0;
+
+	// Delta
+
+	RepelPowerSliderδδ = 0;
+	RepelPowerSliderδα = 0;
+	RepelPowerSliderδβ = 0;
+	RepelPowerSliderδγ = 0;
+	RepelPowerSliderδε = 0;
+	RepelPowerSliderδζ = 0;
+	RepelPowerSliderδη = 0;
+
+	RepelDistanceSliderδβ = 0;
+	RepelDistanceSliderδα = 0;
+	RepelDistanceSliderδδ = 0;
+	RepelDistanceSliderδγ = 0;
+	RepelDistanceSliderδε = 0;
+	RepelDistanceSliderδζ = 0;
+	RepelDistanceSliderδη = 0;
+
+	// Gamma
+
+	RepelPowerSliderγγ = 0;
+	RepelPowerSliderγδ = 0;
+	RepelPowerSliderγα = 0;
+	RepelPowerSliderγβ = 0;
+	RepelPowerSliderγε = 0;
+	RepelPowerSliderγζ = 0;
+	RepelPowerSliderγη = 0;
+
+	RepelDistanceSliderγβ = 0;
+	RepelDistanceSliderγα = 0;
+	RepelDistanceSliderγδ = 0;
+	RepelDistanceSliderγγ = 0;
+	RepelDistanceSliderγε = 0;
+	RepelDistanceSliderγζ = 0;
+	RepelDistanceSliderγη = 0;
+
+	// Epsilon
+
+	RepelPowerSliderεγ = 0;
+	RepelPowerSliderεδ = 0;
+	RepelPowerSliderεα = 0;
+	RepelPowerSliderεβ = 0;
+	RepelPowerSliderεε = 0;
+	RepelPowerSliderεζ = 0;
+	RepelPowerSliderεη = 0;
+
+	RepelDistanceSliderεβ = 0;
+	RepelDistanceSliderεα = 0;
+	RepelDistanceSliderεδ = 0;
+	RepelDistanceSliderεγ = 0;
+	RepelDistanceSliderεε = 0;
+	RepelDistanceSliderεζ = 0;
+	RepelDistanceSliderεη = 0;
+
+	// Zetha
+
+	RepelPowerSliderζγ = 0;
+	RepelPowerSliderζδ = 0;
+	RepelPowerSliderζα = 0;
+	RepelPowerSliderζβ = 0;
+	RepelPowerSliderζε = 0;
+	RepelPowerSliderζζ = 0;
+	RepelPowerSliderζη = 0;
+
+	RepelDistanceSliderζβ = 0;
+	RepelDistanceSliderζα = 0;
+	RepelDistanceSliderζδ = 0;
+	RepelDistanceSliderζγ = 0;
+	RepelDistanceSliderζε = 0;
+	RepelDistanceSliderζζ = 0;
+	RepelDistanceSliderζη = 0;
+
+	// Etha
+
+	RepelPowerSliderηγ = 0;
+	RepelPowerSliderηδ = 0;
+	RepelPowerSliderηα = 0;
+	RepelPowerSliderηβ = 0;
+	RepelPowerSliderηε = 0;
+	RepelPowerSliderηζ = 0;
+	RepelPowerSliderηη = 0;
+
+	RepelDistanceSliderηβ = 0;
+	RepelDistanceSliderηα = 0;
+	RepelDistanceSliderηδ = 0;
+	RepelDistanceSliderηγ = 0;
+	RepelDistanceSliderηε = 0;
+	RepelDistanceSliderηζ = 0;
+	RepelDistanceSliderηη = 0;
+
+	// Etha
+
+	RepelPowerSliderθγ = 0;
+	RepelPowerSliderθδ = 0;
+	RepelPowerSliderθα = 0;
+	RepelPowerSliderθβ = 0;
+	RepelPowerSliderθε = 0;
+	RepelPowerSliderθζ = 0;
+	RepelPowerSliderθη = 0;
+	RepelPowerSliderθθ = 0;
+
+	RepelDistanceSliderθβ = 0;
+	RepelDistanceSliderθα = 0;
+	RepelDistanceSliderθδ = 0;
+	RepelDistanceSliderθγ = 0;
+	RepelDistanceSliderθε = 0;
+	RepelDistanceSliderθζ = 0;
+	RepelDistanceSliderθη = 0;
+	RepelDistanceSliderθθ = 0;
+
+	RepelPowerSliderγθ = 0;
+	RepelPowerSliderδθ = 0;
+	RepelPowerSliderαθ = 0;
+	RepelPowerSliderβθ = 0;
+	RepelPowerSliderεθ = 0;
+	RepelPowerSliderζθ = 0;
+	RepelPowerSliderηθ = 0;
+
+	RepelDistanceSliderβθ = 0;
+	RepelDistanceSliderαθ = 0;
+	RepelDistanceSliderδθ = 0;
+	RepelDistanceSliderγθ = 0;
+	RepelDistanceSliderεθ = 0;
+	RepelDistanceSliderζθ = 0;
+	RepelDistanceSliderηθ = 0;
 }
 
 /// this is a cheap and quick way to save and load parameters (openFramework have betters ways but requires some additional library setups) 
@@ -1688,20 +2676,39 @@ void ofApp::freeze() {
 void ofApp::saveSettings()
 {
 	const std::vector<float> settings = {
-		powerSliderββ, powerSliderβα, powerSliderβδ, powerSliderβγ, powerSliderβε, powerSliderβζ, powerSliderβη,
-		vSliderββ, vSliderβα, vSliderβδ, vSliderβγ, vSliderβε, vSliderβζ, vSliderβη,
-		powerSliderαβ, powerSliderαα, powerSliderαδ, powerSliderαγ, powerSliderαε, powerSliderαζ, powerSliderαη,
-		vSliderαβ, vSliderαα, vSliderαδ, vSliderαγ, vSliderαε, vSliderαζ, vSliderαη,
-		powerSliderδβ, powerSliderδα, powerSliderδδ, powerSliderδγ, powerSliderδε, powerSliderδζ, powerSliderδη,
-		vSliderδβ, vSliderδα, vSliderδδ, vSliderδγ, vSliderδε, vSliderδζ, vSliderδη,
-		powerSliderγβ, powerSliderγα, powerSliderγδ, powerSliderγγ, powerSliderγε, powerSliderγζ, powerSliderγη,
-		vSliderγβ, vSliderγα, vSliderγδ, vSliderγγ, vSliderγε, vSliderγζ, vSliderγη,
-		powerSliderεβ, powerSliderεα, powerSliderεδ, powerSliderεγ, powerSliderεε, powerSliderεζ, powerSliderεη,
-		vSliderεβ, vSliderεα, vSliderεδ, vSliderεγ, vSliderεε, vSliderεζ, vSliderεη,
-		powerSliderζβ, powerSliderζα, powerSliderζδ, powerSliderζγ, powerSliderζε, powerSliderζζ, powerSliderζη,
-		vSliderζβ, vSliderζα, vSliderζδ, vSliderζγ, vSliderζε, vSliderζζ, vSliderζη,
-		powerSliderηβ, powerSliderηα, powerSliderηδ, powerSliderηγ, powerSliderηε, powerSliderηζ, powerSliderηη,
-		vSliderηβ, vSliderηα, vSliderηδ, vSliderηγ, vSliderηε, vSliderηζ, vSliderηη,
+		AttractPowerSliderαα, AttractPowerSliderαβ, AttractPowerSliderαδ, AttractPowerSliderαγ, AttractPowerSliderαε, AttractPowerSliderαζ, AttractPowerSliderαη, AttractPowerSliderαθ,
+		AttractDistanceSliderαα, AttractDistanceSliderαβ, AttractDistanceSliderαδ, AttractDistanceSliderαγ, AttractDistanceSliderαε, AttractDistanceSliderαζ, AttractDistanceSliderαη, AttractDistanceSliderαθ,
+		AttractPowerSliderβα, AttractPowerSliderββ, AttractPowerSliderβδ, AttractPowerSliderβγ, AttractPowerSliderβε, AttractPowerSliderβζ, AttractPowerSliderβη, AttractPowerSliderβθ,
+		AttractDistanceSliderβα, AttractDistanceSliderββ, AttractDistanceSliderβδ, AttractDistanceSliderβγ, AttractDistanceSliderβε, AttractDistanceSliderβζ, AttractDistanceSliderβη, AttractDistanceSliderβθ,
+		AttractPowerSliderγα, AttractPowerSliderγβ, AttractPowerSliderγδ, AttractPowerSliderγγ, AttractPowerSliderγε, AttractPowerSliderγζ, AttractPowerSliderγη, AttractPowerSliderγθ,
+		AttractDistanceSliderγα, AttractDistanceSliderγβ, AttractDistanceSliderγδ, AttractDistanceSliderγγ, AttractDistanceSliderγε, AttractDistanceSliderγζ, AttractDistanceSliderγη, AttractDistanceSliderγθ,
+		AttractPowerSliderδα, AttractPowerSliderδβ, AttractPowerSliderδδ, AttractPowerSliderδγ, AttractPowerSliderδε, AttractPowerSliderδζ, AttractPowerSliderδη, AttractPowerSliderδθ,
+		AttractDistanceSliderδα, AttractDistanceSliderδβ, AttractDistanceSliderδδ, AttractDistanceSliderδγ, AttractDistanceSliderδε, AttractDistanceSliderδζ, AttractDistanceSliderδη, AttractDistanceSliderδθ,
+		AttractPowerSliderεα, AttractPowerSliderεβ, AttractPowerSliderεδ, AttractPowerSliderεγ, AttractPowerSliderεε, AttractPowerSliderεζ, AttractPowerSliderεη, AttractPowerSliderεθ,
+		AttractDistanceSliderεα, AttractDistanceSliderεβ, AttractDistanceSliderεδ, AttractDistanceSliderεγ, AttractDistanceSliderεε, AttractDistanceSliderεζ, AttractDistanceSliderεη, AttractDistanceSliderεθ,
+		AttractPowerSliderζα, AttractPowerSliderζβ, AttractPowerSliderζδ, AttractPowerSliderζγ, AttractPowerSliderζε, AttractPowerSliderζζ, AttractPowerSliderζη, AttractPowerSliderζθ,
+		AttractDistanceSliderζα, AttractDistanceSliderζβ, AttractDistanceSliderζδ, AttractDistanceSliderζγ, AttractDistanceSliderζε, AttractDistanceSliderζζ, AttractDistanceSliderζη, AttractDistanceSliderζθ,
+		AttractPowerSliderηα, AttractPowerSliderηβ, AttractPowerSliderηδ, AttractPowerSliderηγ, AttractPowerSliderηε, AttractPowerSliderηζ, AttractPowerSliderηη, AttractPowerSliderηθ,
+		AttractDistanceSliderηα, AttractDistanceSliderηβ, AttractDistanceSliderηδ, AttractDistanceSliderηγ, AttractDistanceSliderηε, AttractDistanceSliderηζ, AttractDistanceSliderηη, AttractDistanceSliderηθ,
+		AttractPowerSliderθα, AttractPowerSliderθβ, AttractPowerSliderθδ, AttractPowerSliderθγ, AttractPowerSliderθε, AttractPowerSliderθζ, AttractPowerSliderθη, AttractPowerSliderθθ,
+		AttractDistanceSliderθα, AttractDistanceSliderθβ, AttractDistanceSliderθδ, AttractDistanceSliderθγ, AttractDistanceSliderθε, AttractDistanceSliderθζ, AttractDistanceSliderηθ, AttractDistanceSliderθθ,
+		RepelPowerSliderαα, RepelPowerSliderαβ, RepelPowerSliderαδ, RepelPowerSliderαγ, RepelPowerSliderαε, RepelPowerSliderαζ, RepelPowerSliderαη, RepelPowerSliderαθ,
+		RepelDistanceSliderαα, RepelDistanceSliderαβ, RepelDistanceSliderαδ, RepelDistanceSliderαγ, RepelDistanceSliderαε, RepelDistanceSliderαζ, RepelDistanceSliderαη, RepelDistanceSliderαθ,
+		RepelPowerSliderβα, RepelPowerSliderββ, RepelPowerSliderβδ, RepelPowerSliderβγ, RepelPowerSliderβε, RepelPowerSliderβζ, RepelPowerSliderβη, RepelPowerSliderβθ,
+		RepelDistanceSliderβα, RepelDistanceSliderββ, RepelDistanceSliderβδ, RepelDistanceSliderβγ, RepelDistanceSliderβε, RepelDistanceSliderβζ, RepelDistanceSliderβη, RepelDistanceSliderβθ,
+		RepelPowerSliderγα, RepelPowerSliderγβ, RepelPowerSliderγδ, RepelPowerSliderγγ, RepelPowerSliderγε, RepelPowerSliderγζ, RepelPowerSliderγη, RepelPowerSliderγθ,
+		RepelDistanceSliderγα, RepelDistanceSliderγβ, RepelDistanceSliderγδ, RepelDistanceSliderγγ, RepelDistanceSliderγε, RepelDistanceSliderγζ, RepelDistanceSliderγη, RepelDistanceSliderγθ,
+		RepelPowerSliderδα, RepelPowerSliderδβ, RepelPowerSliderδδ, RepelPowerSliderδγ, RepelPowerSliderδε, RepelPowerSliderδζ, RepelPowerSliderδη, RepelPowerSliderδθ,
+		RepelDistanceSliderδα, RepelDistanceSliderδβ, RepelDistanceSliderδδ, RepelDistanceSliderδγ, RepelDistanceSliderδε, RepelDistanceSliderδζ, RepelDistanceSliderδη, RepelDistanceSliderδθ,
+		RepelPowerSliderεα, RepelPowerSliderεβ, RepelPowerSliderεδ, RepelPowerSliderεγ, RepelPowerSliderεε, RepelPowerSliderεζ, RepelPowerSliderεη, RepelPowerSliderεθ,
+		RepelDistanceSliderεα, RepelDistanceSliderεβ, RepelDistanceSliderεδ, RepelDistanceSliderεγ, RepelDistanceSliderεε, RepelDistanceSliderεζ, RepelDistanceSliderεη, RepelDistanceSliderεθ,
+		RepelPowerSliderζα, RepelPowerSliderζβ, RepelPowerSliderζδ, RepelPowerSliderζγ, RepelPowerSliderζε, RepelPowerSliderζζ, RepelPowerSliderζη, RepelPowerSliderζθ,
+		RepelDistanceSliderζα, RepelDistanceSliderζβ, RepelDistanceSliderζδ, RepelDistanceSliderζγ, RepelDistanceSliderζε, RepelDistanceSliderζζ, RepelDistanceSliderζη, RepelDistanceSliderζθ,
+		RepelPowerSliderηα, RepelPowerSliderηβ, RepelPowerSliderηδ, RepelPowerSliderηγ, RepelPowerSliderηε, RepelPowerSliderηζ, RepelPowerSliderηη, RepelPowerSliderηθ,
+		RepelDistanceSliderηα, RepelDistanceSliderηβ, RepelDistanceSliderηδ, RepelDistanceSliderηγ, RepelDistanceSliderηε, RepelDistanceSliderηζ, RepelDistanceSliderηη, RepelDistanceSliderηθ,
+		RepelPowerSliderθα, RepelPowerSliderθβ, RepelPowerSliderθδ, RepelPowerSliderθγ, RepelPowerSliderθε, RepelPowerSliderθζ, RepelPowerSliderθη, RepelPowerSliderθθ,
+		RepelDistanceSliderθα, RepelDistanceSliderθβ, RepelDistanceSliderθδ, RepelDistanceSliderθγ, RepelDistanceSliderθε, RepelDistanceSliderθζ, RepelDistanceSliderηθ, RepelDistanceSliderθθ,
+		static_cast<float>(numberSliderα),
 		static_cast<float>(numberSliderβ),
 		static_cast<float>(numberSliderα),
 		static_cast<float>(numberSliderδ),
@@ -1709,181 +2716,293 @@ void ofApp::saveSettings()
 		static_cast<float>(numberSliderε),
 		static_cast<float>(numberSliderζ),
 		static_cast<float>(numberSliderη),
-		viscositySlider,
-		viscositySliderαα,
-		viscositySliderαβ,
-		viscositySliderαγ,
-		viscositySliderαδ,
-		viscositySliderαε,
-		viscositySliderαζ,
-		viscositySliderαη,
-		viscositySliderβα,
-		viscositySliderββ,
-		viscositySliderβγ,
-		viscositySliderβδ,
-		viscositySliderβε,
-		viscositySliderβζ,
-		viscositySliderβη,
-		viscositySliderγα,
-		viscositySliderγβ,
-		viscositySliderγγ,
-		viscositySliderγδ,
-		viscositySliderγε,
-		viscositySliderγζ,
-		viscositySliderγη,
-		viscositySliderδα,
-		viscositySliderδβ,
-		viscositySliderδγ,
-		viscositySliderδδ,
-		viscositySliderδε,
-		viscositySliderδζ,
-		viscositySliderδη,
-		viscositySliderεα,
-		viscositySliderεβ,
-		viscositySliderεγ,
-		viscositySliderεδ,
-		viscositySliderεε,
-		viscositySliderεζ,
-		viscositySliderεη,
-		viscositySliderζα,
-		viscositySliderζβ,
-		viscositySliderζγ,
-		viscositySliderζδ,
-		viscositySliderζε,
-		viscositySliderζζ,
-		viscositySliderζη,
-		viscositySliderηα,
-		viscositySliderηβ,
-		viscositySliderηγ,
-		viscositySliderηδ,
-		viscositySliderηε,
-		viscositySliderηζ,
-		viscositySliderηη,
-		InteractionEvoProbSlider,
-		InteractionEvoAmountSlider,
-		probabilitySlider,
-		probabilitySliderαα,
-		probabilitySliderαβ,
-		probabilitySliderαγ,
-		probabilitySliderαδ,
-		probabilitySliderαε,
-		probabilitySliderαζ,
-		probabilitySliderαη,
-		probabilitySliderβα,
-		probabilitySliderββ,
-		probabilitySliderβγ,
-		probabilitySliderβδ,
-		probabilitySliderβε,
-		probabilitySliderβζ,
-		probabilitySliderβη,
-		probabilitySliderγα,
-		probabilitySliderγβ,
-		probabilitySliderγγ,
-		probabilitySliderγδ,
-		probabilitySliderγε,
-		probabilitySliderγζ,
-		probabilitySliderγη,
-		probabilitySliderδα,
-		probabilitySliderδβ,
-		probabilitySliderδγ,
-		probabilitySliderδδ,
-		probabilitySliderδε,
-		probabilitySliderδζ,
-		probabilitySliderδη,
-		probabilitySliderεα,
-		probabilitySliderεβ,
-		probabilitySliderεγ,
-		probabilitySliderεδ,
-		probabilitySliderεε,
-		probabilitySliderεζ,
-		probabilitySliderεη,
-		probabilitySliderζα,
-		probabilitySliderζβ,
-		probabilitySliderζγ,
-		probabilitySliderζδ,
-		probabilitySliderζε,
-		probabilitySliderζζ,
-		probabilitySliderζη,
-		probabilitySliderηα,
-		probabilitySliderηβ,
-		probabilitySliderηγ,
-		probabilitySliderηδ,
-		probabilitySliderηε,
-		probabilitySliderηζ,
-		probabilitySliderηη,
-		minPowerSlider,
-		maxPowerSlider,
-		minRangeSlider,
-		maxRangeSlider,
-		ProbabilityEvoProbSlider,
-		ProbabilityEvoAmountSlider,
-		ViscosityEvoProbSlider,
-		ViscosityEvoAmountSlider,
-		viscositySliderαθ,
-		viscositySliderβθ,
-		viscositySliderγθ,
-		viscositySliderδθ,
-		viscositySliderεθ,
-		viscositySliderζθ,
-		viscositySliderηθ,
-		viscositySliderθα,
-		viscositySliderθβ,
-		viscositySliderθγ,
-		viscositySliderθδ,
-		viscositySliderθε,
-		viscositySliderθζ,
-		viscositySliderθη,
-		viscositySliderθθ,
-		probabilitySliderαθ,
-		probabilitySliderβθ,
-		probabilitySliderγθ,
-		probabilitySliderδθ,
-		probabilitySliderεθ,
-		probabilitySliderζθ,
-		probabilitySliderηθ,
-		probabilitySliderθα,
-		probabilitySliderθβ,
-		probabilitySliderθγ,
-		probabilitySliderθδ,
-		probabilitySliderθε,
-		probabilitySliderθζ,
-		probabilitySliderθη,
-		probabilitySliderθθ,
 		static_cast<float>(numberSliderθ),
-		powerSliderαθ,
-		powerSliderβθ,
-		powerSliderδθ,
-		powerSliderγθ,
-		powerSliderεθ,
-		powerSliderζθ,
-		powerSliderηθ,
-		powerSliderθα,
-		powerSliderθβ,
-		powerSliderθδ,
-		powerSliderθγ,
-		powerSliderθε,
-		powerSliderθζ,
-		powerSliderθη,
-		powerSliderθθ,
-		vSliderαθ,
-		vSliderβθ,
-		vSliderδθ,
-		vSliderγθ,
-		vSliderεθ,
-		vSliderζθ,
-		vSliderηθ,
-		vSliderθα,
-		vSliderθβ,
-		vSliderθδ,
-		vSliderθγ,
-		vSliderθε,
-		vSliderθζ,
-		vSliderθη,
-		vSliderθθ,
-		minViscoSlider,
-		maxViscoSlider,
-		minProbSlider,
-		maxProbSlider,
+		viscositySlider,
+		ViscosityAttractSliderαα,
+		ViscosityAttractSliderαβ,
+		ViscosityAttractSliderαγ,
+		ViscosityAttractSliderαδ,
+		ViscosityAttractSliderαε,
+		ViscosityAttractSliderαζ,
+		ViscosityAttractSliderαη,
+		ViscosityAttractSliderβα,
+		ViscosityAttractSliderββ,
+		ViscosityAttractSliderβγ,
+		ViscosityAttractSliderβδ,
+		ViscosityAttractSliderβε,
+		ViscosityAttractSliderβζ,
+		ViscosityAttractSliderβη,
+		ViscosityAttractSliderγα,
+		ViscosityAttractSliderγβ,
+		ViscosityAttractSliderγγ,
+		ViscosityAttractSliderγδ,
+		ViscosityAttractSliderγε,
+		ViscosityAttractSliderγζ,
+		ViscosityAttractSliderγη,
+		ViscosityAttractSliderδα,
+		ViscosityAttractSliderδβ,
+		ViscosityAttractSliderδγ,
+		ViscosityAttractSliderδδ,
+		ViscosityAttractSliderδε,
+		ViscosityAttractSliderδζ,
+		ViscosityAttractSliderδη,
+		ViscosityAttractSliderεα,
+		ViscosityAttractSliderεβ,
+		ViscosityAttractSliderεγ,
+		ViscosityAttractSliderεδ,
+		ViscosityAttractSliderεε,
+		ViscosityAttractSliderεζ,
+		ViscosityAttractSliderεη,
+		ViscosityAttractSliderζα,
+		ViscosityAttractSliderζβ,
+		ViscosityAttractSliderζγ,
+		ViscosityAttractSliderζδ,
+		ViscosityAttractSliderζε,
+		ViscosityAttractSliderζζ,
+		ViscosityAttractSliderζη,
+		ViscosityAttractSliderηα,
+		ViscosityAttractSliderηβ,
+		ViscosityAttractSliderηγ,
+		ViscosityAttractSliderηδ,
+		ViscosityAttractSliderηε,
+		ViscosityAttractSliderηζ,
+		ViscosityAttractSliderηη,
+		ViscosityAttractSliderαθ,
+		ViscosityAttractSliderβθ,
+		ViscosityAttractSliderγθ,
+		ViscosityAttractSliderδθ,
+		ViscosityAttractSliderεθ,
+		ViscosityAttractSliderζθ,
+		ViscosityAttractSliderηθ,
+		ViscosityAttractSliderθα,
+		ViscosityAttractSliderθβ,
+		ViscosityAttractSliderθγ,
+		ViscosityAttractSliderθδ,
+		ViscosityAttractSliderθε,
+		ViscosityAttractSliderθζ,
+		ViscosityAttractSliderθη,
+		ViscosityAttractSliderθθ,
+		ViscosityRepelSliderαα,
+		ViscosityRepelSliderαβ,
+		ViscosityRepelSliderαγ,
+		ViscosityRepelSliderαδ,
+		ViscosityRepelSliderαε,
+		ViscosityRepelSliderαζ,
+		ViscosityRepelSliderαη,
+		ViscosityRepelSliderβα,
+		ViscosityRepelSliderββ,
+		ViscosityRepelSliderβγ,
+		ViscosityRepelSliderβδ,
+		ViscosityRepelSliderβε,
+		ViscosityRepelSliderβζ,
+		ViscosityRepelSliderβη,
+		ViscosityRepelSliderγα,
+		ViscosityRepelSliderγβ,
+		ViscosityRepelSliderγγ,
+		ViscosityRepelSliderγδ,
+		ViscosityRepelSliderγε,
+		ViscosityRepelSliderγζ,
+		ViscosityRepelSliderγη,
+		ViscosityRepelSliderδα,
+		ViscosityRepelSliderδβ,
+		ViscosityRepelSliderδγ,
+		ViscosityRepelSliderδδ,
+		ViscosityRepelSliderδε,
+		ViscosityRepelSliderδζ,
+		ViscosityRepelSliderδη,
+		ViscosityRepelSliderεα,
+		ViscosityRepelSliderεβ,
+		ViscosityRepelSliderεγ,
+		ViscosityRepelSliderεδ,
+		ViscosityRepelSliderεε,
+		ViscosityRepelSliderεζ,
+		ViscosityRepelSliderεη,
+		ViscosityRepelSliderζα,
+		ViscosityRepelSliderζβ,
+		ViscosityRepelSliderζγ,
+		ViscosityRepelSliderζδ,
+		ViscosityRepelSliderζε,
+		ViscosityRepelSliderζζ,
+		ViscosityRepelSliderζη,
+		ViscosityRepelSliderηα,
+		ViscosityRepelSliderηβ,
+		ViscosityRepelSliderηγ,
+		ViscosityRepelSliderηδ,
+		ViscosityRepelSliderηε,
+		ViscosityRepelSliderηζ,
+		ViscosityRepelSliderηη,
+		ViscosityRepelSliderαθ,
+		ViscosityRepelSliderβθ,
+		ViscosityRepelSliderγθ,
+		ViscosityRepelSliderδθ,
+		ViscosityRepelSliderεθ,
+		ViscosityRepelSliderζθ,
+		ViscosityRepelSliderηθ,
+		ViscosityRepelSliderθα,
+		ViscosityRepelSliderθβ,
+		ViscosityRepelSliderθγ,
+		ViscosityRepelSliderθδ,
+		ViscosityRepelSliderθε,
+		ViscosityRepelSliderθζ,
+		ViscosityRepelSliderθη,
+		ViscosityRepelSliderθθ,
+		probabilitySlider,
+		ProbAttractSliderαα,
+		ProbAttractSliderαβ,
+		ProbAttractSliderαγ,
+		ProbAttractSliderαδ,
+		ProbAttractSliderαε,
+		ProbAttractSliderαζ,
+		ProbAttractSliderαη,
+		ProbAttractSliderβα,
+		ProbAttractSliderββ,
+		ProbAttractSliderβγ,
+		ProbAttractSliderβδ,
+		ProbAttractSliderβε,
+		ProbAttractSliderβζ,
+		ProbAttractSliderβη,
+		ProbAttractSliderγα,
+		ProbAttractSliderγβ,
+		ProbAttractSliderγγ,
+		ProbAttractSliderγδ,
+		ProbAttractSliderγε,
+		ProbAttractSliderγζ,
+		ProbAttractSliderγη,
+		ProbAttractSliderδα,
+		ProbAttractSliderδβ,
+		ProbAttractSliderδγ,
+		ProbAttractSliderδδ,
+		ProbAttractSliderδε,
+		ProbAttractSliderδζ,
+		ProbAttractSliderδη,
+		ProbAttractSliderεα,
+		ProbAttractSliderεβ,
+		ProbAttractSliderεγ,
+		ProbAttractSliderεδ,
+		ProbAttractSliderεε,
+		ProbAttractSliderεζ,
+		ProbAttractSliderεη,
+		ProbAttractSliderζα,
+		ProbAttractSliderζβ,
+		ProbAttractSliderζγ,
+		ProbAttractSliderζδ,
+		ProbAttractSliderζε,
+		ProbAttractSliderζζ,
+		ProbAttractSliderζη,
+		ProbAttractSliderηα,
+		ProbAttractSliderηβ,
+		ProbAttractSliderηγ,
+		ProbAttractSliderηδ,
+		ProbAttractSliderηε,
+		ProbAttractSliderηζ,
+		ProbAttractSliderηη,
+		ProbAttractSliderαθ,
+		ProbAttractSliderβθ,
+		ProbAttractSliderγθ,
+		ProbAttractSliderδθ,
+		ProbAttractSliderεθ,
+		ProbAttractSliderζθ,
+		ProbAttractSliderηθ,
+		ProbAttractSliderθα,
+		ProbAttractSliderθβ,
+		ProbAttractSliderθγ,
+		ProbAttractSliderθδ,
+		ProbAttractSliderθε,
+		ProbAttractSliderθζ,
+		ProbAttractSliderθη,
+		ProbAttractSliderθθ,
+		ProbRepelSliderαα,
+		ProbRepelSliderαβ,
+		ProbRepelSliderαγ,
+		ProbRepelSliderαδ,
+		ProbRepelSliderαε,
+		ProbRepelSliderαζ,
+		ProbRepelSliderαη,
+		ProbRepelSliderβα,
+		ProbRepelSliderββ,
+		ProbRepelSliderβγ,
+		ProbRepelSliderβδ,
+		ProbRepelSliderβε,
+		ProbRepelSliderβζ,
+		ProbRepelSliderβη,
+		ProbRepelSliderγα,
+		ProbRepelSliderγβ,
+		ProbRepelSliderγγ,
+		ProbRepelSliderγδ,
+		ProbRepelSliderγε,
+		ProbRepelSliderγζ,
+		ProbRepelSliderγη,
+		ProbRepelSliderδα,
+		ProbRepelSliderδβ,
+		ProbRepelSliderδγ,
+		ProbRepelSliderδδ,
+		ProbRepelSliderδε,
+		ProbRepelSliderδζ,
+		ProbRepelSliderδη,
+		ProbRepelSliderεα,
+		ProbRepelSliderεβ,
+		ProbRepelSliderεγ,
+		ProbRepelSliderεδ,
+		ProbRepelSliderεε,
+		ProbRepelSliderεζ,
+		ProbRepelSliderεη,
+		ProbRepelSliderζα,
+		ProbRepelSliderζβ,
+		ProbRepelSliderζγ,
+		ProbRepelSliderζδ,
+		ProbRepelSliderζε,
+		ProbRepelSliderζζ,
+		ProbRepelSliderζη,
+		ProbRepelSliderηα,
+		ProbRepelSliderηβ,
+		ProbRepelSliderηγ,
+		ProbRepelSliderηδ,
+		ProbRepelSliderηε,
+		ProbRepelSliderηζ,
+		ProbRepelSliderηη,
+		ProbRepelSliderαθ,
+		ProbRepelSliderβθ,
+		ProbRepelSliderγθ,
+		ProbRepelSliderδθ,
+		ProbRepelSliderεθ,
+		ProbRepelSliderζθ,
+		ProbRepelSliderηθ,
+		ProbRepelSliderθα,
+		ProbRepelSliderθβ,
+		ProbRepelSliderθγ,
+		ProbRepelSliderθδ,
+		ProbRepelSliderθε,
+		ProbRepelSliderθζ,
+		ProbRepelSliderθη,
+		ProbRepelSliderθθ,
+		minAttractPowerSlider,
+		maxAttractPowerSlider,
+		minRepelPowerSlider,
+		maxRepelPowerSlider,
+		minAttractRangeSlider,
+		maxAttractRangeSlider,
+		minRepelRangeSlider,
+		maxRepelRangeSlider,
+		minAttractViscoSlider,
+		maxAttractViscoSlider,
+		minRepelViscoSlider,
+		maxRepelViscoSlider,
+		minAttractProbSlider,
+		maxAttractProbSlider,
+		minRepelProbSlider,
+		maxRepelProbSlider,
+		AttractEvoProbSlider,
+		AttractEvoAmountSlider,
+		ProbAttractEvoProbSlider,
+		ProbAttractEvoAmountSlider,
+		ViscoAttractEvoProbSlider,
+		ViscoAttractEvoAmountSlider,
+		RepelEvoProbSlider,
+		RepelEvoAmountSlider,
+		ProbRepelEvoProbSlider,
+		ProbRepelEvoAmountSlider,
+		ViscoRepelEvoProbSlider,
+		ViscoRepelEvoAmountSlider,
 	};
 
 	std::string save_path;
@@ -1947,294 +3066,564 @@ void ofApp::loadSettings()
 		}
 	}
 
-	if (p.size() < 280)
+	if (p.size() < 550)
 	{
 		// better checks needed
 		ofSystemAlertDialog("Could not read the file!");
 	}
 	else
 	{
-		powerSliderββ = p[0];
-		powerSliderβα = p[1];
-		powerSliderβδ = p[2];
-		powerSliderβγ = p[3];
-		powerSliderβε = p[4];
-		powerSliderβζ = p[5];
-		powerSliderβη = p[6];
-		vSliderββ = p[7];
-		vSliderβα = p[8];
-		vSliderβδ = p[9];
-		vSliderβγ = p[10];
-		vSliderβε = p[11];
-		vSliderβζ = p[12];
-		vSliderβη = p[13];
-		powerSliderαβ = p[14];
-		powerSliderαα = p[15];
-		powerSliderαδ = p[16];
-		powerSliderαγ = p[17];
-		powerSliderαε = p[18];
-		powerSliderαζ = p[19];
-		powerSliderαη = p[20];
-		vSliderαβ = p[21];
-		vSliderαα = p[22];
-		vSliderαδ = p[23];
-		vSliderαγ = p[24];
-		vSliderαε = p[25];
-		vSliderαζ = p[26];
-		vSliderαη = p[27];
-		powerSliderδβ = p[28];
-		powerSliderδα = p[29];
-		powerSliderδδ = p[30];
-		powerSliderδγ = p[31];
-		powerSliderδε = p[32];
-		powerSliderδζ = p[33];
-		powerSliderδη = p[34];
-		vSliderδβ = p[35];
-		vSliderδα = p[36];
-		vSliderδδ = p[37];
-		vSliderδγ = p[38];
-		vSliderδε = p[39];
-		vSliderδζ = p[40];
-		vSliderδη = p[41];
-		powerSliderγβ = p[42];
-		powerSliderγα = p[43];
-		powerSliderγδ = p[44];
-		powerSliderγγ = p[45];
-		powerSliderγε = p[46];
-		powerSliderγζ = p[47];
-		powerSliderγη = p[48];
-		vSliderγβ = p[49];
-		vSliderγα = p[50];
-		vSliderγδ = p[51];
-		vSliderγγ = p[52];
-		vSliderγε = p[53];
-		vSliderγζ = p[54];
-		vSliderγη = p[55];
-		powerSliderεβ = p[56];
-		powerSliderεα = p[57];
-		powerSliderεδ = p[58];
-		powerSliderεγ = p[59];
-		powerSliderεε = p[60];
-		powerSliderεζ = p[61];
-		powerSliderεη = p[62];
-		vSliderεβ = p[63];
-		vSliderεα = p[64];
-		vSliderεδ = p[65];
-		vSliderεγ = p[66];
-		vSliderεε = p[67];
-		vSliderεζ = p[68];
-		vSliderεη = p[69];
-		powerSliderζβ = p[70];
-		powerSliderζα = p[71];
-		powerSliderζδ = p[72];
-		powerSliderζγ = p[73];
-		powerSliderζε = p[74];
-		powerSliderζζ = p[75];
-		powerSliderζη = p[76];
-		vSliderζβ = p[77];
-		vSliderζα = p[78];
-		vSliderζδ = p[79];
-		vSliderζγ = p[80];
-		vSliderζε = p[81];
-		vSliderζζ = p[82];
-		vSliderζη = p[83];
-		powerSliderηβ = p[84];
-		powerSliderηα = p[85];
-		powerSliderηδ = p[86];
-		powerSliderηγ = p[87];
-		powerSliderηε = p[88];
-		powerSliderηζ = p[89];
-		powerSliderηη = p[90];
-		vSliderηβ = p[91];
-		vSliderηα = p[92];
-		vSliderηδ = p[93];
-		vSliderηγ = p[94];
-		vSliderηε = p[95];
-		vSliderηζ = p[96];
-		vSliderηη = p[97];
-		numberSliderβ = static_cast<int>(p[98]);
-		numberSliderα = static_cast<int>(p[99]);
-		numberSliderδ = static_cast<int>(p[100]);
-		numberSliderγ = static_cast<int>(p[101]);
-		numberSliderε = static_cast<int>(p[102]);
-		numberSliderζ = static_cast<int>(p[103]);
-		numberSliderη = static_cast<int>(p[104]);
-		viscositySlider = p[105];
-		viscositySliderαα = p[106];
-		viscositySliderαβ = p[107];
-		viscositySliderαγ = p[108];
-		viscositySliderαδ = p[109];
-		viscositySliderαε = p[110];
-		viscositySliderαζ = p[111];
-		viscositySliderαη = p[112];
-		viscositySliderβα = p[113];
-		viscositySliderββ = p[114];
-		viscositySliderβγ = p[115];
-		viscositySliderβδ = p[116];
-		viscositySliderβε = p[117];
-		viscositySliderβζ = p[118];
-		viscositySliderβη = p[119];
-		viscositySliderγα = p[120];
-		viscositySliderγβ = p[121];
-		viscositySliderγγ = p[122];
-		viscositySliderγδ = p[123];
-		viscositySliderγε = p[124];
-		viscositySliderγζ = p[125];
-		viscositySliderγη = p[126];
-		viscositySliderδα = p[127];
-		viscositySliderδβ = p[128];
-		viscositySliderδγ = p[129];
-		viscositySliderδδ = p[130];
-		viscositySliderδε = p[131];
-		viscositySliderδζ = p[132];
-		viscositySliderδη = p[133];
-		viscositySliderεα = p[134];
-		viscositySliderεβ = p[135];
-		viscositySliderεγ = p[136];
-		viscositySliderεδ = p[137];
-		viscositySliderεε = p[138];
-		viscositySliderεζ = p[139];
-		viscositySliderεη = p[140];
-		viscositySliderζα = p[141];
-		viscositySliderζβ = p[142];
-		viscositySliderζγ = p[143];
-		viscositySliderζδ = p[144];
-		viscositySliderζε = p[145];
-		viscositySliderζζ = p[146];
-		viscositySliderζη = p[147];
-		viscositySliderηα = p[148];
-		viscositySliderηβ = p[149];
-		viscositySliderηγ = p[150];
-		viscositySliderηδ = p[151];
-		viscositySliderηε = p[152];
-		viscositySliderηζ = p[153];
-		viscositySliderηη = p[154];
-		InteractionEvoProbSlider = p[155];
-		InteractionEvoAmountSlider = p[156];
-		probabilitySlider = p[157];
-		probabilitySliderαα = p[158];
-		probabilitySliderαβ = p[159];
-		probabilitySliderαγ = p[160];
-		probabilitySliderαδ = p[161];
-		probabilitySliderαε = p[162];
-		probabilitySliderαζ = p[163];
-		probabilitySliderαη = p[164];
-		probabilitySliderβα = p[165];
-		probabilitySliderββ = p[166];
-		probabilitySliderβγ = p[167];
-		probabilitySliderβδ = p[168];
-		probabilitySliderβε = p[169];
-		probabilitySliderβζ = p[170];
-		probabilitySliderβη = p[171];
-		probabilitySliderγα = p[172];
-		probabilitySliderγβ = p[173];
-		probabilitySliderγγ = p[174];
-		probabilitySliderγδ = p[175];
-		probabilitySliderγε = p[176];
-		probabilitySliderγζ = p[177];
-		probabilitySliderγη = p[178];
-		probabilitySliderδα = p[179];
-		probabilitySliderδβ = p[180];
-		probabilitySliderδγ = p[181];
-		probabilitySliderδδ = p[182];
-		probabilitySliderδε = p[183];
-		probabilitySliderδζ = p[184];
-		probabilitySliderδη = p[185];
-		probabilitySliderεα = p[186];
-		probabilitySliderεβ = p[187];
-		probabilitySliderεγ = p[188];
-		probabilitySliderεδ = p[189];
-		probabilitySliderεε = p[190];
-		probabilitySliderεζ = p[191];
-		probabilitySliderεη = p[192];
-		probabilitySliderζα = p[193];
-		probabilitySliderζβ = p[194];
-		probabilitySliderζγ = p[195];
-		probabilitySliderζδ = p[196];
-		probabilitySliderζε = p[197];
-		probabilitySliderζζ = p[198];
-		probabilitySliderζη = p[199];
-		probabilitySliderηα = p[200];
-		probabilitySliderηβ = p[201];
-		probabilitySliderηγ = p[202];
-		probabilitySliderηδ = p[203];
-		probabilitySliderηε = p[204];
-		probabilitySliderηζ = p[205];
-		probabilitySliderηη = p[206];
-		minPowerSlider = p[207];
-		maxPowerSlider = p[208];
-		minRangeSlider = p[209];
-		maxRangeSlider = p[210];
-		ProbabilityEvoProbSlider = p[211];
-		ProbabilityEvoAmountSlider = p[212];
-		ViscosityEvoProbSlider = p[213];
-		ViscosityEvoAmountSlider = p[214];
-		viscositySliderαθ = p[215];
-		viscositySliderβθ = p[216];
-		viscositySliderγθ = p[217];
-		viscositySliderδθ = p[218];
-		viscositySliderεθ = p[219];
-		viscositySliderζθ = p[220];
-		viscositySliderηθ = p[221];
-		viscositySliderθα = p[222];
-		viscositySliderθβ = p[223];
-		viscositySliderθγ = p[224];
-		viscositySliderθδ = p[225];
-		viscositySliderθε = p[226];
-		viscositySliderθζ = p[227];
-		viscositySliderθη = p[228];
-		viscositySliderθθ = p[229];
-		probabilitySliderαθ = p[230];
-		probabilitySliderβθ = p[231];
-		probabilitySliderγθ = p[232];
-		probabilitySliderδθ = p[233];
-		probabilitySliderεθ = p[234];
-		probabilitySliderζθ = p[235];
-		probabilitySliderηθ = p[236];
-		probabilitySliderθα = p[237];
-		probabilitySliderθβ = p[238];
-		probabilitySliderθγ = p[239];
-		probabilitySliderθδ = p[240];
-		probabilitySliderθε = p[241];
-		probabilitySliderθζ = p[242];
-		probabilitySliderθη = p[243];
-		probabilitySliderθθ = p[244];
-		numberSliderθ = static_cast<int>(p[245]);
-		powerSliderαθ = p[246];
-		powerSliderβθ = p[247];
-		powerSliderδθ = p[248];
-		powerSliderγθ = p[249];
-		powerSliderεθ = p[250];
-		powerSliderζθ = p[251];
-		powerSliderηθ = p[252];
-		powerSliderθα = p[253];
-		powerSliderθβ = p[254];
-		powerSliderθδ = p[255];
-		powerSliderθγ = p[256];
-		powerSliderθε = p[257];
-		powerSliderθζ = p[258];
-		powerSliderθη = p[259];
-		powerSliderθθ = p[260];
-		vSliderαθ = p[261];
-		vSliderβθ = p[262];
-		vSliderδθ = p[263];
-		vSliderγθ = p[264];
-		vSliderεθ = p[265];
-		vSliderζθ = p[266];
-		vSliderηθ = p[267];
-		vSliderθα = p[268];
-		vSliderθβ = p[269];
-		vSliderθδ = p[270];
-		vSliderθγ = p[271];
-		vSliderθε = p[272];
-		vSliderθζ = p[273];
-		vSliderθη = p[274];
-		vSliderθθ = p[275];
-		minViscoSlider = p[276];
-		maxViscoSlider = p[277];
-		minProbSlider = p[278];
-		maxProbSlider = p[279];
-	}
+AttractPowerSliderαα = p[0];
+AttractPowerSliderαβ = p[1];
+AttractPowerSliderαδ = p[2];
+AttractPowerSliderαγ = p[3];
+AttractPowerSliderαε = p[4];
+AttractPowerSliderαζ = p[5];
+AttractPowerSliderαη = p[6];
+AttractPowerSliderαθ = p[7];
+AttractDistanceSliderαα = p[8];
+AttractDistanceSliderαβ = p[9];
+AttractDistanceSliderαδ = p[10];
+AttractDistanceSliderαγ = p[11];
+AttractDistanceSliderαε = p[12];
+AttractDistanceSliderαζ = p[13];
+AttractDistanceSliderαη = p[14];
+AttractDistanceSliderαθ = p[15];
+AttractPowerSliderβα = p[16];
+AttractPowerSliderββ = p[17];
+AttractPowerSliderβδ = p[18];
+AttractPowerSliderβγ = p[19];
+AttractPowerSliderβε = p[20];
+AttractPowerSliderβζ = p[21];
+AttractPowerSliderβη = p[22];
+AttractPowerSliderβθ = p[23];
+AttractDistanceSliderβα = p[24];
+AttractDistanceSliderββ = p[25];
+AttractDistanceSliderβδ = p[26];
+AttractDistanceSliderβγ = p[27];
+AttractDistanceSliderβε = p[28];
+AttractDistanceSliderβζ = p[29];
+AttractDistanceSliderβη = p[30];
+AttractDistanceSliderβθ = p[31];
+AttractPowerSliderγα = p[32];
+AttractPowerSliderγβ = p[33];
+AttractPowerSliderγδ = p[34];
+AttractPowerSliderγγ = p[35];
+AttractPowerSliderγε = p[36];
+AttractPowerSliderγζ = p[37];
+AttractPowerSliderγη = p[38];
+AttractPowerSliderγθ = p[39];
+AttractDistanceSliderγα = p[40];
+AttractDistanceSliderγβ = p[41];
+AttractDistanceSliderγδ = p[42];
+AttractDistanceSliderγγ = p[43];
+AttractDistanceSliderγε = p[44];
+AttractDistanceSliderγζ = p[45];
+AttractDistanceSliderγη = p[46];
+AttractDistanceSliderγθ = p[47];
+AttractPowerSliderδα = p[48];
+AttractPowerSliderδβ = p[49];
+AttractPowerSliderδδ = p[50];
+AttractPowerSliderδγ = p[51];
+AttractPowerSliderδε = p[52];
+AttractPowerSliderδζ = p[53];
+AttractPowerSliderδη = p[54];
+AttractPowerSliderδθ = p[55];
+AttractDistanceSliderδα = p[56];
+AttractDistanceSliderδβ = p[57];
+AttractDistanceSliderδδ = p[58];
+AttractDistanceSliderδγ = p[59];
+AttractDistanceSliderδε = p[60];
+AttractDistanceSliderδζ = p[61];
+AttractDistanceSliderδη = p[62];
+AttractDistanceSliderδθ = p[63];
+AttractPowerSliderεα = p[64];
+AttractPowerSliderεβ = p[65];
+AttractPowerSliderεδ = p[66];
+AttractPowerSliderεγ = p[67];
+AttractPowerSliderεε = p[68];
+AttractPowerSliderεζ = p[69];
+AttractPowerSliderεη = p[70];
+AttractPowerSliderεθ = p[71];
+AttractDistanceSliderεα = p[72];
+AttractDistanceSliderεβ = p[73];
+AttractDistanceSliderεδ = p[74];
+AttractDistanceSliderεγ = p[75];
+AttractDistanceSliderεε = p[76];
+AttractDistanceSliderεζ = p[77];
+AttractDistanceSliderεη = p[78];
+AttractDistanceSliderεθ = p[79];
+AttractPowerSliderζα = p[80];
+AttractPowerSliderζβ = p[81];
+AttractPowerSliderζδ = p[82];
+AttractPowerSliderζγ = p[83];
+AttractPowerSliderζε = p[84];
+AttractPowerSliderζζ = p[85];
+AttractPowerSliderζη = p[86];
+AttractPowerSliderζθ = p[87];
+AttractDistanceSliderζα = p[88];
+AttractDistanceSliderζβ = p[89];
+AttractDistanceSliderζδ = p[90];
+AttractDistanceSliderζγ = p[91];
+AttractDistanceSliderζε = p[92];
+AttractDistanceSliderζζ = p[93];
+AttractDistanceSliderζη = p[94];
+AttractDistanceSliderζθ = p[95];
+AttractPowerSliderηα = p[96];
+AttractPowerSliderηβ = p[97];
+AttractPowerSliderηδ = p[98];
+AttractPowerSliderηγ = p[99];
+AttractPowerSliderηε = p[100];
+AttractPowerSliderηζ = p[101];
+AttractPowerSliderηη = p[102];
+AttractPowerSliderηθ = p[103];
+AttractDistanceSliderηα = p[104];
+AttractDistanceSliderηβ = p[105];
+AttractDistanceSliderηδ = p[106];
+AttractDistanceSliderηγ = p[107];
+AttractDistanceSliderηε = p[108];
+AttractDistanceSliderηζ = p[109];
+AttractDistanceSliderηη = p[110];
+AttractDistanceSliderηθ = p[111];
+AttractPowerSliderθα = p[112];
+AttractPowerSliderθβ = p[113];
+AttractPowerSliderθδ = p[114];
+AttractPowerSliderθγ = p[115];
+AttractPowerSliderθε = p[116];
+AttractPowerSliderθζ = p[117];
+AttractPowerSliderθη = p[118];
+AttractPowerSliderθθ = p[119];
+AttractDistanceSliderθα = p[120];
+AttractDistanceSliderθβ = p[121];
+AttractDistanceSliderθδ = p[122];
+AttractDistanceSliderθγ = p[123];
+AttractDistanceSliderθε = p[124];
+AttractDistanceSliderθζ = p[125];
+AttractDistanceSliderηθ = p[126];
+AttractDistanceSliderθθ = p[127];
+RepelPowerSliderαα = p[128];
+RepelPowerSliderαβ = p[129];
+RepelPowerSliderαδ = p[130];
+RepelPowerSliderαγ = p[131];
+RepelPowerSliderαε = p[132];
+RepelPowerSliderαζ = p[133];
+RepelPowerSliderαη = p[134];
+RepelPowerSliderαθ = p[135];
+RepelDistanceSliderαα = p[136];
+RepelDistanceSliderαβ = p[137];
+RepelDistanceSliderαδ = p[138];
+RepelDistanceSliderαγ = p[139];
+RepelDistanceSliderαε = p[140];
+RepelDistanceSliderαζ = p[141];
+RepelDistanceSliderαη = p[142];
+RepelDistanceSliderαθ = p[143];
+RepelPowerSliderβα = p[144];
+RepelPowerSliderββ = p[145];
+RepelPowerSliderβδ = p[146];
+RepelPowerSliderβγ = p[147];
+RepelPowerSliderβε = p[148];
+RepelPowerSliderβζ = p[149];
+RepelPowerSliderβη = p[150];
+RepelPowerSliderβθ = p[151];
+RepelDistanceSliderβα = p[152];
+RepelDistanceSliderββ = p[153];
+RepelDistanceSliderβδ = p[154];
+RepelDistanceSliderβγ = p[155];
+RepelDistanceSliderβε = p[156];
+RepelDistanceSliderβζ = p[157];
+RepelDistanceSliderβη = p[158];
+RepelDistanceSliderβθ = p[159];
+RepelPowerSliderγα = p[160];
+RepelPowerSliderγβ = p[161];
+RepelPowerSliderγδ = p[162];
+RepelPowerSliderγγ = p[163];
+RepelPowerSliderγε = p[164];
+RepelPowerSliderγζ = p[165];
+RepelPowerSliderγη = p[166];
+RepelPowerSliderγθ = p[167];
+RepelDistanceSliderγα = p[168];
+RepelDistanceSliderγβ = p[169];
+RepelDistanceSliderγδ = p[170];
+RepelDistanceSliderγγ = p[171];
+RepelDistanceSliderγε = p[172];
+RepelDistanceSliderγζ = p[173];
+RepelDistanceSliderγη = p[174];
+RepelDistanceSliderγθ = p[175];
+RepelPowerSliderδα = p[176];
+RepelPowerSliderδβ = p[177];
+RepelPowerSliderδδ = p[178];
+RepelPowerSliderδγ = p[179];
+RepelPowerSliderδε = p[180];
+RepelPowerSliderδζ = p[181];
+RepelPowerSliderδη = p[182];
+RepelPowerSliderδθ = p[183];
+RepelDistanceSliderδα = p[184];
+RepelDistanceSliderδβ = p[185];
+RepelDistanceSliderδδ = p[186];
+RepelDistanceSliderδγ = p[187];
+RepelDistanceSliderδε = p[188];
+RepelDistanceSliderδζ = p[189];
+RepelDistanceSliderδη = p[190];
+RepelDistanceSliderδθ = p[191];
+RepelPowerSliderεα = p[192];
+RepelPowerSliderεβ = p[193];
+RepelPowerSliderεδ = p[194];
+RepelPowerSliderεγ = p[195];
+RepelPowerSliderεε = p[196];
+RepelPowerSliderεζ = p[197];
+RepelPowerSliderεη = p[198];
+RepelPowerSliderεθ = p[199];
+RepelDistanceSliderεα = p[200];
+RepelDistanceSliderεβ = p[201];
+RepelDistanceSliderεδ = p[202];
+RepelDistanceSliderεγ = p[203];
+RepelDistanceSliderεε = p[204];
+RepelDistanceSliderεζ = p[205];
+RepelDistanceSliderεη = p[206];
+RepelDistanceSliderεθ = p[207];
+RepelPowerSliderζα = p[208];
+RepelPowerSliderζβ = p[209];
+RepelPowerSliderζδ = p[210];
+RepelPowerSliderζγ = p[211];
+RepelPowerSliderζε = p[212];
+RepelPowerSliderζζ = p[213];
+RepelPowerSliderζη = p[214];
+RepelPowerSliderζθ = p[215];
+RepelDistanceSliderζα = p[216];
+RepelDistanceSliderζβ = p[217];
+RepelDistanceSliderζδ = p[218];
+RepelDistanceSliderζγ = p[219];
+RepelDistanceSliderζε = p[220];
+RepelDistanceSliderζζ = p[221];
+RepelDistanceSliderζη = p[222];
+RepelDistanceSliderζθ = p[223];
+RepelPowerSliderηα = p[224];
+RepelPowerSliderηβ = p[225];
+RepelPowerSliderηδ = p[226];
+RepelPowerSliderηγ = p[227];
+RepelPowerSliderηε = p[228];
+RepelPowerSliderηζ = p[229];
+RepelPowerSliderηη = p[230];
+RepelPowerSliderηθ = p[231];
+RepelDistanceSliderηα = p[232];
+RepelDistanceSliderηβ = p[233];
+RepelDistanceSliderηδ = p[234];
+RepelDistanceSliderηγ = p[235];
+RepelDistanceSliderηε = p[236];
+RepelDistanceSliderηζ = p[237];
+RepelDistanceSliderηη = p[238];
+RepelDistanceSliderηθ = p[239];
+RepelPowerSliderθα = p[240];
+RepelPowerSliderθβ = p[241];
+RepelPowerSliderθδ = p[242];
+RepelPowerSliderθγ = p[243];
+RepelPowerSliderθε = p[244];
+RepelPowerSliderθζ = p[245];
+RepelPowerSliderθη = p[246];
+RepelPowerSliderθθ = p[247];
+RepelDistanceSliderθα = p[248];
+RepelDistanceSliderθβ = p[249];
+RepelDistanceSliderθδ = p[250];
+RepelDistanceSliderθγ = p[251];
+RepelDistanceSliderθε = p[252];
+RepelDistanceSliderθζ = p[253];
+RepelDistanceSliderηθ = p[254];
+RepelDistanceSliderθθ = p[255];
+numberSliderβ = static_cast<int>(p[256]);
+numberSliderα = static_cast<int>(p[257]);
+numberSliderδ = static_cast<int>(p[258]);
+numberSliderγ = static_cast<int>(p[259]);
+numberSliderε = static_cast<int>(p[260]);
+numberSliderζ = static_cast<int>(p[261]);
+numberSliderη = static_cast<int>(p[262]);
+numberSliderθ = static_cast<int>(p[263]);
+viscositySlider = p[264];
+ViscosityAttractSliderαα = p[265];
+ViscosityAttractSliderαβ = p[266];
+ViscosityAttractSliderαγ = p[267];
+ViscosityAttractSliderαδ = p[268];
+ViscosityAttractSliderαε = p[269];
+ViscosityAttractSliderαζ = p[270];
+ViscosityAttractSliderαη = p[271];
+ViscosityAttractSliderβα = p[272];
+ViscosityAttractSliderββ = p[273];
+ViscosityAttractSliderβγ = p[274];
+ViscosityAttractSliderβδ = p[275];
+ViscosityAttractSliderβε = p[276];
+ViscosityAttractSliderβζ = p[277];
+ViscosityAttractSliderβη = p[278];
+ViscosityAttractSliderγα = p[279];
+ViscosityAttractSliderγβ = p[280];
+ViscosityAttractSliderγγ = p[281];
+ViscosityAttractSliderγδ = p[282];
+ViscosityAttractSliderγε = p[283];
+ViscosityAttractSliderγζ = p[284];
+ViscosityAttractSliderγη = p[285];
+ViscosityAttractSliderδα = p[286];
+ViscosityAttractSliderδβ = p[287];
+ViscosityAttractSliderδγ = p[288];
+ViscosityAttractSliderδδ = p[289];
+ViscosityAttractSliderδε = p[290];
+ViscosityAttractSliderδζ = p[291];
+ViscosityAttractSliderδη = p[292];
+ViscosityAttractSliderεα = p[293];
+ViscosityAttractSliderεβ = p[294];
+ViscosityAttractSliderεγ = p[295];
+ViscosityAttractSliderεδ = p[296];
+ViscosityAttractSliderεε = p[297];
+ViscosityAttractSliderεζ = p[298];
+ViscosityAttractSliderεη = p[299];
+ViscosityAttractSliderζα = p[300];
+ViscosityAttractSliderζβ = p[301];
+ViscosityAttractSliderζγ = p[302];
+ViscosityAttractSliderζδ = p[303];
+ViscosityAttractSliderζε = p[304];
+ViscosityAttractSliderζζ = p[305];
+ViscosityAttractSliderζη = p[306];
+ViscosityAttractSliderηα = p[307];
+ViscosityAttractSliderηβ = p[308];
+ViscosityAttractSliderηγ = p[309];
+ViscosityAttractSliderηδ = p[310];
+ViscosityAttractSliderηε = p[311];
+ViscosityAttractSliderηζ = p[312];
+ViscosityAttractSliderηη = p[313];
+ViscosityAttractSliderαθ = p[314];
+ViscosityAttractSliderβθ = p[315];
+ViscosityAttractSliderγθ = p[316];
+ViscosityAttractSliderδθ = p[317];
+ViscosityAttractSliderεθ = p[318];
+ViscosityAttractSliderζθ = p[319];
+ViscosityAttractSliderηθ = p[320];
+ViscosityAttractSliderθα = p[321];
+ViscosityAttractSliderθβ = p[322];
+ViscosityAttractSliderθγ = p[323];
+ViscosityAttractSliderθδ = p[324];
+ViscosityAttractSliderθε = p[325];
+ViscosityAttractSliderθζ = p[326];
+ViscosityAttractSliderθη = p[327];
+ViscosityAttractSliderθθ = p[328];
+ViscosityRepelSliderαα = p[329];
+ViscosityRepelSliderαβ = p[330];
+ViscosityRepelSliderαγ = p[331];
+ViscosityRepelSliderαδ = p[332];
+ViscosityRepelSliderαε = p[333];
+ViscosityRepelSliderαζ = p[334];
+ViscosityRepelSliderαη = p[335];
+ViscosityRepelSliderβα = p[336];
+ViscosityRepelSliderββ = p[337];
+ViscosityRepelSliderβγ = p[338];
+ViscosityRepelSliderβδ = p[339];
+ViscosityRepelSliderβε = p[340];
+ViscosityRepelSliderβζ = p[341];
+ViscosityRepelSliderβη = p[342];
+ViscosityRepelSliderγα = p[343];
+ViscosityRepelSliderγβ = p[344];
+ViscosityRepelSliderγγ = p[345];
+ViscosityRepelSliderγδ = p[346];
+ViscosityRepelSliderγε = p[347];
+ViscosityRepelSliderγζ = p[348];
+ViscosityRepelSliderγη = p[349];
+ViscosityRepelSliderδα = p[350];
+ViscosityRepelSliderδβ = p[351];
+ViscosityRepelSliderδγ = p[352];
+ViscosityRepelSliderδδ = p[353];
+ViscosityRepelSliderδε = p[354];
+ViscosityRepelSliderδζ = p[355];
+ViscosityRepelSliderδη = p[356];
+ViscosityRepelSliderεα = p[357];
+ViscosityRepelSliderεβ = p[358];
+ViscosityRepelSliderεγ = p[359];
+ViscosityRepelSliderεδ = p[360];
+ViscosityRepelSliderεε = p[361];
+ViscosityRepelSliderεζ = p[362];
+ViscosityRepelSliderεη = p[363];
+ViscosityRepelSliderζα = p[364];
+ViscosityRepelSliderζβ = p[365];
+ViscosityRepelSliderζγ = p[366];
+ViscosityRepelSliderζδ = p[367];
+ViscosityRepelSliderζε = p[368];
+ViscosityRepelSliderζζ = p[369];
+ViscosityRepelSliderζη = p[370];
+ViscosityRepelSliderηα = p[371];
+ViscosityRepelSliderηβ = p[372];
+ViscosityRepelSliderηγ = p[373];
+ViscosityRepelSliderηδ = p[374];
+ViscosityRepelSliderηε = p[375];
+ViscosityRepelSliderηζ = p[376];
+ViscosityRepelSliderηη = p[377];
+ViscosityRepelSliderαθ = p[378];
+ViscosityRepelSliderβθ = p[379];
+ViscosityRepelSliderγθ = p[380];
+ViscosityRepelSliderδθ = p[381];
+ViscosityRepelSliderεθ = p[382];
+ViscosityRepelSliderζθ = p[383];
+ViscosityRepelSliderηθ = p[384];
+ViscosityRepelSliderθα = p[385];
+ViscosityRepelSliderθβ = p[386];
+ViscosityRepelSliderθγ = p[387];
+ViscosityRepelSliderθδ = p[388];
+ViscosityRepelSliderθε = p[389];
+ViscosityRepelSliderθζ = p[390];
+ViscosityRepelSliderθη = p[391];
+ViscosityRepelSliderθθ = p[392];
+probabilitySlider = p[393];
+ProbAttractSliderαα = p[394];
+ProbAttractSliderαβ = p[395];
+ProbAttractSliderαγ = p[396];
+ProbAttractSliderαδ = p[397];
+ProbAttractSliderαε = p[398];
+ProbAttractSliderαζ = p[399];
+ProbAttractSliderαη = p[400];
+ProbAttractSliderβα = p[401];
+ProbAttractSliderββ = p[402];
+ProbAttractSliderβγ = p[403];
+ProbAttractSliderβδ = p[404];
+ProbAttractSliderβε = p[405];
+ProbAttractSliderβζ = p[406];
+ProbAttractSliderβη = p[407];
+ProbAttractSliderγα = p[408];
+ProbAttractSliderγβ = p[409];
+ProbAttractSliderγγ = p[410];
+ProbAttractSliderγδ = p[411];
+ProbAttractSliderγε = p[412];
+ProbAttractSliderγζ = p[413];
+ProbAttractSliderγη = p[414];
+ProbAttractSliderδα = p[415];
+ProbAttractSliderδβ = p[416];
+ProbAttractSliderδγ = p[417];
+ProbAttractSliderδδ = p[418];
+ProbAttractSliderδε = p[419];
+ProbAttractSliderδζ = p[420];
+ProbAttractSliderδη = p[421];
+ProbAttractSliderεα = p[422];
+ProbAttractSliderεβ = p[423];
+ProbAttractSliderεγ = p[424];
+ProbAttractSliderεδ = p[425];
+ProbAttractSliderεε = p[426];
+ProbAttractSliderεζ = p[427];
+ProbAttractSliderεη = p[428];
+ProbAttractSliderζα = p[429];
+ProbAttractSliderζβ = p[430];
+ProbAttractSliderζγ = p[431];
+ProbAttractSliderζδ = p[432];
+ProbAttractSliderζε = p[433];
+ProbAttractSliderζζ = p[434];
+ProbAttractSliderζη = p[435];
+ProbAttractSliderηα = p[436];
+ProbAttractSliderηβ = p[437];
+ProbAttractSliderηγ = p[438];
+ProbAttractSliderηδ = p[439];
+ProbAttractSliderηε = p[440];
+ProbAttractSliderηζ = p[441];
+ProbAttractSliderηη = p[442];
+ProbAttractSliderαθ = p[443];
+ProbAttractSliderβθ = p[444];
+ProbAttractSliderγθ = p[445];
+ProbAttractSliderδθ = p[446];
+ProbAttractSliderεθ = p[447];
+ProbAttractSliderζθ = p[448];
+ProbAttractSliderηθ = p[449];
+ProbAttractSliderθα = p[450];
+ProbAttractSliderθβ = p[451];
+ProbAttractSliderθγ = p[452];
+ProbAttractSliderθδ = p[453];
+ProbAttractSliderθε = p[454];
+ProbAttractSliderθζ = p[455];
+ProbAttractSliderθη = p[456];
+ProbAttractSliderθθ = p[457];
+ProbRepelSliderαα = p[458];
+ProbRepelSliderαβ = p[459];
+ProbRepelSliderαγ = p[460];
+ProbRepelSliderαδ = p[461];
+ProbRepelSliderαε = p[462];
+ProbRepelSliderαζ = p[463];
+ProbRepelSliderαη = p[464];
+ProbRepelSliderβα = p[465];
+ProbRepelSliderββ = p[466];
+ProbRepelSliderβγ = p[467];
+ProbRepelSliderβδ = p[468];
+ProbRepelSliderβε = p[469];
+ProbRepelSliderβζ = p[470];
+ProbRepelSliderβη = p[471];
+ProbRepelSliderγα = p[472];
+ProbRepelSliderγβ = p[473];
+ProbRepelSliderγγ = p[474];
+ProbRepelSliderγδ = p[475];
+ProbRepelSliderγε = p[476];
+ProbRepelSliderγζ = p[477];
+ProbRepelSliderγη = p[478];
+ProbRepelSliderδα = p[479];
+ProbRepelSliderδβ = p[480];
+ProbRepelSliderδγ = p[481];
+ProbRepelSliderδδ = p[482];
+ProbRepelSliderδε = p[483];
+ProbRepelSliderδζ = p[484];
+ProbRepelSliderδη = p[485];
+ProbRepelSliderεα = p[486];
+ProbRepelSliderεβ = p[487];
+ProbRepelSliderεγ = p[488];
+ProbRepelSliderεδ = p[489];
+ProbRepelSliderεε = p[490];
+ProbRepelSliderεζ = p[491];
+ProbRepelSliderεη = p[492];
+ProbRepelSliderζα = p[493];
+ProbRepelSliderζβ = p[494];
+ProbRepelSliderζγ = p[495];
+ProbRepelSliderζδ = p[496];
+ProbRepelSliderζε = p[497];
+ProbRepelSliderζζ = p[498];
+ProbRepelSliderζη = p[499];
+ProbRepelSliderηα = p[500];
+ProbRepelSliderηβ = p[501];
+ProbRepelSliderηγ = p[502];
+ProbRepelSliderηδ = p[503];
+ProbRepelSliderηε = p[504];
+ProbRepelSliderηζ = p[505];
+ProbRepelSliderηη = p[506];
+ProbRepelSliderαθ = p[507];
+ProbRepelSliderβθ = p[508];
+ProbRepelSliderγθ = p[509];
+ProbRepelSliderδθ = p[510];
+ProbRepelSliderεθ = p[511];
+ProbRepelSliderζθ = p[512];
+ProbRepelSliderηθ = p[513];
+ProbRepelSliderθα = p[514];
+ProbRepelSliderθβ = p[515];
+ProbRepelSliderθγ = p[516];
+ProbRepelSliderθδ = p[517];
+ProbRepelSliderθε = p[518];
+ProbRepelSliderθζ = p[519];
+ProbRepelSliderθη = p[520];
+ProbRepelSliderθθ = p[521];
+minAttractPowerSlider = p[522];
+maxAttractPowerSlider = p[523];
+minRepelPowerSlider = p[524];
+maxRepelPowerSlider = p[525];
+minAttractRangeSlider = p[526];
+maxAttractRangeSlider = p[527];
+minRepelRangeSlider = p[528];
+maxRepelRangeSlider = p[529];
+minAttractViscoSlider = p[530];
+maxAttractViscoSlider = p[531];
+minRepelViscoSlider = p[532];
+maxRepelViscoSlider = p[533];
+minAttractProbSlider = p[534];
+maxAttractProbSlider = p[535];
+minRepelProbSlider = p[536];
+maxRepelProbSlider = p[537];
+AttractEvoProbSlider = p[538];
+AttractEvoAmountSlider = p[539];
+ProbAttractEvoProbSlider = p[540];
+ProbAttractEvoAmountSlider = p[541];
+ViscoAttractEvoProbSlider = p[542];
+ViscoAttractEvoAmountSlider = p[543];
+RepelEvoProbSlider = p[544];
+RepelEvoAmountSlider = p[545];
+ProbRepelEvoProbSlider = p[546];
+ProbRepelEvoAmountSlider = p[547];
+ViscoRepelEvoProbSlider = p[548];
+ViscoRepelEvoAmountSlider = p[549];
+}
 	restart();
 }
 
@@ -2243,9 +3632,9 @@ void ofApp::loadSettings()
 void ofApp::setup()
 {
 	lastTime = clock();
-	ofSetWindowTitle("Particle Life - 7+1c64v64p version 1.7.6.5");
+	ofSetWindowTitle("Particle Life - 8c128v128p version 1.8.0");
 	ofSetVerticalSync(true);
-
+	
 	// Interface
 	gui.setup("Settings");
 	gui.loadFont("Arial", 10);
@@ -2256,8 +3645,9 @@ void ofApp::setup()
 	gui.add(motionBlurToggle.setup("Motion Blur", false));
 	gui.add(save.setup("Save Model"));
 	gui.add(load.setup("Load Model"));
+	
 	//gui.add(modelToggle.setup("Show Model", false));
-
+	
 	rndGroup.setup("Randomize");
 	rndGroup.add(randomGeneral.setup("Randomize all parameters (space bar)"));
 	rndGroup.add(randomRelations.setup("Randomize all interactions (a)"));
@@ -2265,7 +3655,6 @@ void ofApp::setup()
 	rndGroup.add(randomVsc.setup("Randomize Viscosities (v)"));
 	rndGroup.add(randomProb.setup("Randomize Probabilities (p)"));
 	rndGroup.add(randomChoice.setup("Randomize IP (i)"));
-	rndGroup.add(rndDarkButton.setup("Random Dark IP (d)"));
 	gui.add(&rndGroup);
 	rndGroup.minimize();
 
@@ -2278,19 +3667,25 @@ void ofApp::setup()
 	qtyGroup.add(numberSliderε.setup("Epsilon", pnumberSliderε, 0, 10000));
 	qtyGroup.add(numberSliderζ.setup("Zeta", pnumberSliderζ, 0, 10000));
 	qtyGroup.add(numberSliderη.setup("Eta", pnumberSliderη, 0, 10000));
-	qtyGroup.add(numberSliderθ.setup("Teta - Dark", pnumberSliderθ, 0, 10000));
+	qtyGroup.add(numberSliderθ.setup("Teta", pnumberSliderθ, 0, 10000));
 	gui.add(&qtyGroup);
 	qtyGroup.minimize();
 
 	// Evolve Group
 	evolveGroup.setup("Evolution of Parameters");
 	evolveGroup.add(evoToggle.setup("Evolve parameters", false));
-	evolveGroup.add(InteractionEvoProbSlider.setup("inter evo chance%", InterEvoChance, 0, 100));
-	evolveGroup.add(InteractionEvoAmountSlider.setup("inter evo amount%%", InterEvoAmount, 0, 100));
-	evolveGroup.add(ProbabilityEvoProbSlider.setup("prob evo chance%", ProbEvoChance, 0, 100));
-	evolveGroup.add(ProbabilityEvoAmountSlider.setup("prob evo amount%%", ProbEvoAmount, 0, 100));
-	evolveGroup.add(ViscosityEvoProbSlider.setup("visco evo chance%", ViscoEvoChance, 0, 100));
-	evolveGroup.add(ViscosityEvoAmountSlider.setup("visco evo amount%%", ViscoEvoAmount, 0, 100));
+	evolveGroup.add(AttractEvoProbSlider.setup("Attract power evo chance%", AttractEvoChance, 0, 100));
+	evolveGroup.add(AttractEvoAmountSlider.setup("Attract power evo amount%%", AttractEvoAmount, 0, 100));
+	evolveGroup.add(ProbAttractEvoProbSlider.setup("Attract prob evo chance%", ProbAttractEvoChance, 0, 100));
+	evolveGroup.add(ProbAttractEvoAmountSlider.setup("Attract prob evo amount%%", ProbAttractEvoAmount, 0, 100));
+	evolveGroup.add(ViscoAttractEvoProbSlider.setup("Attract visco evo chance%", ViscoAttractEvoChance, 0, 100));
+	evolveGroup.add(ViscoAttractEvoAmountSlider.setup("Attract visco evo amount%%", ViscoAttractEvoAmount, 0, 100));
+	evolveGroup.add(RepelEvoProbSlider.setup("Repel power evo chance%", RepelEvoChance, 0, 100));
+	evolveGroup.add(RepelEvoAmountSlider.setup("Repel power evo amount%%", RepelEvoAmount, 0, 100));
+	evolveGroup.add(ProbRepelEvoProbSlider.setup("Repel prob evo chance%", ProbRepelEvoChance, 0, 100));
+	evolveGroup.add(ProbRepelEvoAmountSlider.setup("Repel prob evo amount%%", ProbRepelEvoAmount, 0, 100));
+	evolveGroup.add(ViscoRepelEvoProbSlider.setup("Repel visco evo chance%", ViscoRepelEvoChance, 0, 100));
+	evolveGroup.add(ViscoRepelEvoAmountSlider.setup("Repel visco evo amount%%", ViscoRepelEvoAmount, 0, 100));
 	evolveGroup.add(probabilitySlider.setup("interaction prob%", probability, 1, 100));
 	evolveGroup.add(viscositySlider.setup("interaction viscosity", viscosity, 0, 1));
 	gui.add(&evolveGroup);
@@ -2298,316 +3693,579 @@ void ofApp::setup()
 
 	// MinMax Group
 	MinMaxGroup.setup("MinMax");
-	MinMaxGroup.add(minPowerSlider.setup("minimum power", minP, -100, 100));
-	MinMaxGroup.add(maxPowerSlider.setup("maximum power", maxP, -100, 100));
-	MinMaxGroup.add(minRangeSlider.setup("minimum range", minR, 0, 300));
-	MinMaxGroup.add(maxRangeSlider.setup("maximum range", maxR, 0, 300));
-	MinMaxGroup.add(minViscoSlider.setup("minimum viscosity", minV, 0.0, 1.0));
-	MinMaxGroup.add(maxViscoSlider.setup("maximum viscosity", maxV, 0.0, 1.0));
-	MinMaxGroup.add(minProbSlider.setup("minimum probability", minI, 0, 100));
-	MinMaxGroup.add(maxProbSlider.setup("maximum probability", maxI, 0, 100));
+	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, -50, 50));
+	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, -50, 50));
+	MinMaxGroup.add(minAttractRangeSlider.setup("Attract minimum range", minAttR, 0, 100));
+	MinMaxGroup.add(maxAttractRangeSlider.setup("Attract maximum range", maxAttR, 0, 100));
+	MinMaxGroup.add(minAttractViscoSlider.setup("Attract minimum viscosity", minAttV, 0.0, 1.0));
+	MinMaxGroup.add(maxAttractViscoSlider.setup("Attract maximum viscosity", maxAttV, 0.0, 1.0));
+	MinMaxGroup.add(minAttractProbSlider.setup("Attract minimum probability", minAttI, 0, 100));
+	MinMaxGroup.add(maxAttractProbSlider.setup("Attract maximum probability", maxAttI, 0, 100));
+	MinMaxGroup.add(minRepelPowerSlider.setup("Repel minimum power", minRepP, -50, 50));
+	MinMaxGroup.add(maxRepelPowerSlider.setup("Repel maximum power", maxRepP, -50, 50));
+	MinMaxGroup.add(minRepelRangeSlider.setup("Repel minimum range", minRepR, 0, 100));
+	MinMaxGroup.add(maxRepelRangeSlider.setup("Repel maximum range", maxRepR, 0, 100));
+	MinMaxGroup.add(minRepelViscoSlider.setup("Repel minimum viscosity", minRepV, 0.0, 1.0));
+	MinMaxGroup.add(maxRepelViscoSlider.setup("Repel maximum viscosity", maxRepV, 0.0, 1.0));
+	MinMaxGroup.add(minRepelProbSlider.setup("Repel minimum probability", minRepI, 0, 100));
+	MinMaxGroup.add(maxRepelProbSlider.setup("Repel maximum probability", maxRepI, 0, 100));
 	gui.add(&MinMaxGroup);
 	MinMaxGroup.minimize();
 
 	// Alpha
 	alphaGroup.setup("Alpha");
-	alphaGroup.add(powerSliderαα.setup("power alpha x alpha:", ppowerSliderαα, minP, maxP));
-	alphaGroup.add(powerSliderαβ.setup("power alpha x betha:", ppowerSliderαβ, minP, maxP));
-	alphaGroup.add(powerSliderαγ.setup("power alpha x gamma:", ppowerSliderαγ, minP, maxP));
-	alphaGroup.add(powerSliderαδ.setup("power alpha x delta:", ppowerSliderαδ, minP, maxP));
-	alphaGroup.add(powerSliderαε.setup("power alpha x epsilon:", ppowerSliderαε, minP, maxP));
-	alphaGroup.add(powerSliderαζ.setup("power alpha x zeta:", ppowerSliderαζ, minP, maxP));
-	alphaGroup.add(powerSliderαη.setup("power alpha x eta:", ppowerSliderαη, minP, maxP));
-	alphaGroup.add(powerSliderαθ.setup("power alpha x teta:", ppowerSliderαθ, minP, maxP));
-	alphaGroup.add(vSliderαα.setup("radius alpha x alpha:", pvSliderαα, minR, maxR));
-	alphaGroup.add(vSliderαβ.setup("radius alpha x betha:", pvSliderαβ, minR, maxR));
-	alphaGroup.add(vSliderαγ.setup("radius alpha x gamma:", pvSliderαγ, minR, maxR));
-	alphaGroup.add(vSliderαδ.setup("radius alpha x delta:", pvSliderαδ, minR, maxR));
-	alphaGroup.add(vSliderαε.setup("radius alpha x epsilon:", pvSliderαε, minR, maxR));
-	alphaGroup.add(vSliderαζ.setup("radius alpha x zeta:", pvSliderαζ, minR, maxR));
-	alphaGroup.add(vSliderαη.setup("radius alpha x eta:", pvSliderαη, minR, maxR));
-	alphaGroup.add(vSliderαθ.setup("radius alpha x teta:", pvSliderαθ, minR, maxR));
-	alphaGroup.add(viscositySliderαβ.setup("Viscosity alpha x betha", viscosityαβ, minV, maxV));
-	alphaGroup.add(viscositySliderαα.setup("Viscosity alpha x alpha", viscosityαα, minV, maxV));
-	alphaGroup.add(viscositySliderαγ.setup("Viscosity alpha x gamma", viscosityαγ, minV, maxV));
-	alphaGroup.add(viscositySliderαδ.setup("Viscosity alpha x delta", viscosityαδ, minV, maxV));
-	alphaGroup.add(viscositySliderαε.setup("Viscosity alpha x epsilon", viscosityαε, minV, maxV));
-	alphaGroup.add(viscositySliderαζ.setup("Viscosity alpha x zeta", viscosityαζ, minV, maxV));
-	alphaGroup.add(viscositySliderαη.setup("Viscosity alpha x eta", viscosityαη, minV, maxV));
-	alphaGroup.add(viscositySliderαθ.setup("Viscosity alpha x teta", viscosityαθ, minV, maxV));
-	alphaGroup.add(probabilitySliderαβ.setup("Probability alpha x betha", probabilityαβ, minI, maxI));
-	alphaGroup.add(probabilitySliderαα.setup("Probability alpha x alpha", probabilityαα, minI, maxI));
-	alphaGroup.add(probabilitySliderαγ.setup("Probability alpha x gamma", probabilityαγ, minI, maxI));
-	alphaGroup.add(probabilitySliderαδ.setup("Probability alpha x delta", probabilityαδ, minI, maxI));
-	alphaGroup.add(probabilitySliderαε.setup("Probability alpha x epsilon", probabilityαε, minI, maxI));
-	alphaGroup.add(probabilitySliderαζ.setup("Probability alpha x zeta", probabilityαζ, minI, maxI));
-	alphaGroup.add(probabilitySliderαη.setup("Probability alpha x eta", probabilityαη, minI, maxI));
-	alphaGroup.add(probabilitySliderαθ.setup("Probability alpha x teta", probabilityαθ, minI, maxI));
+	alphaGroup.add(AttractPowerSliderαα.setup("Attract power alpha x alpha:", pAttractPowerSliderαα, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαβ.setup("Attract power alpha x betha:", pAttractPowerSliderαβ, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαγ.setup("Attract power alpha x gamma:", pAttractPowerSliderαγ, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαδ.setup("Attract power alpha x delta:", pAttractPowerSliderαδ, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαε.setup("Attract power alpha x epsilon:", pAttractPowerSliderαε, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαζ.setup("Attract power alpha x zeta:", pAttractPowerSliderαζ, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαη.setup("Attract power alpha x eta:", pAttractPowerSliderαη, minAttP, maxAttP));
+	alphaGroup.add(AttractPowerSliderαθ.setup("Attract power alpha x teta:", pAttractPowerSliderαθ, minAttP, maxAttP));
+	alphaGroup.add(AttractDistanceSliderαα.setup("Attract radius alpha x alpha:", pAttractDistanceSliderαα, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαβ.setup("Attract radius alpha x betha:", pAttractDistanceSliderαβ, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαγ.setup("Attract radius alpha x gamma:", pAttractDistanceSliderαγ, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαδ.setup("Attract radius alpha x delta:", pAttractDistanceSliderαδ, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαε.setup("Attract radius alpha x epsilon:", pAttractDistanceSliderαε, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαζ.setup("Attract radius alpha x zeta:", pAttractDistanceSliderαζ, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαη.setup("Attract radius alpha x eta:", pAttractDistanceSliderαη, minAttR, maxAttR));
+	alphaGroup.add(AttractDistanceSliderαθ.setup("Attract radius alpha x teta:", pAttractDistanceSliderαθ, minAttR, maxAttR));
+	alphaGroup.add(ViscosityAttractSliderαβ.setup("Attract viscosity alpha x betha", ViscosityAttractαβ, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαα.setup("Attract viscosity alpha x alpha", ViscosityAttractαα, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαγ.setup("Attract viscosity alpha x gamma", ViscosityAttractαγ, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαδ.setup("Attract viscosity alpha x delta", ViscosityAttractαδ, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαε.setup("Attract viscosity alpha x epsilon", ViscosityAttractαε, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαζ.setup("Attract viscosity alpha x zeta", ViscosityAttractαζ, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαη.setup("Attract viscosity alpha x eta", ViscosityAttractαη, minAttV, maxAttV));
+	alphaGroup.add(ViscosityAttractSliderαθ.setup("Attract viscosity alpha x teta", ViscosityAttractαθ, minAttV, maxAttV));
+	alphaGroup.add(ProbAttractSliderαβ.setup("Attract prob alpha x betha", ProbAttractαβ, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαα.setup("Attract prob alpha x alpha", ProbAttractαα, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαγ.setup("Attract prob alpha x gamma", ProbAttractαγ, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαδ.setup("Attract prob alpha x delta", ProbAttractαδ, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαε.setup("Attract prob alpha x epsilon", ProbAttractαε, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαζ.setup("Attract prob alpha x zeta", ProbAttractαζ, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαη.setup("Attract prob alpha x eta", ProbAttractαη, minAttI, maxAttI));
+	alphaGroup.add(ProbAttractSliderαθ.setup("Attract prob alpha x teta", ProbAttractαθ, minAttI, maxAttI));
+	alphaGroup.add(RepelPowerSliderαα.setup("Repel power alpha x alpha:", pRepelPowerSliderαα, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαβ.setup("Repel power alpha x betha:", pRepelPowerSliderαβ, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαγ.setup("Repel power alpha x gamma:", pRepelPowerSliderαγ, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαδ.setup("Repel power alpha x delta:", pRepelPowerSliderαδ, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαε.setup("Repel power alpha x epsilon:", pRepelPowerSliderαε, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαζ.setup("Repel power alpha x zeta:", pRepelPowerSliderαζ, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαη.setup("Repel power alpha x eta:", pRepelPowerSliderαη, minRepP, maxRepP));
+	alphaGroup.add(RepelPowerSliderαθ.setup("Repel power alpha x teta:", pRepelPowerSliderαθ, minRepP, maxRepP));
+	alphaGroup.add(RepelDistanceSliderαα.setup("Repel radius alpha x alpha:", pRepelDistanceSliderαα, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαβ.setup("Repel radius alpha x betha:", pRepelDistanceSliderαβ, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαγ.setup("Repel radius alpha x gamma:", pRepelDistanceSliderαγ, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαδ.setup("Repel radius alpha x delta:", pRepelDistanceSliderαδ, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαε.setup("Repel radius alpha x epsilon:", pRepelDistanceSliderαε, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαζ.setup("Repel radius alpha x zeta:", pRepelDistanceSliderαζ, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαη.setup("Repel radius alpha x eta:", pRepelDistanceSliderαη, minRepR, maxRepR));
+	alphaGroup.add(RepelDistanceSliderαθ.setup("Repel radius alpha x teta:", pRepelDistanceSliderαθ, minRepR, maxRepR));
+	alphaGroup.add(ViscosityRepelSliderαβ.setup("Repel viscosity alpha x betha", ViscosityRepelαβ, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαα.setup("Repel viscosity alpha x alpha", ViscosityRepelαα, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαγ.setup("Repel viscosity alpha x gamma", ViscosityRepelαγ, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαδ.setup("Repel viscosity alpha x delta", ViscosityRepelαδ, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαε.setup("Repel viscosity alpha x epsilon", ViscosityRepelαε, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαζ.setup("Repel viscosity alpha x zeta", ViscosityRepelαζ, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαη.setup("Repel viscosity alpha x eta", ViscosityRepelαη, minRepV, maxRepV));
+	alphaGroup.add(ViscosityRepelSliderαθ.setup("Repel viscosity alpha x teta", ViscosityRepelαθ, minRepV, maxRepV));
+	alphaGroup.add(ProbRepelSliderαβ.setup("Repel prob alpha x betha", ProbRepelαβ, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαα.setup("Repel prob alpha x alpha", ProbRepelαα, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαγ.setup("Repel prob alpha x gamma", ProbRepelαγ, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαδ.setup("Repel prob alpha x delta", ProbRepelαδ, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαε.setup("Repel prob alpha x epsilon", ProbRepelαε, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαζ.setup("Repel prob alpha x zeta", ProbRepelαζ, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαη.setup("Repel prob alpha x eta", ProbRepelαη, minRepI, maxRepI));
+	alphaGroup.add(ProbRepelSliderαθ.setup("Repel prob alpha x teta", ProbRepelαθ, minRepI, maxRepI));
 	alphaGroup.minimize();
 	gui.add(&alphaGroup);
 
 	// Betha
 	bethaGroup.setup("Betha");
-	bethaGroup.add(powerSliderβα.setup("power betha x alpha:", ppowerSliderβα, minP, maxP));
-	bethaGroup.add(powerSliderββ.setup("power betha x betha:", ppowerSliderββ, minP, maxP));
-	bethaGroup.add(powerSliderβγ.setup("power betha x gamma:", ppowerSliderβγ, minP, maxP));
-	bethaGroup.add(powerSliderβδ.setup("power betha x delta:", ppowerSliderβδ, minP, maxP));
-	bethaGroup.add(powerSliderβε.setup("power betha x epsilon:", ppowerSliderβε, minP, maxP));
-	bethaGroup.add(powerSliderβζ.setup("power betha x zeta:", ppowerSliderβζ, minP, maxP));
-	bethaGroup.add(powerSliderβη.setup("power betha x eta:", ppowerSliderβη, minP, maxP));
-	bethaGroup.add(powerSliderβθ.setup("power betha x teta:", ppowerSliderβθ, minP, maxP));
-	bethaGroup.add(vSliderβα.setup("radius r x alpha:", pvSliderβα, minR, maxR));
-	bethaGroup.add(vSliderββ.setup("radius r x betha:", pvSliderββ, minR, maxR));
-	bethaGroup.add(vSliderβγ.setup("radius r x gamma:", pvSliderβγ, minR, maxR));
-	bethaGroup.add(vSliderβδ.setup("radius r x delta:", pvSliderβδ, minR, maxR));
-	bethaGroup.add(vSliderβε.setup("radius r x epsilon:", pvSliderβε, minR, maxR));
-	bethaGroup.add(vSliderβζ.setup("radius r x zeta:", pvSliderβζ, minR, maxR));
-	bethaGroup.add(vSliderβη.setup("radius r x eta:", pvSliderβη, minR, maxR));
-	bethaGroup.add(vSliderβθ.setup("radius betha x teta:", pvSliderβθ, minR, maxR));
-	bethaGroup.add(viscositySliderββ.setup("Viscosity betha x betha", viscosityββ, minV, maxV));
-	bethaGroup.add(viscositySliderβα.setup("Viscosity betha x alpha", viscosityβα, minV, maxV));
-	bethaGroup.add(viscositySliderβγ.setup("Viscosity betha x gamma", viscosityβγ, minV, maxV));
-	bethaGroup.add(viscositySliderβδ.setup("Viscosity betha x delta", viscosityβδ, minV, maxV));
-	bethaGroup.add(viscositySliderβε.setup("Viscosity betha x epsilon", viscosityβε, minV, maxV));
-	bethaGroup.add(viscositySliderβζ.setup("Viscosity betha x zeta", viscosityβζ, minV, maxV));
-	bethaGroup.add(viscositySliderβη.setup("Viscosity betha x eta", viscosityβη, minV, maxV));
-	bethaGroup.add(viscositySliderβθ.setup("Viscosity betha x teta", viscosityβθ, minV, maxV));
-	bethaGroup.add(probabilitySliderββ.setup("Probability betha x betha", probabilityββ, minI, maxI));
-	bethaGroup.add(probabilitySliderβα.setup("Probability betha x alpha", probabilityβα, minI, maxI));
-	bethaGroup.add(probabilitySliderβγ.setup("Probability betha x gamma", probabilityβγ, minI, maxI));
-	bethaGroup.add(probabilitySliderβδ.setup("Probability betha x delta", probabilityβδ, minI, maxI));
-	bethaGroup.add(probabilitySliderβε.setup("Probability betha x epsilon", probabilityβε, minI, maxI));
-	bethaGroup.add(probabilitySliderβζ.setup("Probability betha x zeta", probabilityβζ, minI, maxI));
-	bethaGroup.add(probabilitySliderβη.setup("Probability betha x eta", probabilityβη, minI, maxI));
-	bethaGroup.add(probabilitySliderβθ.setup("Probability betha x teta", probabilityβθ, minI, maxI));
+	bethaGroup.add(AttractPowerSliderβα.setup("Attract power betha x alpha:", pAttractPowerSliderβα, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderββ.setup("Attract power betha x betha:", pAttractPowerSliderββ, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderβγ.setup("Attract power betha x gamma:", pAttractPowerSliderβγ, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderβδ.setup("Attract power betha x delta:", pAttractPowerSliderβδ, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderβε.setup("Attract power betha x epsilon:", pAttractPowerSliderβε, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderβζ.setup("Attract power betha x zeta:", pAttractPowerSliderβζ, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderβη.setup("Attract power betha x eta:", pAttractPowerSliderβη, minAttP, maxAttP));
+	bethaGroup.add(AttractPowerSliderβθ.setup("Attract power betha x teta:", pAttractPowerSliderβθ, minAttP, maxAttP));
+	bethaGroup.add(AttractDistanceSliderβα.setup("Attract radius betha x alpha:", pAttractDistanceSliderβα, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderββ.setup("Attract radius betha x betha:", pAttractDistanceSliderββ, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderβγ.setup("Attract radius betha x gamma:", pAttractDistanceSliderβγ, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderβδ.setup("Attract radius betha x delta:", pAttractDistanceSliderβδ, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderβε.setup("Attract radius betha x epsilon:", pAttractDistanceSliderβε, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderβζ.setup("Attract radius betha x zeta:", pAttractDistanceSliderβζ, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderβη.setup("Attract radius betha x eta:", pAttractDistanceSliderβη, minAttR, maxAttR));
+	bethaGroup.add(AttractDistanceSliderβθ.setup("Attract radius betha x teta:", pAttractDistanceSliderβθ, minAttR, maxAttR));
+	bethaGroup.add(ViscosityAttractSliderββ.setup("Attract viscosity betha x betha", ViscosityAttractββ, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβα.setup("Attract viscosity betha x alpha", ViscosityAttractβα, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβγ.setup("Attract viscosity betha x gamma", ViscosityAttractβγ, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβδ.setup("Attract viscosity betha x delta", ViscosityAttractβδ, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβε.setup("Attract viscosity betha x epsilon", ViscosityAttractβε, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβζ.setup("Attract viscosity betha x zeta", ViscosityAttractβζ, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβη.setup("Attract viscosity betha x eta", ViscosityAttractβη, minAttV, maxAttV));
+	bethaGroup.add(ViscosityAttractSliderβθ.setup("Attract viscosity betha x teta", ViscosityAttractβθ, minAttV, maxAttV));
+	bethaGroup.add(ProbAttractSliderββ.setup("Attract prob betha x betha", ProbAttractββ, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβα.setup("Attract prob betha x alpha", ProbAttractβα, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβγ.setup("Attract prob betha x gamma", ProbAttractβγ, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβδ.setup("Attract prob betha x delta", ProbAttractβδ, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβε.setup("Attract prob betha x epsilon", ProbAttractβε, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβζ.setup("Attract prob betha x zeta", ProbAttractβζ, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβη.setup("Attract prob betha x eta", ProbAttractβη, minAttI, maxAttI));
+	bethaGroup.add(ProbAttractSliderβθ.setup("Attract prob betha x teta", ProbAttractβθ, minAttI, maxAttI));
+	bethaGroup.add(RepelPowerSliderβα.setup("Repel power betha x alpha:", pRepelPowerSliderβα, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderββ.setup("Repel power betha x betha:", pRepelPowerSliderββ, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderβγ.setup("Repel power betha x gamma:", pRepelPowerSliderβγ, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderβδ.setup("Repel power betha x delta:", pRepelPowerSliderβδ, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderβε.setup("Repel power betha x epsilon:", pRepelPowerSliderβε, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderβζ.setup("Repel power betha x zeta:", pRepelPowerSliderβζ, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderβη.setup("Repel power betha x eta:", pRepelPowerSliderβη, minRepP, maxRepP));
+	bethaGroup.add(RepelPowerSliderβθ.setup("Repel power betha x teta:", pRepelPowerSliderβθ, minRepP, maxRepP));
+	bethaGroup.add(RepelDistanceSliderβα.setup("Repel radius betha x alpha:", pRepelDistanceSliderβα, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderββ.setup("Repel radius betha x betha:", pRepelDistanceSliderββ, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderβγ.setup("Repel radius betha x gamma:", pRepelDistanceSliderβγ, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderβδ.setup("Repel radius betha x delta:", pRepelDistanceSliderβδ, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderβε.setup("Repel radius betha x epsilon:", pRepelDistanceSliderβε, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderβζ.setup("Repel radius betha x zeta:", pRepelDistanceSliderβζ, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderβη.setup("Repel radius betha x eta:", pRepelDistanceSliderβη, minRepR, maxRepR));
+	bethaGroup.add(RepelDistanceSliderβθ.setup("Repel radius betha x teta:", pRepelDistanceSliderβθ, minRepR, maxRepR));
+	bethaGroup.add(ViscosityRepelSliderββ.setup("Repel viscosity betha x betha", ViscosityRepelββ, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβα.setup("Repel viscosity betha x alpha", ViscosityRepelβα, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβγ.setup("Repel viscosity betha x gamma", ViscosityRepelβγ, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβδ.setup("Repel viscosity betha x delta", ViscosityRepelβδ, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβε.setup("Repel viscosity betha x epsilon", ViscosityRepelβε, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβζ.setup("Repel viscosity betha x zeta", ViscosityRepelβζ, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβη.setup("Repel viscosity betha x eta", ViscosityRepelβη, minRepV, maxRepV));
+	bethaGroup.add(ViscosityRepelSliderβθ.setup("Repel viscosity betha x teta", ViscosityRepelβθ, minRepV, maxRepV));
+	bethaGroup.add(ProbRepelSliderββ.setup("Repel prob betha x betha", ProbRepelββ, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβα.setup("Repel prob betha x alpha", ProbRepelβα, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβγ.setup("Repel prob betha x gamma", ProbRepelβγ, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβδ.setup("Repel prob betha x delta", ProbRepelβδ, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβε.setup("Repel prob betha x epsilon", ProbRepelβε, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβζ.setup("Repel prob betha x zeta", ProbRepelβζ, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβη.setup("Repel prob betha x eta", ProbRepelβη, minRepI, maxRepI));
+	bethaGroup.add(ProbRepelSliderβθ.setup("Repel prob betha x teta", ProbRepelβθ, minRepI, maxRepI));
 	bethaGroup.minimize();
 	gui.add(&bethaGroup);
 
 	// Gamma
 	gammaGroup.setup("Gamma");
-	gammaGroup.add(powerSliderγα.setup("power gamma x alpha:", ppowerSliderγα, minP, maxP));
-	gammaGroup.add(powerSliderγβ.setup("power gamma x betha:", ppowerSliderγβ, minP, maxP));
-	gammaGroup.add(powerSliderγγ.setup("power gamma x gamma:", ppowerSliderγγ, minP, maxP));
-	gammaGroup.add(powerSliderγδ.setup("power gamma x delta:", ppowerSliderγδ, minP, maxP));
-	gammaGroup.add(powerSliderγε.setup("power gamma x epsilon:", ppowerSliderγε, minP, maxP));
-	gammaGroup.add(powerSliderγζ.setup("power gamma x zeta:", ppowerSliderγζ, minP, maxP));
-	gammaGroup.add(powerSliderγη.setup("power gamma x eta:", ppowerSliderγη, minP, maxP));
-	gammaGroup.add(powerSliderγθ.setup("power gamma x teta:", ppowerSliderγθ, minP, maxP));
-	gammaGroup.add(vSliderγα.setup("radius b x alpha:", pvSliderγα, minR, maxR));
-	gammaGroup.add(vSliderγβ.setup("radius b x betha:", pvSliderγβ, minR, maxR));
-	gammaGroup.add(vSliderγγ.setup("radius b x gamma:", pvSliderγγ, minR, maxR));
-	gammaGroup.add(vSliderγδ.setup("radius b x delta:", pvSliderγδ, minR, maxR));
-	gammaGroup.add(vSliderγε.setup("radius b x epsilon:", pvSliderγε, minR, maxR));
-	gammaGroup.add(vSliderγζ.setup("radius b x zeta:", pvSliderγζ, minR, maxR));
-	gammaGroup.add(vSliderγη.setup("radius b x eta:", pvSliderγη, minR, maxR));
-	gammaGroup.add(vSliderγθ.setup("radius gamma x teta:", pvSliderγθ, minR, maxR));
-	gammaGroup.add(viscositySliderγβ.setup("Viscosity gamma x betha", viscosityγβ, minV, maxV));
-	gammaGroup.add(viscositySliderγα.setup("Viscosity gamma x alpha", viscosityγα, minV, maxV));
-	gammaGroup.add(viscositySliderγγ.setup("Viscosity gamma x gamma", viscosityγγ, minV, maxV));
-	gammaGroup.add(viscositySliderγδ.setup("Viscosity gamma x delta", viscosityγδ, minV, maxV));
-	gammaGroup.add(viscositySliderγε.setup("Viscosity gamma x epsilon", viscosityγε, minV, maxV));
-	gammaGroup.add(viscositySliderγζ.setup("Viscosity gamma x zeta", viscosityγζ, minV, maxV));
-	gammaGroup.add(viscositySliderγη.setup("Viscosity gamma x eta", viscosityγη, minV, maxV));
-	gammaGroup.add(viscositySliderγθ.setup("Viscosity gamma x teta", viscosityγθ, minV, maxV));
-	gammaGroup.add(probabilitySliderγβ.setup("Probability gamma x betha", probabilityγβ, minI, maxI));
-	gammaGroup.add(probabilitySliderγα.setup("Probability gamma x alpha", probabilityγα, minI, maxI));
-	gammaGroup.add(probabilitySliderγγ.setup("Probability gamma x gamma", probabilityγγ, minI, maxI));
-	gammaGroup.add(probabilitySliderγδ.setup("Probability gamma x delta", probabilityγδ, minI, maxI));
-	gammaGroup.add(probabilitySliderγε.setup("Probability gamma x epsilon", probabilityγε, minI, maxI));
-	gammaGroup.add(probabilitySliderγζ.setup("Probability gamma x zeta", probabilityγζ, minI, maxI));
-	gammaGroup.add(probabilitySliderγη.setup("Probability gamma x eta", probabilityγη, minI, maxI));
-	gammaGroup.add(probabilitySliderγθ.setup("Probability gamma x teta", probabilityγθ, minI, maxI));
+	gammaGroup.add(AttractPowerSliderγα.setup("Attract power gamma x alpha:", pAttractPowerSliderγα, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγβ.setup("Attract power gamma x betha:", pAttractPowerSliderγβ, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγγ.setup("Attract power gamma x gamma:", pAttractPowerSliderγγ, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγδ.setup("Attract power gamma x delta:", pAttractPowerSliderγδ, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγε.setup("Attract power gamma x epsilon:", pAttractPowerSliderγε, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγζ.setup("Attract power gamma x zeta:", pAttractPowerSliderγζ, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγη.setup("Attract power gamma x eta:", pAttractPowerSliderγη, minAttP, maxAttP));
+	gammaGroup.add(AttractPowerSliderγθ.setup("Attract power gamma x teta:", pAttractPowerSliderγθ, minAttP, maxAttP));
+	gammaGroup.add(AttractDistanceSliderγα.setup("Attract radius gamma x alpha:", pAttractDistanceSliderγα, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγβ.setup("Attract radius gamma x betha:", pAttractDistanceSliderγβ, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγγ.setup("Attract radius gamma x gamma:", pAttractDistanceSliderγγ, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγδ.setup("Attract radius gamma x delta:", pAttractDistanceSliderγδ, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγε.setup("Attract radius gamma x epsilon:", pAttractDistanceSliderγε, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγζ.setup("Attract radius gamma x zeta:", pAttractDistanceSliderγζ, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγη.setup("Attract radius gamma x eta:", pAttractDistanceSliderγη, minAttR, maxAttR));
+	gammaGroup.add(AttractDistanceSliderγθ.setup("Attract radius gamma x teta:", pAttractDistanceSliderγθ, minAttR, maxAttR));
+	gammaGroup.add(ViscosityAttractSliderγβ.setup("Attract viscosity gamma x betha", ViscosityAttractγβ, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγα.setup("Attract viscosity gamma x alpha", ViscosityAttractγα, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγγ.setup("Attract viscosity gamma x gamma", ViscosityAttractγγ, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγδ.setup("Attract viscosity gamma x delta", ViscosityAttractγδ, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγε.setup("Attract viscosity gamma x epsilon", ViscosityAttractγε, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγζ.setup("Attract viscosity gamma x zeta", ViscosityAttractγζ, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγη.setup("Attract viscosity gamma x eta", ViscosityAttractγη, minAttV, maxAttV));
+	gammaGroup.add(ViscosityAttractSliderγθ.setup("Attract viscosity gamma x teta", ViscosityAttractγθ, minAttV, maxAttV));
+	gammaGroup.add(ProbAttractSliderγβ.setup("Attract prob gamma x betha", ProbAttractγβ, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγα.setup("Attract prob gamma x alpha", ProbAttractγα, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγγ.setup("Attract prob gamma x gamma", ProbAttractγγ, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγδ.setup("Attract prob gamma x delta", ProbAttractγδ, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγε.setup("Attract prob gamma x epsilon", ProbAttractγε, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγζ.setup("Attract prob gamma x zeta", ProbAttractγζ, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγη.setup("Attract prob gamma x eta", ProbAttractγη, minAttI, maxAttI));
+	gammaGroup.add(ProbAttractSliderγθ.setup("Attract prob gamma x teta", ProbAttractγθ, minAttI, maxAttI));
+	gammaGroup.add(RepelPowerSliderγα.setup("Repel power gamma x alpha:", pRepelPowerSliderγα, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγβ.setup("Repel power gamma x betha:", pRepelPowerSliderγβ, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγγ.setup("Repel power gamma x gamma:", pRepelPowerSliderγγ, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγδ.setup("Repel power gamma x delta:", pRepelPowerSliderγδ, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγε.setup("Repel power gamma x epsilon:", pRepelPowerSliderγε, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγζ.setup("Repel power gamma x zeta:", pRepelPowerSliderγζ, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγη.setup("Repel power gamma x eta:", pRepelPowerSliderγη, minRepP, maxRepP));
+	gammaGroup.add(RepelPowerSliderγθ.setup("Repel power gamma x teta:", pRepelPowerSliderγθ, minRepP, maxRepP));
+	gammaGroup.add(RepelDistanceSliderγα.setup("Repel radius gamma x alpha:", pRepelDistanceSliderγα, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγβ.setup("Repel radius gamma x betha:", pRepelDistanceSliderγβ, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγγ.setup("Repel radius gamma x gamma:", pRepelDistanceSliderγγ, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγδ.setup("Repel radius gamma x delta:", pRepelDistanceSliderγδ, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγε.setup("Repel radius gamma x epsilon:", pRepelDistanceSliderγε, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγζ.setup("Repel radius gamma x zeta:", pRepelDistanceSliderγζ, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγη.setup("Repel radius gamma x eta:", pRepelDistanceSliderγη, minRepR, maxRepR));
+	gammaGroup.add(RepelDistanceSliderγθ.setup("Repel radius gamma x teta:", pRepelDistanceSliderγθ, minRepR, maxRepR));
+	gammaGroup.add(ViscosityRepelSliderγβ.setup("Repel viscosity gamma x betha", ViscosityRepelγβ, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγα.setup("Repel viscosity gamma x alpha", ViscosityRepelγα, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγγ.setup("Repel viscosity gamma x gamma", ViscosityRepelγγ, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγδ.setup("Repel viscosity gamma x delta", ViscosityRepelγδ, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγε.setup("Repel viscosity gamma x epsilon", ViscosityRepelγε, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγζ.setup("Repel viscosity gamma x zeta", ViscosityRepelγζ, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγη.setup("Repel viscosity gamma x eta", ViscosityRepelγη, minRepV, maxRepV));
+	gammaGroup.add(ViscosityRepelSliderγθ.setup("Repel viscosity gamma x teta", ViscosityRepelγθ, minRepV, maxRepV));
+	gammaGroup.add(ProbRepelSliderγβ.setup("Repel prob gamma x betha", ProbRepelγβ, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγα.setup("Repel prob gamma x alpha", ProbRepelγα, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγγ.setup("Repel prob gamma x gamma", ProbRepelγγ, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγδ.setup("Repel prob gamma x delta", ProbRepelγδ, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγε.setup("Repel prob gamma x epsilon", ProbRepelγε, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγζ.setup("Repel prob gamma x zeta", ProbRepelγζ, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγη.setup("Repel prob gamma x eta", ProbRepelγη, minRepI, maxRepI));
+	gammaGroup.add(ProbRepelSliderγθ.setup("Repel prob gamma x teta", ProbRepelγθ, minRepI, maxRepI));
 	gammaGroup.minimize();
 	gui.add(&gammaGroup);
 
 	// Delta
 	eltaGroup.setup("Delta");
-	eltaGroup.add(powerSliderδα.setup("power delta x alpha:", ppowerSliderδα, minP, maxP));
-	eltaGroup.add(powerSliderδβ.setup("power delta x betha:", ppowerSliderδβ, minP, maxP));
-	eltaGroup.add(powerSliderδγ.setup("power delta x gamma:", ppowerSliderδγ, minP, maxP));
-	eltaGroup.add(powerSliderδδ.setup("power delta x delta:", ppowerSliderδδ, minP, maxP));
-	eltaGroup.add(powerSliderδε.setup("power delta x epsilon:", ppowerSliderδε, minP, maxP));
-	eltaGroup.add(powerSliderδζ.setup("power delta x zeta:", ppowerSliderδζ, minP, maxP));
-	eltaGroup.add(powerSliderδη.setup("power delta x eta:", ppowerSliderδη, minP, maxP));
-	eltaGroup.add(powerSliderδθ.setup("power delta x teta:", ppowerSliderδθ, minP, maxP));
-	eltaGroup.add(vSliderδα.setup("radius w x alpha:", pvSliderδα, minR, maxR));
-	eltaGroup.add(vSliderδβ.setup("radius w x betha:", pvSliderδβ, minR, maxR));
-	eltaGroup.add(vSliderδγ.setup("radius w x gamma:", pvSliderδγ, minR, maxR));
-	eltaGroup.add(vSliderδδ.setup("radius w x delta:", pvSliderδδ, minR, maxR));
-	eltaGroup.add(vSliderδε.setup("radius w x epsilon:", pvSliderδε, minR, maxR));
-	eltaGroup.add(vSliderδζ.setup("radius w x zeta:", pvSliderδζ, minR, maxR));
-	eltaGroup.add(vSliderδη.setup("radius w x eta:", pvSliderδη, minR, maxR));
-	eltaGroup.add(vSliderδθ.setup("radius delta x teta:", pvSliderδθ, minR, maxR));
-	eltaGroup.add(viscositySliderδβ.setup("Viscosity delta x betha", viscosityδβ, minV, maxV));
-	eltaGroup.add(viscositySliderδα.setup("Viscosity delta x alpha", viscosityδα, minV, maxV));
-	eltaGroup.add(viscositySliderδγ.setup("Viscosity delta x gamma", viscosityδγ, minV, maxV));
-	eltaGroup.add(viscositySliderδδ.setup("Viscosity delta x delta", viscosityδδ, minV, maxV));
-	eltaGroup.add(viscositySliderδε.setup("Viscosity delta x epsilon", viscosityδε, minV, maxV));
-	eltaGroup.add(viscositySliderδζ.setup("Viscosity delta x zeta", viscosityδζ, minV, maxV));
-	eltaGroup.add(viscositySliderδη.setup("Viscosity delta x eta", viscosityδη, minV, maxV));
-	eltaGroup.add(viscositySliderδθ.setup("Viscosity delta x teta", viscosityδθ, minV, maxV));
-	eltaGroup.add(probabilitySliderδβ.setup("Probability delta x betha", probabilityδβ, minI, maxI));
-	eltaGroup.add(probabilitySliderδα.setup("Probability delta x alpha", probabilityδα, minI, maxI));
-	eltaGroup.add(probabilitySliderδγ.setup("Probability delta x gamma", probabilityδγ, minI, maxI));
-	eltaGroup.add(probabilitySliderδδ.setup("Probability delta x delta", probabilityδδ, minI, maxI));
-	eltaGroup.add(probabilitySliderδε.setup("Probability delta x epsilon", probabilityδε, minI, maxI));
-	eltaGroup.add(probabilitySliderδζ.setup("Probability delta x zeta", probabilityδζ, minI, maxI));
-	eltaGroup.add(probabilitySliderδη.setup("Probability delta x eta", probabilityδη, minI, maxI));
-	eltaGroup.add(probabilitySliderδθ.setup("Probability delta x teta", probabilityδθ, minI, maxI));
+	eltaGroup.add(AttractPowerSliderδα.setup("Attract power delta x alpha:", pAttractPowerSliderδα, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδβ.setup("Attract power delta x betha:", pAttractPowerSliderδβ, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδγ.setup("Attract power delta x gamma:", pAttractPowerSliderδγ, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδδ.setup("Attract power delta x delta:", pAttractPowerSliderδδ, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδε.setup("Attract power delta x epsilon:", pAttractPowerSliderδε, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδζ.setup("Attract power delta x zeta:", pAttractPowerSliderδζ, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδη.setup("Attract power delta x eta:", pAttractPowerSliderδη, minAttP, maxAttP));
+	eltaGroup.add(AttractPowerSliderδθ.setup("Attract power delta x teta:", pAttractPowerSliderδθ, minAttP, maxAttP));
+	eltaGroup.add(AttractDistanceSliderδα.setup("Attract radius delta x alpha:", pAttractDistanceSliderδα, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδβ.setup("Attract radius delta x betha:", pAttractDistanceSliderδβ, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδγ.setup("Attract radius delta x gamma:", pAttractDistanceSliderδγ, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδδ.setup("Attract radius delta x delta:", pAttractDistanceSliderδδ, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδε.setup("Attract radius delta x epsilon:", pAttractDistanceSliderδε, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδζ.setup("Attract radius delta x zeta:", pAttractDistanceSliderδζ, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδη.setup("Attract radius delta x eta:", pAttractDistanceSliderδη, minAttR, maxAttR));
+	eltaGroup.add(AttractDistanceSliderδθ.setup("Attract radius delta x teta:", pAttractDistanceSliderδθ, minAttR, maxAttR));
+	eltaGroup.add(ViscosityAttractSliderδβ.setup("Attract viscosity delta x betha", ViscosityAttractδβ, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδα.setup("Attract viscosity delta x alpha", ViscosityAttractδα, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδγ.setup("Attract viscosity delta x gamma", ViscosityAttractδγ, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδδ.setup("Attract viscosity delta x delta", ViscosityAttractδδ, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδε.setup("Attract viscosity delta x epsilon", ViscosityAttractδε, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδζ.setup("Attract viscosity delta x zeta", ViscosityAttractδζ, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδη.setup("Attract viscosity delta x eta", ViscosityAttractδη, minAttV, maxAttV));
+	eltaGroup.add(ViscosityAttractSliderδθ.setup("Attract viscosity delta x teta", ViscosityAttractδθ, minAttV, maxAttV));
+	eltaGroup.add(ProbAttractSliderδβ.setup("Attract prob delta x betha", ProbAttractδβ, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδα.setup("Attract prob delta x alpha", ProbAttractδα, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδγ.setup("Attract prob delta x gamma", ProbAttractδγ, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδδ.setup("Attract prob delta x delta", ProbAttractδδ, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδε.setup("Attract prob delta x epsilon", ProbAttractδε, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδζ.setup("Attract prob delta x zeta", ProbAttractδζ, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδη.setup("Attract prob delta x eta", ProbAttractδη, minAttI, maxAttI));
+	eltaGroup.add(ProbAttractSliderδθ.setup("Attract prob delta x teta", ProbAttractδθ, minAttI, maxAttI));
+	eltaGroup.add(RepelPowerSliderδα.setup("Repel power delta x alpha:", pRepelPowerSliderδα, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδβ.setup("Repel power delta x betha:", pRepelPowerSliderδβ, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδγ.setup("Repel power delta x gamma:", pRepelPowerSliderδγ, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδδ.setup("Repel power delta x delta:", pRepelPowerSliderδδ, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδε.setup("Repel power delta x epsilon:", pRepelPowerSliderδε, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδζ.setup("Repel power delta x zeta:", pRepelPowerSliderδζ, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδη.setup("Repel power delta x eta:", pRepelPowerSliderδη, minRepP, maxRepP));
+	eltaGroup.add(RepelPowerSliderδθ.setup("Repel power delta x teta:", pRepelPowerSliderδθ, minRepP, maxRepP));
+	eltaGroup.add(RepelDistanceSliderδα.setup("Repel radius delta x alpha:", pRepelDistanceSliderδα, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδβ.setup("Repel radius delta x betha:", pRepelDistanceSliderδβ, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδγ.setup("Repel radius delta x gamma:", pRepelDistanceSliderδγ, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδδ.setup("Repel radius delta x delta:", pRepelDistanceSliderδδ, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδε.setup("Repel radius delta x epsilon:", pRepelDistanceSliderδε, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδζ.setup("Repel radius delta x zeta:", pRepelDistanceSliderδζ, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδη.setup("Repel radius delta x eta:", pRepelDistanceSliderδη, minRepR, maxRepR));
+	eltaGroup.add(RepelDistanceSliderδθ.setup("Repel radius delta x teta:", pRepelDistanceSliderδθ, minRepR, maxRepR));
+	eltaGroup.add(ViscosityRepelSliderδβ.setup("Repel viscosity delta x betha", ViscosityRepelδβ, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδα.setup("Repel viscosity delta x alpha", ViscosityRepelδα, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδγ.setup("Repel viscosity delta x gamma", ViscosityRepelδγ, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδδ.setup("Repel viscosity delta x delta", ViscosityRepelδδ, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδε.setup("Repel viscosity delta x epsilon", ViscosityRepelδε, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδζ.setup("Repel viscosity delta x zeta", ViscosityRepelδζ, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδη.setup("Repel viscosity delta x eta", ViscosityRepelδη, minRepV, maxRepV));
+	eltaGroup.add(ViscosityRepelSliderδθ.setup("Repel viscosity delta x teta", ViscosityRepelδθ, minRepV, maxRepV));
+	eltaGroup.add(ProbRepelSliderδβ.setup("Repel prob delta x betha", ProbRepelδβ, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδα.setup("Repel prob delta x alpha", ProbRepelδα, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδγ.setup("Repel prob delta x gamma", ProbRepelδγ, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδδ.setup("Repel prob delta x delta", ProbRepelδδ, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδε.setup("Repel prob delta x epsilon", ProbRepelδε, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδζ.setup("Repel prob delta x zeta", ProbRepelδζ, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδη.setup("Repel prob delta x eta", ProbRepelδη, minRepI, maxRepI));
+	eltaGroup.add(ProbRepelSliderδθ.setup("Repel prob delta x teta", ProbRepelδθ, minRepI, maxRepI));
 	eltaGroup.minimize();
 	gui.add(&eltaGroup);
 
 	// Epsilon
 	epsilonGroup.setup("Epsilon");
-	epsilonGroup.add(powerSliderεα.setup("power epsilon x alpha:", ppowerSliderεα, minP, maxP));
-	epsilonGroup.add(powerSliderεβ.setup("power epsilon x betha:", ppowerSliderεβ, minP, maxP));
-	epsilonGroup.add(powerSliderεγ.setup("power epsilon x gamma:", ppowerSliderεγ, minP, maxP));
-	epsilonGroup.add(powerSliderεδ.setup("power epsilon x delta:", ppowerSliderεδ, minP, maxP));
-	epsilonGroup.add(powerSliderεε.setup("power epsilon x epsilon:", ppowerSliderεε, minP, maxP));
-	epsilonGroup.add(powerSliderεζ.setup("power epsilon x zeta:", ppowerSliderεζ, minP, maxP));
-	epsilonGroup.add(powerSliderεη.setup("power epsilon x eta:", ppowerSliderεη, minP, maxP));
-	epsilonGroup.add(powerSliderεθ.setup("power epsilon x teta:", ppowerSliderεθ, minP, maxP));
-	epsilonGroup.add(vSliderεα.setup("radius o x alpha:", pvSliderεα, minR, maxR));
-	epsilonGroup.add(vSliderεβ.setup("radius o x betha:", pvSliderεβ, minR, maxR));
-	epsilonGroup.add(vSliderεγ.setup("radius o x gamma:", pvSliderεγ, minR, maxR));
-	epsilonGroup.add(vSliderεδ.setup("radius o x delta:", pvSliderεδ, minR, maxR));
-	epsilonGroup.add(vSliderεε.setup("radius o x epsilon:", pvSliderεε, minR, maxR));
-	epsilonGroup.add(vSliderεζ.setup("radius o x zeta:", pvSliderεζ, minR, maxR));
-	epsilonGroup.add(vSliderεη.setup("radius o x eta:", pvSliderεη, minR, maxR));
-	epsilonGroup.add(vSliderεθ.setup("radius epsilon x teta:", pvSliderεθ, minR, maxR));
-	epsilonGroup.add(viscositySliderεβ.setup("Viscosity epsilon x betha", viscosityεβ, minV, maxV));
-	epsilonGroup.add(viscositySliderεα.setup("Viscosity epsilon x alpha", viscosityεα, minV, maxV));
-	epsilonGroup.add(viscositySliderεγ.setup("Viscosity epsilon x gamma", viscosityεγ, minV, maxV));
-	epsilonGroup.add(viscositySliderεδ.setup("Viscosity epsilon x delta", viscosityεδ, minV, maxV));
-	epsilonGroup.add(viscositySliderεε.setup("Viscosity epsilon x epsilon", viscosityεε, minV, maxV));
-	epsilonGroup.add(viscositySliderεζ.setup("Viscosity epsilon x zeta", viscosityεζ, minV, maxV));
-	epsilonGroup.add(viscositySliderεη.setup("Viscosity epsilon x eta", viscosityεη, minV, maxV));
-	epsilonGroup.add(viscositySliderεθ.setup("Viscosity epsilon x teta", viscosityεθ, minV, maxV));
-	epsilonGroup.add(probabilitySliderεβ.setup("Probability epsilon x betha", probabilityεβ, minI, maxI));
-	epsilonGroup.add(probabilitySliderεα.setup("Probability epsilon x alpha", probabilityεα, minI, maxI));
-	epsilonGroup.add(probabilitySliderεγ.setup("Probability epsilon x gamma", probabilityεγ, minI, maxI));
-	epsilonGroup.add(probabilitySliderεδ.setup("Probability epsilon x delta", probabilityεδ, minI, maxI));
-	epsilonGroup.add(probabilitySliderεε.setup("Probability epsilon x epsilon", probabilityεε, minI, maxI));
-	epsilonGroup.add(probabilitySliderεζ.setup("Probability epsilon x zeta", probabilityεζ, minI, maxI));
-	epsilonGroup.add(probabilitySliderεη.setup("Probability epsilon x eta", probabilityεη, minI, maxI));
-	epsilonGroup.add(probabilitySliderεθ.setup("Probability epsilon x teta", probabilityεθ, minI, maxI));
+	epsilonGroup.add(AttractPowerSliderεα.setup("Attract power epsilon x alpha:", pAttractPowerSliderεα, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεβ.setup("Attract power epsilon x betha:", pAttractPowerSliderεβ, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεγ.setup("Attract power epsilon x gamma:", pAttractPowerSliderεγ, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεδ.setup("Attract power epsilon x delta:", pAttractPowerSliderεδ, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεε.setup("Attract power epsilon x epsilon:", pAttractPowerSliderεε, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεζ.setup("Attract power epsilon x zeta:", pAttractPowerSliderεζ, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεη.setup("Attract power epsilon x eta:", pAttractPowerSliderεη, minAttP, maxAttP));
+	epsilonGroup.add(AttractPowerSliderεθ.setup("Attract power epsilon x teta:", pAttractPowerSliderεθ, minAttP, maxAttP));
+	epsilonGroup.add(AttractDistanceSliderεα.setup("Attract radius epsilon x alpha:", pAttractDistanceSliderεα, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεβ.setup("Attract radius epsilon x betha:", pAttractDistanceSliderεβ, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεγ.setup("Attract radius epsilon x gamma:", pAttractDistanceSliderεγ, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεδ.setup("Attract radius epsilon x delta:", pAttractDistanceSliderεδ, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεε.setup("Attract radius epsilon x epsilon:", pAttractDistanceSliderεε, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεζ.setup("Attract radius epsilon x zeta:", pAttractDistanceSliderεζ, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεη.setup("Attract radius epsilon x eta:", pAttractDistanceSliderεη, minAttR, maxAttR));
+	epsilonGroup.add(AttractDistanceSliderεθ.setup("Attract radius epsilon x teta:", pAttractDistanceSliderεθ, minAttR, maxAttR));
+	epsilonGroup.add(ViscosityAttractSliderεβ.setup("Attract viscosity epsilon x betha", ViscosityAttractεβ, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεα.setup("Attract viscosity epsilon x alpha", ViscosityAttractεα, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεγ.setup("Attract viscosity epsilon x gamma", ViscosityAttractεγ, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεδ.setup("Attract viscosity epsilon x delta", ViscosityAttractεδ, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεε.setup("Attract viscosity epsilon x epsilon", ViscosityAttractεε, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεζ.setup("Attract viscosity epsilon x zeta", ViscosityAttractεζ, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεη.setup("Attract viscosity epsilon x eta", ViscosityAttractεη, minAttV, maxAttV));
+	epsilonGroup.add(ViscosityAttractSliderεθ.setup("Attract viscosity epsilon x teta", ViscosityAttractεθ, minAttV, maxAttV));
+	epsilonGroup.add(ProbAttractSliderεβ.setup("Attract prob epsilon x betha", ProbAttractεβ, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεα.setup("Attract prob epsilon x alpha", ProbAttractεα, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεγ.setup("Attract prob epsilon x gamma", ProbAttractεγ, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεδ.setup("Attract prob epsilon x delta", ProbAttractεδ, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεε.setup("Attract prob epsilon x epsilon", ProbAttractεε, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεζ.setup("Attract prob epsilon x zeta", ProbAttractεζ, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεη.setup("Attract prob epsilon x eta", ProbAttractεη, minAttI, maxAttI));
+	epsilonGroup.add(ProbAttractSliderεθ.setup("Attract prob epsilon x teta", ProbAttractεθ, minAttI, maxAttI));
+	epsilonGroup.add(RepelPowerSliderεα.setup("Repel power epsilon x alpha:", pRepelPowerSliderεα, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεβ.setup("Repel power epsilon x betha:", pRepelPowerSliderεβ, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεγ.setup("Repel power epsilon x gamma:", pRepelPowerSliderεγ, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεδ.setup("Repel power epsilon x delta:", pRepelPowerSliderεδ, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεε.setup("Repel power epsilon x epsilon:", pRepelPowerSliderεε, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεζ.setup("Repel power epsilon x zeta:", pRepelPowerSliderεζ, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεη.setup("Repel power epsilon x eta:", pRepelPowerSliderεη, minRepP, maxRepP));
+	epsilonGroup.add(RepelPowerSliderεθ.setup("Repel power epsilon x teta:", pRepelPowerSliderεθ, minRepP, maxRepP));
+	epsilonGroup.add(RepelDistanceSliderεα.setup("Repel radius epsilon x alpha:", pRepelDistanceSliderεα, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεβ.setup("Repel radius epsilon x betha:", pRepelDistanceSliderεβ, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεγ.setup("Repel radius epsilon x gamma:", pRepelDistanceSliderεγ, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεδ.setup("Repel radius epsilon x delta:", pRepelDistanceSliderεδ, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεε.setup("Repel radius epsilon x epsilon:", pRepelDistanceSliderεε, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεζ.setup("Repel radius epsilon x zeta:", pRepelDistanceSliderεζ, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεη.setup("Repel radius epsilon x eta:", pRepelDistanceSliderεη, minRepR, maxRepR));
+	epsilonGroup.add(RepelDistanceSliderεθ.setup("Repel radius epsilon x teta:", pRepelDistanceSliderεθ, minRepR, maxRepR));
+	epsilonGroup.add(ViscosityRepelSliderεβ.setup("Repel viscosity epsilon x betha", ViscosityRepelεβ, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεα.setup("Repel viscosity epsilon x alpha", ViscosityRepelεα, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεγ.setup("Repel viscosity epsilon x gamma", ViscosityRepelεγ, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεδ.setup("Repel viscosity epsilon x delta", ViscosityRepelεδ, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεε.setup("Repel viscosity epsilon x epsilon", ViscosityRepelεε, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεζ.setup("Repel viscosity epsilon x zeta", ViscosityRepelεζ, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεη.setup("Repel viscosity epsilon x eta", ViscosityRepelεη, minRepV, maxRepV));
+	epsilonGroup.add(ViscosityRepelSliderεθ.setup("Repel viscosity epsilon x teta", ViscosityRepelεθ, minRepV, maxRepV));
+	epsilonGroup.add(ProbRepelSliderεβ.setup("Repel prob epsilon x betha", ProbRepelεβ, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεα.setup("Repel prob epsilon x alpha", ProbRepelεα, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεγ.setup("Repel prob epsilon x gamma", ProbRepelεγ, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεδ.setup("Repel prob epsilon x delta", ProbRepelεδ, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεε.setup("Repel prob epsilon x epsilon", ProbRepelεε, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεζ.setup("Repel prob epsilon x zeta", ProbRepelεζ, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεη.setup("Repel prob epsilon x eta", ProbRepelεη, minRepI, maxRepI));
+	epsilonGroup.add(ProbRepelSliderεθ.setup("Repel prob epsilon x teta", ProbRepelεθ, minRepI, maxRepI));
 	epsilonGroup.minimize();
 	gui.add(&epsilonGroup);
 
 	// Zeta
 	zetaGroup.setup("Zeta");
-	zetaGroup.add(powerSliderζα.setup("power zeta x alpha:", ppowerSliderζα, minP, maxP));
-	zetaGroup.add(powerSliderζβ.setup("power zeta x betha:", ppowerSliderζβ, minP, maxP));
-	zetaGroup.add(powerSliderζγ.setup("power zeta x gamma:", ppowerSliderζγ, minP, maxP));
-	zetaGroup.add(powerSliderζδ.setup("power zeta x delta:", ppowerSliderζδ, minP, maxP));
-	zetaGroup.add(powerSliderζε.setup("power zeta x epsilon:", ppowerSliderζε, minP, maxP));
-	zetaGroup.add(powerSliderζζ.setup("power zeta x zeta:", ppowerSliderζζ, minP, maxP));
-	zetaGroup.add(powerSliderζη.setup("power zeta x eta:", ppowerSliderζη, minP, maxP));
-	zetaGroup.add(powerSliderζθ.setup("power zeta x teta:", ppowerSliderζθ, minP, maxP));
-	zetaGroup.add(vSliderζα.setup("radius k x alpha:", pvSliderζα, minR, maxR));
-	zetaGroup.add(vSliderζβ.setup("radius k x betha:", pvSliderζβ, minR, maxR));
-	zetaGroup.add(vSliderζγ.setup("radius k x gamma:", pvSliderζγ, minR, maxR));
-	zetaGroup.add(vSliderζδ.setup("radius k x delta:", pvSliderζδ, minR, maxR));
-	zetaGroup.add(vSliderζε.setup("radius k x epsilon:", pvSliderζε, minR, maxR));
-	zetaGroup.add(vSliderζζ.setup("radius k x zeta:", pvSliderζζ, minR, maxR));
-	zetaGroup.add(vSliderζη.setup("radius k x eta:", pvSliderζη, minR, maxR));
-	zetaGroup.add(vSliderζθ.setup("radius zeta x teta:", pvSliderζθ, minR, maxR));
-	zetaGroup.add(viscositySliderζβ.setup("Viscosity zeta x betha", viscosityζβ, minV, maxV));
-	zetaGroup.add(viscositySliderζα.setup("Viscosity zeta x alpha", viscosityζα, minV, maxV));
-	zetaGroup.add(viscositySliderζγ.setup("Viscosity zeta x gamma", viscosityζγ, minV, maxV));
-	zetaGroup.add(viscositySliderζδ.setup("Viscosity zeta x delta", viscosityζδ, minV, maxV));
-	zetaGroup.add(viscositySliderζε.setup("Viscosity zeta x epsilon", viscosityζε, minV, maxV));
-	zetaGroup.add(viscositySliderζζ.setup("Viscosity zeta x zeta", viscosityζζ, minV, maxV));
-	zetaGroup.add(viscositySliderζη.setup("Viscosity zeta x eta", viscosityζη, minV, maxV));
-	zetaGroup.add(viscositySliderζθ.setup("Viscosity zeta x teta", viscosityζθ, minV, maxV));
-	zetaGroup.add(probabilitySliderζβ.setup("Probability zeta x betha", probabilityζβ, minI, maxI));
-	zetaGroup.add(probabilitySliderζα.setup("Probability zeta x alpha", probabilityζα, minI, maxI));
-	zetaGroup.add(probabilitySliderζγ.setup("Probability zeta x gamma", probabilityζγ, minI, maxI));
-	zetaGroup.add(probabilitySliderζδ.setup("Probability zeta x delta", probabilityζδ, minI, maxI));
-	zetaGroup.add(probabilitySliderζε.setup("Probability zeta x epsilon", probabilityζε, minI, maxI));
-	zetaGroup.add(probabilitySliderζζ.setup("Probability zeta x zeta", probabilityζζ, minI, maxI));
-	zetaGroup.add(probabilitySliderζη.setup("Probability zeta x eta", probabilityζη, minI, maxI));
-	zetaGroup.add(probabilitySliderζθ.setup("Probability zeta x teta", probabilityζθ, minI, maxI));
+	zetaGroup.add(AttractPowerSliderζα.setup("Attract power zeta x alpha:", pAttractPowerSliderζα, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζβ.setup("Attract power zeta x betha:", pAttractPowerSliderζβ, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζγ.setup("Attract power zeta x gamma:", pAttractPowerSliderζγ, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζδ.setup("Attract power zeta x delta:", pAttractPowerSliderζδ, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζε.setup("Attract power zeta x epsilon:", pAttractPowerSliderζε, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζζ.setup("Attract power zeta x zeta:", pAttractPowerSliderζζ, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζη.setup("Attract power zeta x eta:", pAttractPowerSliderζη, minAttP, maxAttP));
+	zetaGroup.add(AttractPowerSliderζθ.setup("Attract power zeta x teta:", pAttractPowerSliderζθ, minAttP, maxAttP));
+	zetaGroup.add(AttractDistanceSliderζα.setup("Attract radius zeta x alpha:", pAttractDistanceSliderζα, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζβ.setup("Attract radius zeta x betha:", pAttractDistanceSliderζβ, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζγ.setup("Attract radius zeta x gamma:", pAttractDistanceSliderζγ, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζδ.setup("Attract radius zeta x delta:", pAttractDistanceSliderζδ, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζε.setup("Attract radius zeta x epsilon:", pAttractDistanceSliderζε, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζζ.setup("Attract radius zeta x zeta:", pAttractDistanceSliderζζ, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζη.setup("Attract radius zeta x eta:", pAttractDistanceSliderζη, minAttR, maxAttR));
+	zetaGroup.add(AttractDistanceSliderζθ.setup("Attract radius zeta x teta:", pAttractDistanceSliderζθ, minAttR, maxAttR));
+	zetaGroup.add(ViscosityAttractSliderζβ.setup("Attract viscosity zeta x betha", ViscosityAttractζβ, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζα.setup("Attract viscosity zeta x alpha", ViscosityAttractζα, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζγ.setup("Attract viscosity zeta x gamma", ViscosityAttractζγ, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζδ.setup("Attract viscosity zeta x delta", ViscosityAttractζδ, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζε.setup("Attract viscosity zeta x epsilon", ViscosityAttractζε, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζζ.setup("Attract viscosity zeta x zeta", ViscosityAttractζζ, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζη.setup("Attract viscosity zeta x eta", ViscosityAttractζη, minAttV, maxAttV));
+	zetaGroup.add(ViscosityAttractSliderζθ.setup("Attract viscosity zeta x teta", ViscosityAttractζθ, minAttV, maxAttV));
+	zetaGroup.add(ProbAttractSliderζβ.setup("Attract prob zeta x betha", ProbAttractζβ, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζα.setup("Attract prob zeta x alpha", ProbAttractζα, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζγ.setup("Attract prob zeta x gamma", ProbAttractζγ, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζδ.setup("Attract prob zeta x delta", ProbAttractζδ, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζε.setup("Attract prob zeta x epsilon", ProbAttractζε, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζζ.setup("Attract prob zeta x zeta", ProbAttractζζ, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζη.setup("Attract prob zeta x eta", ProbAttractζη, minAttI, maxAttI));
+	zetaGroup.add(ProbAttractSliderζθ.setup("Attract prob zeta x teta", ProbAttractζθ, minAttI, maxAttI));
+	zetaGroup.add(RepelPowerSliderζα.setup("Repel power zeta x alpha:", pRepelPowerSliderζα, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζβ.setup("Repel power zeta x betha:", pRepelPowerSliderζβ, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζγ.setup("Repel power zeta x gamma:", pRepelPowerSliderζγ, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζδ.setup("Repel power zeta x delta:", pRepelPowerSliderζδ, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζε.setup("Repel power zeta x epsilon:", pRepelPowerSliderζε, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζζ.setup("Repel power zeta x zeta:", pRepelPowerSliderζζ, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζη.setup("Repel power zeta x eta:", pRepelPowerSliderζη, minRepP, maxRepP));
+	zetaGroup.add(RepelPowerSliderζθ.setup("Repel power zeta x teta:", pRepelPowerSliderζθ, minRepP, maxRepP));
+	zetaGroup.add(RepelDistanceSliderζα.setup("Repel radius zeta x alpha:", pRepelDistanceSliderζα, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζβ.setup("Repel radius zeta x betha:", pRepelDistanceSliderζβ, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζγ.setup("Repel radius zeta x gamma:", pRepelDistanceSliderζγ, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζδ.setup("Repel radius zeta x delta:", pRepelDistanceSliderζδ, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζε.setup("Repel radius zeta x epsilon:", pRepelDistanceSliderζε, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζζ.setup("Repel radius zeta x zeta:", pRepelDistanceSliderζζ, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζη.setup("Repel radius zeta x eta:", pRepelDistanceSliderζη, minRepR, maxRepR));
+	zetaGroup.add(RepelDistanceSliderζθ.setup("Repel radius zeta x teta:", pRepelDistanceSliderζθ, minRepR, maxRepR));
+	zetaGroup.add(ViscosityRepelSliderζβ.setup("Repel viscosity zeta x betha", ViscosityRepelζβ, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζα.setup("Repel viscosity zeta x alpha", ViscosityRepelζα, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζγ.setup("Repel viscosity zeta x gamma", ViscosityRepelζγ, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζδ.setup("Repel viscosity zeta x delta", ViscosityRepelζδ, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζε.setup("Repel viscosity zeta x epsilon", ViscosityRepelζε, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζζ.setup("Repel viscosity zeta x zeta", ViscosityRepelζζ, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζη.setup("Repel viscosity zeta x eta", ViscosityRepelζη, minRepV, maxRepV));
+	zetaGroup.add(ViscosityRepelSliderζθ.setup("Repel viscosity zeta x teta", ViscosityRepelζθ, minRepV, maxRepV));
+	zetaGroup.add(ProbRepelSliderζβ.setup("Repel prob zeta x betha", ProbRepelζβ, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζα.setup("Repel prob zeta x alpha", ProbRepelζα, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζγ.setup("Repel prob zeta x gamma", ProbRepelζγ, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζδ.setup("Repel prob zeta x delta", ProbRepelζδ, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζε.setup("Repel prob zeta x epsilon", ProbRepelζε, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζζ.setup("Repel prob zeta x zeta", ProbRepelζζ, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζη.setup("Repel prob zeta x eta", ProbRepelζη, minRepI, maxRepI));
+	zetaGroup.add(ProbRepelSliderζθ.setup("Repel prob zeta x teta", ProbRepelζθ, minRepI, maxRepI));
 	zetaGroup.minimize();
 	gui.add(&zetaGroup);
 
 	// Eta
 	etaGroup.setup("Eta");
-	etaGroup.add(powerSliderηα.setup("power eta x alpha:", ppowerSliderηα, minP, maxP));
-	etaGroup.add(powerSliderηβ.setup("power eta x betha:", ppowerSliderηβ, minP, maxP));
-	etaGroup.add(powerSliderηγ.setup("power eta x gamma:", ppowerSliderηγ, minP, maxP));
-	etaGroup.add(powerSliderηδ.setup("power eta x delta:", ppowerSliderηδ, minP, maxP));
-	etaGroup.add(powerSliderηε.setup("power eta x epsilon:", ppowerSliderηε, minP, maxP));
-	etaGroup.add(powerSliderηζ.setup("power eta x zeta:", ppowerSliderηζ, minP, maxP));
-	etaGroup.add(powerSliderηη.setup("power eta x eta:", ppowerSliderηη, minP, maxP));
-	etaGroup.add(powerSliderηθ.setup("power eta x teta:", ppowerSliderηθ, minP, maxP));
-	etaGroup.add(vSliderηα.setup("radius c x alpha:", pvSliderηα, minR, maxR));
-	etaGroup.add(vSliderηβ.setup("radius c x betha:", pvSliderηβ, minR, maxR));
-	etaGroup.add(vSliderηγ.setup("radius c x gamma:", pvSliderηγ, minR, maxR));
-	etaGroup.add(vSliderηδ.setup("radius c x delta:", pvSliderηδ, minR, maxR));
-	etaGroup.add(vSliderηε.setup("radius c x epsilon:", pvSliderηε, minR, maxR));
-	etaGroup.add(vSliderηζ.setup("radius c x zeta:", pvSliderηζ, minR, maxR));
-	etaGroup.add(vSliderηη.setup("radius c x eta:", pvSliderηη, minR, maxR));
-	etaGroup.add(vSliderηθ.setup("radius eta x teta:", pvSliderηθ, minR, maxR));
-	etaGroup.add(viscositySliderηβ.setup("Viscosity eta x betha", viscosityηβ, minV, maxV));
-	etaGroup.add(viscositySliderηα.setup("Viscosity eta x alpha", viscosityηα, minV, maxV));
-	etaGroup.add(viscositySliderηγ.setup("Viscosity eta x gamma", viscosityηγ, minV, maxV));
-	etaGroup.add(viscositySliderηδ.setup("Viscosity eta x delta", viscosityηδ, minV, maxV));
-	etaGroup.add(viscositySliderηε.setup("Viscosity eta x epsilon", viscosityηε, minV, maxV));
-	etaGroup.add(viscositySliderηζ.setup("Viscosity eta x zeta", viscosityηζ, minV, maxV));
-	etaGroup.add(viscositySliderηη.setup("Viscosity eta x eta", viscosityηη, minV, maxV));
-	etaGroup.add(viscositySliderηθ.setup("Viscosity eta x teta", viscosityηθ, minV, maxV));
-	etaGroup.add(probabilitySliderηβ.setup("Probability eta x betha", probabilityηβ, minI, maxI));
-	etaGroup.add(probabilitySliderηα.setup("Probability eta x alpha", probabilityηα, minI, maxI));
-	etaGroup.add(probabilitySliderηγ.setup("Probability eta x gamma", probabilityηγ, minI, maxI));
-	etaGroup.add(probabilitySliderηδ.setup("Probability eta x delta", probabilityηδ, minI, maxI));
-	etaGroup.add(probabilitySliderηε.setup("Probability eta x epsilon", probabilityηε, minI, maxI));
-	etaGroup.add(probabilitySliderηζ.setup("Probability eta x zeta", probabilityηζ, minI, maxI));
-	etaGroup.add(probabilitySliderηη.setup("Probability eta x eta", probabilityηη, minI, maxI));
-	etaGroup.add(probabilitySliderηθ.setup("Probability eta x teta", probabilityηθ, minI, maxI));
+	etaGroup.add(AttractPowerSliderηα.setup("Attract power eta x alpha:", pAttractPowerSliderηα, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηβ.setup("Attract power eta x betha:", pAttractPowerSliderηβ, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηγ.setup("Attract power eta x gamma:", pAttractPowerSliderηγ, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηδ.setup("Attract power eta x delta:", pAttractPowerSliderηδ, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηε.setup("Attract power eta x epsilon:", pAttractPowerSliderηε, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηζ.setup("Attract power eta x zeta:", pAttractPowerSliderηζ, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηη.setup("Attract power eta x eta:", pAttractPowerSliderηη, minAttP, maxAttP));
+	etaGroup.add(AttractPowerSliderηθ.setup("Attract power eta x teta:", pAttractPowerSliderηθ, minAttP, maxAttP));
+	etaGroup.add(AttractDistanceSliderηα.setup("Attract radius eta x alpha:", pAttractDistanceSliderηα, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηβ.setup("Attract radius eta x betha:", pAttractDistanceSliderηβ, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηγ.setup("Attract radius eta x gamma:", pAttractDistanceSliderηγ, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηδ.setup("Attract radius eta x delta:", pAttractDistanceSliderηδ, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηε.setup("Attract radius eta x epsilon:", pAttractDistanceSliderηε, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηζ.setup("Attract radius eta x zeta:", pAttractDistanceSliderηζ, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηη.setup("Attract radius eta x eta:", pAttractDistanceSliderηη, minAttR, maxAttR));
+	etaGroup.add(AttractDistanceSliderηθ.setup("Attract radius eta x teta:", pAttractDistanceSliderηθ, minAttR, maxAttR));
+	etaGroup.add(ViscosityAttractSliderηβ.setup("Attract viscosity eta x betha", ViscosityAttractηβ, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηα.setup("Attract viscosity eta x alpha", ViscosityAttractηα, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηγ.setup("Attract viscosity eta x gamma", ViscosityAttractηγ, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηδ.setup("Attract viscosity eta x delta", ViscosityAttractηδ, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηε.setup("Attract viscosity eta x epsilon", ViscosityAttractηε, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηζ.setup("Attract viscosity eta x zeta", ViscosityAttractηζ, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηη.setup("Attract viscosity eta x eta", ViscosityAttractηη, minAttV, maxAttV));
+	etaGroup.add(ViscosityAttractSliderηθ.setup("Attract viscosity eta x teta", ViscosityAttractηθ, minAttV, maxAttV));
+	etaGroup.add(ProbAttractSliderηβ.setup("Attract prob eta x betha", ProbAttractηβ, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηα.setup("Attract prob eta x alpha", ProbAttractηα, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηγ.setup("Attract prob eta x gamma", ProbAttractηγ, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηδ.setup("Attract prob eta x delta", ProbAttractηδ, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηε.setup("Attract prob eta x epsilon", ProbAttractηε, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηζ.setup("Attract prob eta x zeta", ProbAttractηζ, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηη.setup("Attract prob eta x eta", ProbAttractηη, minAttI, maxAttI));
+	etaGroup.add(ProbAttractSliderηθ.setup("Attract prob eta x teta", ProbAttractηθ, minAttI, maxAttI));
+	etaGroup.add(RepelPowerSliderηα.setup("Repel power eta x alpha:", pRepelPowerSliderηα, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηβ.setup("Repel power eta x betha:", pRepelPowerSliderηβ, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηγ.setup("Repel power eta x gamma:", pRepelPowerSliderηγ, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηδ.setup("Repel power eta x delta:", pRepelPowerSliderηδ, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηε.setup("Repel power eta x epsilon:", pRepelPowerSliderηε, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηζ.setup("Repel power eta x zeta:", pRepelPowerSliderηζ, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηη.setup("Repel power eta x eta:", pRepelPowerSliderηη, minRepP, maxRepP));
+	etaGroup.add(RepelPowerSliderηθ.setup("Repel power eta x teta:", pRepelPowerSliderηθ, minRepP, maxRepP));
+	etaGroup.add(RepelDistanceSliderηα.setup("Repel radius eta x alpha:", pRepelDistanceSliderηα, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηβ.setup("Repel radius eta x betha:", pRepelDistanceSliderηβ, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηγ.setup("Repel radius eta x gamma:", pRepelDistanceSliderηγ, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηδ.setup("Repel radius eta x delta:", pRepelDistanceSliderηδ, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηε.setup("Repel radius eta x epsilon:", pRepelDistanceSliderηε, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηζ.setup("Repel radius eta x zeta:", pRepelDistanceSliderηζ, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηη.setup("Repel radius eta x eta:", pRepelDistanceSliderηη, minRepR, maxRepR));
+	etaGroup.add(RepelDistanceSliderηθ.setup("Repel radius eta x teta:", pRepelDistanceSliderηθ, minRepR, maxRepR));
+	etaGroup.add(ViscosityRepelSliderηβ.setup("Repel viscosity eta x betha", ViscosityRepelηβ, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηα.setup("Repel viscosity eta x alpha", ViscosityRepelηα, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηγ.setup("Repel viscosity eta x gamma", ViscosityRepelηγ, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηδ.setup("Repel viscosity eta x delta", ViscosityRepelηδ, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηε.setup("Repel viscosity eta x epsilon", ViscosityRepelηε, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηζ.setup("Repel viscosity eta x zeta", ViscosityRepelηζ, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηη.setup("Repel viscosity eta x eta", ViscosityRepelηη, minRepV, maxRepV));
+	etaGroup.add(ViscosityRepelSliderηθ.setup("Repel viscosity eta x teta", ViscosityRepelηθ, minRepV, maxRepV));
+	etaGroup.add(ProbRepelSliderηβ.setup("Repel prob eta x betha", ProbRepelηβ, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηα.setup("Repel prob eta x alpha", ProbRepelηα, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηγ.setup("Repel prob eta x gamma", ProbRepelηγ, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηδ.setup("Repel prob eta x delta", ProbRepelηδ, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηε.setup("Repel prob eta x epsilon", ProbRepelηε, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηζ.setup("Repel prob eta x zeta", ProbRepelηζ, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηη.setup("Repel prob eta x eta", ProbRepelηη, minRepI, maxRepI));
+	etaGroup.add(ProbRepelSliderηθ.setup("Repel prob eta x teta", ProbRepelηθ, minRepI, maxRepI));
 	etaGroup.minimize();
 	gui.add(&etaGroup);
 
 	// Teta
 	tetaGroup.setup("Teta - Dark");
-	tetaGroup.add(powerSliderθα.setup("power teta x alpha:", ppowerSliderθα, minP, maxP));
-	tetaGroup.add(powerSliderθβ.setup("power teta x betha:", ppowerSliderθβ, minP, maxP));
-	tetaGroup.add(powerSliderθγ.setup("power teta x gamma:", ppowerSliderθγ, minP, maxP));
-	tetaGroup.add(powerSliderθδ.setup("power teta x delta:", ppowerSliderθδ, minP, maxP));
-	tetaGroup.add(powerSliderθε.setup("power teta x epsilon:", ppowerSliderθε, minP, maxP));
-	tetaGroup.add(powerSliderθζ.setup("power teta x zeta:", ppowerSliderθζ, minP, maxP));
-	tetaGroup.add(powerSliderθη.setup("power teta x eta:", ppowerSliderθη, minP, maxP));
-	tetaGroup.add(powerSliderθθ.setup("power teta x teta:", ppowerSliderθθ, minP, maxP));
-	tetaGroup.add(vSliderθα.setup("radius teta x alpha:", pvSliderθα, minR, maxR));
-	tetaGroup.add(vSliderθβ.setup("radius teta x betha:", pvSliderθβ, minR, maxR));
-	tetaGroup.add(vSliderθγ.setup("radius teta x gamma:", pvSliderθγ, minR, maxR));
-	tetaGroup.add(vSliderθδ.setup("radius teta x delta:", pvSliderθδ, minR, maxR));
-	tetaGroup.add(vSliderθε.setup("radius teta x epsilon:", pvSliderθε, minR, maxR));
-	tetaGroup.add(vSliderθζ.setup("radius teta x zeta:", pvSliderθζ, minR, maxR));
-	tetaGroup.add(vSliderθη.setup("radius teta x eta:", pvSliderθη, minR, maxR));
-	tetaGroup.add(vSliderθθ.setup("radius teta x teta:", pvSliderθθ, minR, maxR));
-	tetaGroup.add(viscositySliderθα.setup("Viscosity teta x alpha", viscosityθα, minV, maxV));
-	tetaGroup.add(viscositySliderθβ.setup("Viscosity teta x betha", viscosityθβ, minV, maxV));
-	tetaGroup.add(viscositySliderθγ.setup("Viscosity teta x gamma", viscosityθγ, minV, maxV));
-	tetaGroup.add(viscositySliderθδ.setup("Viscosity teta x delta", viscosityθδ, minV, maxV));
-	tetaGroup.add(viscositySliderθε.setup("Viscosity teta x epsilon", viscosityθε, minV, maxV));
-	tetaGroup.add(viscositySliderθζ.setup("Viscosity teta x zeta", viscosityθζ, minV, maxV));
-	tetaGroup.add(viscositySliderθη.setup("Viscosity teta x eta", viscosityθη, minV, maxV));
-	tetaGroup.add(viscositySliderθθ.setup("Viscosity teta x teta", viscosityθθ, minV, maxV));
-	tetaGroup.add(probabilitySliderθα.setup("Probability teta x alpha", probabilityθα, minI, maxI));
-	tetaGroup.add(probabilitySliderθβ.setup("Probability teta x betha", probabilityθβ, minI, maxI));
-	tetaGroup.add(probabilitySliderθγ.setup("Probability teta x gamma", probabilityθγ, minI, maxI));
-	tetaGroup.add(probabilitySliderθδ.setup("Probability teta x delta", probabilityθδ, minI, maxI));
-	tetaGroup.add(probabilitySliderθε.setup("Probability teta x epsilon", probabilityθε, minI, maxI));
-	tetaGroup.add(probabilitySliderθζ.setup("Probability teta x zeta", probabilityθζ, minI, maxI));
-	tetaGroup.add(probabilitySliderθη.setup("Probability teta x eta", probabilityθη, minI, maxI));
-	tetaGroup.add(probabilitySliderθθ.setup("Probability teta x teta", probabilityθθ, minI, maxI));
+	tetaGroup.add(AttractPowerSliderθα.setup("Attract power teta x alpha:", pAttractPowerSliderθα, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθβ.setup("Attract power teta x betha:", pAttractPowerSliderθβ, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθγ.setup("Attract power teta x gamma:", pAttractPowerSliderθγ, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθδ.setup("Attract power teta x delta:", pAttractPowerSliderθδ, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθε.setup("Attract power teta x epsilon:", pAttractPowerSliderθε, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθζ.setup("Attract power teta x zeta:", pAttractPowerSliderθζ, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθη.setup("Attract power teta x eta:", pAttractPowerSliderθη, minAttP, maxAttP));
+	tetaGroup.add(AttractPowerSliderθθ.setup("Attract power teta x teta:", pAttractPowerSliderθθ, minAttP, maxAttP));
+	tetaGroup.add(AttractDistanceSliderθα.setup("Attract radius teta x alpha:", pAttractDistanceSliderθα, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθβ.setup("Attract radius teta x betha:", pAttractDistanceSliderθβ, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθγ.setup("Attract radius teta x gamma:", pAttractDistanceSliderθγ, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθδ.setup("Attract radius teta x delta:", pAttractDistanceSliderθδ, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθε.setup("Attract radius teta x epsilon:", pAttractDistanceSliderθε, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθζ.setup("Attract radius teta x zeta:", pAttractDistanceSliderθζ, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθη.setup("Attract radius teta x eta:", pAttractDistanceSliderθη, minAttR, maxAttR));
+	tetaGroup.add(AttractDistanceSliderθθ.setup("Attract radius teta x teta:", pAttractDistanceSliderθθ, minAttR, maxAttR));
+	tetaGroup.add(ViscosityAttractSliderθβ.setup("Attract viscosity teta x betha", ViscosityAttractθβ, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθα.setup("Attract viscosity teta x alpha", ViscosityAttractθα, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθγ.setup("Attract viscosity teta x gamma", ViscosityAttractθγ, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθδ.setup("Attract viscosity teta x delta", ViscosityAttractθδ, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθε.setup("Attract viscosity teta x epsilon", ViscosityAttractθε, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθζ.setup("Attract viscosity teta x zeta", ViscosityAttractθζ, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθη.setup("Attract viscosity teta x eta", ViscosityAttractθη, minAttV, maxAttV));
+	tetaGroup.add(ViscosityAttractSliderθθ.setup("Attract viscosity teta x teta", ViscosityAttractθθ, minAttV, maxAttV));
+	tetaGroup.add(ProbAttractSliderθβ.setup("Attract prob teta x betha", ProbAttractθβ, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθα.setup("Attract prob teta x alpha", ProbAttractθα, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθγ.setup("Attract prob teta x gamma", ProbAttractθγ, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθδ.setup("Attract prob teta x delta", ProbAttractθδ, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθε.setup("Attract prob teta x epsilon", ProbAttractθε, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθζ.setup("Attract prob teta x zeta", ProbAttractθζ, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθη.setup("Attract prob teta x eta", ProbAttractθη, minAttI, maxAttI));
+	tetaGroup.add(ProbAttractSliderθθ.setup("Attract prob teta x teta", ProbAttractθθ, minAttI, maxAttI));
+	tetaGroup.add(RepelPowerSliderθα.setup("Repel power teta x alpha:", pRepelPowerSliderθα, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθβ.setup("Repel power teta x betha:", pRepelPowerSliderθβ, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθγ.setup("Repel power teta x gamma:", pRepelPowerSliderθγ, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθδ.setup("Repel power teta x delta:", pRepelPowerSliderθδ, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθε.setup("Repel power teta x epsilon:", pRepelPowerSliderθε, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθζ.setup("Repel power teta x zeta:", pRepelPowerSliderθζ, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθη.setup("Repel power teta x eta:", pRepelPowerSliderθη, minRepP, maxRepP));
+	tetaGroup.add(RepelPowerSliderθθ.setup("Repel power teta x teta:", pRepelPowerSliderθθ, minRepP, maxRepP));
+	tetaGroup.add(RepelDistanceSliderθα.setup("Repel radius teta x alpha:", pRepelDistanceSliderθα, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθβ.setup("Repel radius teta x betha:", pRepelDistanceSliderθβ, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθγ.setup("Repel radius teta x gamma:", pRepelDistanceSliderθγ, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθδ.setup("Repel radius teta x delta:", pRepelDistanceSliderθδ, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθε.setup("Repel radius teta x epsilon:", pRepelDistanceSliderθε, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθζ.setup("Repel radius teta x zeta:", pRepelDistanceSliderθζ, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθη.setup("Repel radius teta x eta:", pRepelDistanceSliderθη, minRepR, maxRepR));
+	tetaGroup.add(RepelDistanceSliderθθ.setup("Repel radius teta x teta:", pRepelDistanceSliderθθ, minRepR, maxRepR));
+	tetaGroup.add(ViscosityRepelSliderθβ.setup("Repel viscosity teta x betha", ViscosityRepelθβ, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθα.setup("Repel viscosity teta x alpha", ViscosityRepelθα, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθγ.setup("Repel viscosity teta x gamma", ViscosityRepelθγ, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθδ.setup("Repel viscosity teta x delta", ViscosityRepelθδ, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθε.setup("Repel viscosity teta x epsilon", ViscosityRepelθε, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθζ.setup("Repel viscosity teta x zeta", ViscosityRepelθζ, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθη.setup("Repel viscosity teta x eta", ViscosityRepelθη, minRepV, maxRepV));
+	tetaGroup.add(ViscosityRepelSliderθθ.setup("Repel viscosity teta x teta", ViscosityRepelθθ, minRepV, maxRepV));
+	tetaGroup.add(ProbRepelSliderθβ.setup("Repel prob teta x betha", ProbRepelθβ, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθα.setup("Repel prob teta x alpha", ProbRepelθα, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθγ.setup("Repel prob teta x gamma", ProbRepelθγ, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθδ.setup("Repel prob teta x delta", ProbRepelθδ, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθε.setup("Repel prob teta x epsilon", ProbRepelθε, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθζ.setup("Repel prob teta x zeta", ProbRepelθζ, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθη.setup("Repel prob teta x eta", ProbRepelθη, minRepI, maxRepI));
+	tetaGroup.add(ProbRepelSliderθθ.setup("Repel prob teta x teta", ProbRepelθθ, minRepI, maxRepI));
 	tetaGroup.minimize();
 	gui.add(&tetaGroup);
 
+
 	expGroup.setup("Experimental");
-	expGroup.add(attractDarkButton.setup("attractDark (j)"));
-	expGroup.add(repulseDarkButton.setup("repulseDark (k)"));
 	expGroup.add(freezeButton.setup("Freeze (f)"));
 	expGroup.add(boundsToggle.setup("Bounded", true));
 	expGroup.add(radiusToogle.setup("infinite radius", false));
@@ -2615,289 +4273,460 @@ void ofApp::setup()
 	expGroup.add(gravitySlider.setup("Gravity", worldGravity, -1, 1));
 	expGroup.minimize();
 	gui.add(&expGroup);
-
+	
+	
 	ofSetBackgroundAuto(false);
 	ofEnableAlphaBlending();
-
+	
 	restart();
 }
+
+
 
 //------------------------------Update simulation with sliders values------------------------------
 void ofApp::update()
 {
 	physic_begin = clock();
-	minP = minPowerSlider;
-	maxP = maxPowerSlider;
-	minR = minRangeSlider;
-	maxR = maxRangeSlider;
-	minV = minViscoSlider;
-	maxV = maxViscoSlider;
-	minI = minProbSlider;
-	maxI = maxProbSlider;
+	minAttP = minAttractPowerSlider;
+	maxAttP = maxAttractPowerSlider;
+	minAttR = minAttractRangeSlider;
+	maxAttR = maxAttractRangeSlider;
+	minAttV = minAttractViscoSlider;
+	maxAttV = maxAttractViscoSlider;
+	minAttI = minAttractProbSlider;
+	maxAttI = maxAttractProbSlider;
+	minRepP = minRepelPowerSlider;
+	maxRepP = maxRepelPowerSlider;
+	minRepR = minRepelRangeSlider;
+	maxRepR = maxRepelRangeSlider;
+	minRepV = minRepelViscoSlider;
+	maxRepV = maxRepelViscoSlider;
+	minRepI = minRepelProbSlider;
+	maxRepI = maxRepelProbSlider;
 	probability = probabilitySlider;
-	probabilityαα = probabilitySliderαα;
-	probabilityαβ = probabilitySliderαβ;
-	probabilityαγ = probabilitySliderαγ;
-	probabilityαδ = probabilitySliderαδ;
-	probabilityαε = probabilitySliderαε;
-	probabilityαζ = probabilitySliderαζ;
-	probabilityαη = probabilitySliderαη;
-	probabilityβα = probabilitySliderβα;
-	probabilityββ = probabilitySliderββ;
-	probabilityβγ = probabilitySliderβγ;
-	probabilityβδ = probabilitySliderβδ;
-	probabilityβε = probabilitySliderβε;
-	probabilityβζ = probabilitySliderβζ;
-	probabilityβη = probabilitySliderβη;
-	probabilityγα = probabilitySliderγα;
-	probabilityγβ = probabilitySliderγβ;
-	probabilityγγ = probabilitySliderγγ;
-	probabilityγδ = probabilitySliderγδ;
-	probabilityγε = probabilitySliderγε;
-	probabilityγζ = probabilitySliderγζ;
-	probabilityγη = probabilitySliderγη;
-	probabilityδα = probabilitySliderδα;
-	probabilityδβ = probabilitySliderδβ;
-	probabilityδγ = probabilitySliderδγ;
-	probabilityδδ = probabilitySliderδδ;
-	probabilityδε = probabilitySliderδε;
-	probabilityδζ = probabilitySliderδζ;
-	probabilityδη = probabilitySliderδη;
-	probabilityεα = probabilitySliderεα;
-	probabilityεβ = probabilitySliderεβ;
-	probabilityεγ = probabilitySliderεγ;
-	probabilityεδ = probabilitySliderεδ;
-	probabilityεε = probabilitySliderεε;
-	probabilityεζ = probabilitySliderεζ;
-	probabilityεη = probabilitySliderεη;
-	probabilityζβ = probabilitySliderζβ;
-	probabilityζγ = probabilitySliderζγ;
-	probabilityζδ = probabilitySliderζδ;
-	probabilityζε = probabilitySliderζε;
-	probabilityζζ = probabilitySliderζζ;
-	probabilityζη = probabilitySliderζη;
-	probabilityηα = probabilitySliderηα;
-	probabilityηβ = probabilitySliderηβ;
-	probabilityηγ = probabilitySliderηγ;
-	probabilityηδ = probabilitySliderηδ;
-	probabilityηε = probabilitySliderηε;
-	probabilityηζ = probabilitySliderηζ;
-	probabilityηη = probabilitySliderηη;
-	probabilityαθ = probabilitySliderαθ;
-	probabilityβθ = probabilitySliderβθ;
-	probabilityγθ = probabilitySliderγθ;
-	probabilityδθ = probabilitySliderδθ;
-	probabilityεθ = probabilitySliderεθ;
-	probabilityζθ = probabilitySliderζθ;
-	probabilityηθ = probabilitySliderηθ;
-	probabilityθα = probabilitySliderθα;
-	probabilityθβ = probabilitySliderθβ;
-	probabilityθγ = probabilitySliderθγ;
-	probabilityθδ = probabilitySliderθδ;
-	probabilityθε = probabilitySliderθε;
-	probabilityθζ = probabilitySliderθζ;
-	probabilityθη = probabilitySliderθη;
-	probabilityθθ = probabilitySliderθθ;
-
+	ProbAttractαα = ProbAttractSliderαα;
+	ProbAttractαβ = ProbAttractSliderαβ;
+	ProbAttractαγ = ProbAttractSliderαγ;
+	ProbAttractαδ = ProbAttractSliderαδ;
+	ProbAttractαε = ProbAttractSliderαε;
+	ProbAttractαζ = ProbAttractSliderαζ;
+	ProbAttractαη = ProbAttractSliderαη;
+	ProbAttractβα = ProbAttractSliderβα;
+	ProbAttractββ = ProbAttractSliderββ;
+	ProbAttractβγ = ProbAttractSliderβγ;
+	ProbAttractβδ = ProbAttractSliderβδ;
+	ProbAttractβε = ProbAttractSliderβε;
+	ProbAttractβζ = ProbAttractSliderβζ;
+	ProbAttractβη = ProbAttractSliderβη;
+	ProbAttractγα = ProbAttractSliderγα;
+	ProbAttractγβ = ProbAttractSliderγβ;
+	ProbAttractγγ = ProbAttractSliderγγ;
+	ProbAttractγδ = ProbAttractSliderγδ;
+	ProbAttractγε = ProbAttractSliderγε;
+	ProbAttractγζ = ProbAttractSliderγζ;
+	ProbAttractγη = ProbAttractSliderγη;
+	ProbAttractδα = ProbAttractSliderδα;
+	ProbAttractδβ = ProbAttractSliderδβ;
+	ProbAttractδγ = ProbAttractSliderδγ;
+	ProbAttractδδ = ProbAttractSliderδδ;
+	ProbAttractδε = ProbAttractSliderδε;
+	ProbAttractδζ = ProbAttractSliderδζ;
+	ProbAttractδη = ProbAttractSliderδη;
+	ProbAttractεα = ProbAttractSliderεα;
+	ProbAttractεβ = ProbAttractSliderεβ;
+	ProbAttractεγ = ProbAttractSliderεγ;
+	ProbAttractεδ = ProbAttractSliderεδ;
+	ProbAttractεε = ProbAttractSliderεε;
+	ProbAttractεζ = ProbAttractSliderεζ;
+	ProbAttractεη = ProbAttractSliderεη;
+	ProbAttractζβ = ProbAttractSliderζβ;
+	ProbAttractζγ = ProbAttractSliderζγ;
+	ProbAttractζδ = ProbAttractSliderζδ;
+	ProbAttractζε = ProbAttractSliderζε;
+	ProbAttractζζ = ProbAttractSliderζζ;
+	ProbAttractζη = ProbAttractSliderζη;
+	ProbAttractηα = ProbAttractSliderηα;
+	ProbAttractηβ = ProbAttractSliderηβ;
+	ProbAttractηγ = ProbAttractSliderηγ;
+	ProbAttractηδ = ProbAttractSliderηδ;
+	ProbAttractηε = ProbAttractSliderηε;
+	ProbAttractηζ = ProbAttractSliderηζ;
+	ProbAttractηη = ProbAttractSliderηη;
+	ProbAttractαθ = ProbAttractSliderαθ;
+	ProbAttractβθ = ProbAttractSliderβθ;
+	ProbAttractγθ = ProbAttractSliderγθ;
+	ProbAttractδθ = ProbAttractSliderδθ;
+	ProbAttractεθ = ProbAttractSliderεθ;
+	ProbAttractζθ = ProbAttractSliderζθ;
+	ProbAttractηθ = ProbAttractSliderηθ;
+	ProbAttractθα = ProbAttractSliderθα;
+	ProbAttractθβ = ProbAttractSliderθβ;
+	ProbAttractθγ = ProbAttractSliderθγ;
+	ProbAttractθδ = ProbAttractSliderθδ;
+	ProbAttractθε = ProbAttractSliderθε;
+	ProbAttractθζ = ProbAttractSliderθζ;
+	ProbAttractθη = ProbAttractSliderθη;
+	ProbAttractθθ = ProbAttractSliderθθ;
+	ProbRepelαα = ProbRepelSliderαα;
+	ProbRepelαβ = ProbRepelSliderαβ;
+	ProbRepelαγ = ProbRepelSliderαγ;
+	ProbRepelαδ = ProbRepelSliderαδ;
+	ProbRepelαε = ProbRepelSliderαε;
+	ProbRepelαζ = ProbRepelSliderαζ;
+	ProbRepelαη = ProbRepelSliderαη;
+	ProbRepelβα = ProbRepelSliderβα;
+	ProbRepelββ = ProbRepelSliderββ;
+	ProbRepelβγ = ProbRepelSliderβγ;
+	ProbRepelβδ = ProbRepelSliderβδ;
+	ProbRepelβε = ProbRepelSliderβε;
+	ProbRepelβζ = ProbRepelSliderβζ;
+	ProbRepelβη = ProbRepelSliderβη;
+	ProbRepelγα = ProbRepelSliderγα;
+	ProbRepelγβ = ProbRepelSliderγβ;
+	ProbRepelγγ = ProbRepelSliderγγ;
+	ProbRepelγδ = ProbRepelSliderγδ;
+	ProbRepelγε = ProbRepelSliderγε;
+	ProbRepelγζ = ProbRepelSliderγζ;
+	ProbRepelγη = ProbRepelSliderγη;
+	ProbRepelδα = ProbRepelSliderδα;
+	ProbRepelδβ = ProbRepelSliderδβ;
+	ProbRepelδγ = ProbRepelSliderδγ;
+	ProbRepelδδ = ProbRepelSliderδδ;
+	ProbRepelδε = ProbRepelSliderδε;
+	ProbRepelδζ = ProbRepelSliderδζ;
+	ProbRepelδη = ProbRepelSliderδη;
+	ProbRepelεα = ProbRepelSliderεα;
+	ProbRepelεβ = ProbRepelSliderεβ;
+	ProbRepelεγ = ProbRepelSliderεγ;
+	ProbRepelεδ = ProbRepelSliderεδ;
+	ProbRepelεε = ProbRepelSliderεε;
+	ProbRepelεζ = ProbRepelSliderεζ;
+	ProbRepelεη = ProbRepelSliderεη;
+	ProbRepelζβ = ProbRepelSliderζβ;
+	ProbRepelζγ = ProbRepelSliderζγ;
+	ProbRepelζδ = ProbRepelSliderζδ;
+	ProbRepelζε = ProbRepelSliderζε;
+	ProbRepelζζ = ProbRepelSliderζζ;
+	ProbRepelζη = ProbRepelSliderζη;
+	ProbRepelηα = ProbRepelSliderηα;
+	ProbRepelηβ = ProbRepelSliderηβ;
+	ProbRepelηγ = ProbRepelSliderηγ;
+	ProbRepelηδ = ProbRepelSliderηδ;
+	ProbRepelηε = ProbRepelSliderηε;
+	ProbRepelηζ = ProbRepelSliderηζ;
+	ProbRepelηη = ProbRepelSliderηη;
+	ProbRepelαθ = ProbRepelSliderαθ;
+	ProbRepelβθ = ProbRepelSliderβθ;
+	ProbRepelγθ = ProbRepelSliderγθ;
+	ProbRepelδθ = ProbRepelSliderδθ;
+	ProbRepelεθ = ProbRepelSliderεθ;
+	ProbRepelζθ = ProbRepelSliderζθ;
+	ProbRepelηθ = ProbRepelSliderηθ;
+	ProbRepelθα = ProbRepelSliderθα;
+	ProbRepelθβ = ProbRepelSliderθβ;
+	ProbRepelθγ = ProbRepelSliderθγ;
+	ProbRepelθδ = ProbRepelSliderθδ;
+	ProbRepelθε = ProbRepelSliderθε;
+	ProbRepelθζ = ProbRepelSliderθζ;
+	ProbRepelθη = ProbRepelSliderθη;
+	ProbRepelθθ = ProbRepelSliderθθ;
 	viscosity = viscositySlider;
-	viscosityαα = viscositySliderαα;
-	viscosityαβ = viscositySliderαβ;
-	viscosityαδ = viscositySliderαδ;
-	viscosityαγ = viscositySliderαγ;
-	viscosityαε = viscositySliderαε;
-	viscosityαζ = viscositySliderαζ;
-	viscosityαη = viscositySliderαη;
-	viscosityβα = viscositySliderβα;
-	viscosityββ = viscositySliderββ;
-	viscosityβδ = viscositySliderβδ;
-	viscosityβγ = viscositySliderβγ;
-	viscosityβε = viscositySliderβε;
-	viscosityβζ = viscositySliderβζ;
-	viscosityβη = viscositySliderβη;
-	viscosityγα = viscositySliderγα;
-	viscosityγβ = viscositySliderγβ;
-	viscosityγδ = viscositySliderγδ;
-	viscosityγγ = viscositySliderγγ;
-	viscosityγε = viscositySliderγε;
-	viscosityγζ = viscositySliderγζ;
-	viscosityγη = viscositySliderγη;
-	viscosityδα = viscositySliderδα;
-	viscosityδβ = viscositySliderδβ;
-	viscosityδδ = viscositySliderδδ;
-	viscosityδγ = viscositySliderδγ;
-	viscosityδε = viscositySliderδε;
-	viscosityδζ = viscositySliderδζ;
-	viscosityδη = viscositySliderδη;
-	viscosityεα = viscositySliderεα;
-	viscosityεβ = viscositySliderεβ;
-	viscosityεδ = viscositySliderεδ;
-	viscosityεγ = viscositySliderεγ;
-	viscosityεε = viscositySliderεε;
-	viscosityεζ = viscositySliderεζ;
-	viscosityεη = viscositySliderεη;
-	viscosityζα = viscositySliderζα;
-	viscosityζβ = viscositySliderζβ;
-	viscosityζδ = viscositySliderζδ;
-	viscosityζγ = viscositySliderζγ;
-	viscosityζε = viscositySliderζε;
-	viscosityζζ = viscositySliderζζ;
-	viscosityζη = viscositySliderζη;
-	viscosityηα = viscositySliderηα;
-	viscosityηβ = viscositySliderηβ;
-	viscosityηδ = viscositySliderηδ;
-	viscosityηγ = viscositySliderηγ;
-	viscosityηε = viscositySliderηε;
-	viscosityηζ = viscositySliderηζ;
-	viscosityηη = viscositySliderηη;
-	viscosityαθ = viscositySliderαθ;
-	viscosityβθ = viscositySliderβθ;
-	viscosityδθ = viscositySliderδθ;
-	viscosityγθ = viscositySliderγθ;
-	viscosityεθ = viscositySliderεθ;
-	viscosityζθ = viscositySliderζθ;
-	viscosityηθ = viscositySliderηθ;
-	viscosityθα = viscositySliderθα;
-	viscosityθβ = viscositySliderθβ;
-	viscosityθδ = viscositySliderθδ;
-	viscosityθγ = viscositySliderθγ;
-	viscosityθε = viscositySliderθε;
-	viscosityθζ = viscositySliderθζ;
-	viscosityθη = viscositySliderθη;
-	viscosityθθ = viscositySliderθθ;
-
+	ViscosityAttractαα = ViscosityAttractSliderαα;
+	ViscosityAttractαβ = ViscosityAttractSliderαβ;
+	ViscosityAttractαδ = ViscosityAttractSliderαδ;
+	ViscosityAttractαγ = ViscosityAttractSliderαγ;
+	ViscosityAttractαε = ViscosityAttractSliderαε;
+	ViscosityAttractαζ = ViscosityAttractSliderαζ;
+	ViscosityAttractαη = ViscosityAttractSliderαη;
+	ViscosityAttractβα = ViscosityAttractSliderβα;
+	ViscosityAttractββ = ViscosityAttractSliderββ;
+	ViscosityAttractβδ = ViscosityAttractSliderβδ;
+	ViscosityAttractβγ = ViscosityAttractSliderβγ;
+	ViscosityAttractβε = ViscosityAttractSliderβε;
+	ViscosityAttractβζ = ViscosityAttractSliderβζ;
+	ViscosityAttractβη = ViscosityAttractSliderβη;
+	ViscosityAttractγα = ViscosityAttractSliderγα;
+	ViscosityAttractγβ = ViscosityAttractSliderγβ;
+	ViscosityAttractγδ = ViscosityAttractSliderγδ;
+	ViscosityAttractγγ = ViscosityAttractSliderγγ;
+	ViscosityAttractγε = ViscosityAttractSliderγε;
+	ViscosityAttractγζ = ViscosityAttractSliderγζ;
+	ViscosityAttractγη = ViscosityAttractSliderγη;
+	ViscosityAttractδα = ViscosityAttractSliderδα;
+	ViscosityAttractδβ = ViscosityAttractSliderδβ;
+	ViscosityAttractδδ = ViscosityAttractSliderδδ;
+	ViscosityAttractδγ = ViscosityAttractSliderδγ;
+	ViscosityAttractδε = ViscosityAttractSliderδε;
+	ViscosityAttractδζ = ViscosityAttractSliderδζ;
+	ViscosityAttractδη = ViscosityAttractSliderδη;
+	ViscosityAttractεα = ViscosityAttractSliderεα;
+	ViscosityAttractεβ = ViscosityAttractSliderεβ;
+	ViscosityAttractεδ = ViscosityAttractSliderεδ;
+	ViscosityAttractεγ = ViscosityAttractSliderεγ;
+	ViscosityAttractεε = ViscosityAttractSliderεε;
+	ViscosityAttractεζ = ViscosityAttractSliderεζ;
+	ViscosityAttractεη = ViscosityAttractSliderεη;
+	ViscosityAttractζα = ViscosityAttractSliderζα;
+	ViscosityAttractζβ = ViscosityAttractSliderζβ;
+	ViscosityAttractζδ = ViscosityAttractSliderζδ;
+	ViscosityAttractζγ = ViscosityAttractSliderζγ;
+	ViscosityAttractζε = ViscosityAttractSliderζε;
+	ViscosityAttractζζ = ViscosityAttractSliderζζ;
+	ViscosityAttractζη = ViscosityAttractSliderζη;
+	ViscosityAttractηα = ViscosityAttractSliderηα;
+	ViscosityAttractηβ = ViscosityAttractSliderηβ;
+	ViscosityAttractηδ = ViscosityAttractSliderηδ;
+	ViscosityAttractηγ = ViscosityAttractSliderηγ;
+	ViscosityAttractηε = ViscosityAttractSliderηε;
+	ViscosityAttractηζ = ViscosityAttractSliderηζ;
+	ViscosityAttractηη = ViscosityAttractSliderηη;
+	ViscosityAttractαθ = ViscosityAttractSliderαθ;
+	ViscosityAttractβθ = ViscosityAttractSliderβθ;
+	ViscosityAttractδθ = ViscosityAttractSliderδθ;
+	ViscosityAttractγθ = ViscosityAttractSliderγθ;
+	ViscosityAttractεθ = ViscosityAttractSliderεθ;
+	ViscosityAttractζθ = ViscosityAttractSliderζθ;
+	ViscosityAttractηθ = ViscosityAttractSliderηθ;
+	ViscosityAttractθα = ViscosityAttractSliderθα;
+	ViscosityAttractθβ = ViscosityAttractSliderθβ;
+	ViscosityAttractθδ = ViscosityAttractSliderθδ;
+	ViscosityAttractθγ = ViscosityAttractSliderθγ;
+	ViscosityAttractθε = ViscosityAttractSliderθε;
+	ViscosityAttractθζ = ViscosityAttractSliderθζ;
+	ViscosityAttractθη = ViscosityAttractSliderθη;
+	ViscosityAttractθθ = ViscosityAttractSliderθθ;
+	ViscosityRepelαα = ViscosityRepelSliderαα;
+	ViscosityRepelαβ = ViscosityRepelSliderαβ;
+	ViscosityRepelαδ = ViscosityRepelSliderαδ;
+	ViscosityRepelαγ = ViscosityRepelSliderαγ;
+	ViscosityRepelαε = ViscosityRepelSliderαε;
+	ViscosityRepelαζ = ViscosityRepelSliderαζ;
+	ViscosityRepelαη = ViscosityRepelSliderαη;
+	ViscosityRepelβα = ViscosityRepelSliderβα;
+	ViscosityRepelββ = ViscosityRepelSliderββ;
+	ViscosityRepelβδ = ViscosityRepelSliderβδ;
+	ViscosityRepelβγ = ViscosityRepelSliderβγ;
+	ViscosityRepelβε = ViscosityRepelSliderβε;
+	ViscosityRepelβζ = ViscosityRepelSliderβζ;
+	ViscosityRepelβη = ViscosityRepelSliderβη;
+	ViscosityRepelγα = ViscosityRepelSliderγα;
+	ViscosityRepelγβ = ViscosityRepelSliderγβ;
+	ViscosityRepelγδ = ViscosityRepelSliderγδ;
+	ViscosityRepelγγ = ViscosityRepelSliderγγ;
+	ViscosityRepelγε = ViscosityRepelSliderγε;
+	ViscosityRepelγζ = ViscosityRepelSliderγζ;
+	ViscosityRepelγη = ViscosityRepelSliderγη;
+	ViscosityRepelδα = ViscosityRepelSliderδα;
+	ViscosityRepelδβ = ViscosityRepelSliderδβ;
+	ViscosityRepelδδ = ViscosityRepelSliderδδ;
+	ViscosityRepelδγ = ViscosityRepelSliderδγ;
+	ViscosityRepelδε = ViscosityRepelSliderδε;
+	ViscosityRepelδζ = ViscosityRepelSliderδζ;
+	ViscosityRepelδη = ViscosityRepelSliderδη;
+	ViscosityRepelεα = ViscosityRepelSliderεα;
+	ViscosityRepelεβ = ViscosityRepelSliderεβ;
+	ViscosityRepelεδ = ViscosityRepelSliderεδ;
+	ViscosityRepelεγ = ViscosityRepelSliderεγ;
+	ViscosityRepelεε = ViscosityRepelSliderεε;
+	ViscosityRepelεζ = ViscosityRepelSliderεζ;
+	ViscosityRepelεη = ViscosityRepelSliderεη;
+	ViscosityRepelζα = ViscosityRepelSliderζα;
+	ViscosityRepelζβ = ViscosityRepelSliderζβ;
+	ViscosityRepelζδ = ViscosityRepelSliderζδ;
+	ViscosityRepelζγ = ViscosityRepelSliderζγ;
+	ViscosityRepelζε = ViscosityRepelSliderζε;
+	ViscosityRepelζζ = ViscosityRepelSliderζζ;
+	ViscosityRepelζη = ViscosityRepelSliderζη;
+	ViscosityRepelηα = ViscosityRepelSliderηα;
+	ViscosityRepelηβ = ViscosityRepelSliderηβ;
+	ViscosityRepelηδ = ViscosityRepelSliderηδ;
+	ViscosityRepelηγ = ViscosityRepelSliderηγ;
+	ViscosityRepelηε = ViscosityRepelSliderηε;
+	ViscosityRepelηζ = ViscosityRepelSliderηζ;
+	ViscosityRepelηη = ViscosityRepelSliderηη;
+	ViscosityRepelαθ = ViscosityRepelSliderαθ;
+	ViscosityRepelβθ = ViscosityRepelSliderβθ;
+	ViscosityRepelδθ = ViscosityRepelSliderδθ;
+	ViscosityRepelγθ = ViscosityRepelSliderγθ;
+	ViscosityRepelεθ = ViscosityRepelSliderεθ;
+	ViscosityRepelζθ = ViscosityRepelSliderζθ;
+	ViscosityRepelηθ = ViscosityRepelSliderηθ;
+	ViscosityRepelθα = ViscosityRepelSliderθα;
+	ViscosityRepelθβ = ViscosityRepelSliderθβ;
+	ViscosityRepelθδ = ViscosityRepelSliderθδ;
+	ViscosityRepelθγ = ViscosityRepelSliderθγ;
+	ViscosityRepelθε = ViscosityRepelSliderθε;
+	ViscosityRepelθζ = ViscosityRepelSliderθζ;
+	ViscosityRepelθη = ViscosityRepelSliderθη;
+	ViscosityRepelθθ = ViscosityRepelSliderθθ;
 	worldGravity = gravitySlider;
 	wallRepel = wallRepelSlider;
-	InterEvoChance = InteractionEvoProbSlider;
-	InterEvoAmount = InteractionEvoAmountSlider;
-	ProbEvoChance = ProbabilityEvoProbSlider;
-	ProbEvoAmount = ProbabilityEvoAmountSlider;
-	ViscoEvoChance = ViscosityEvoProbSlider;
-	ViscoEvoAmount = ViscosityEvoAmountSlider;
+	AttractEvoChance = AttractEvoProbSlider;
+	AttractEvoAmount = AttractEvoAmountSlider;
+	ProbAttractEvoChance = ProbAttractEvoProbSlider;
+	ProbAttractEvoAmount = ProbAttractEvoAmountSlider;
+	ViscoAttractEvoChance = ViscoAttractEvoProbSlider;
+	ViscoAttractEvoAmount = ViscoAttractEvoAmountSlider;
+	RepelEvoChance = RepelEvoProbSlider;
+	RepelEvoAmount = RepelEvoAmountSlider;
+	ProbRepelEvoChance = ProbRepelEvoProbSlider;
+	ProbRepelEvoAmount = ProbRepelEvoAmountSlider;
+	ViscoRepelEvoChance = ViscoRepelEvoProbSlider;
+	ViscoRepelEvoAmount = ViscoRepelEvoAmountSlider;
 
-	if (evoToggle && ofRandom(1.0F) < (InterEvoChance / 100.0F))
+	if (evoToggle && ofRandom(1.0F) < (AttractEvoChance / 100.0F))
 	{
-		for (auto& slider : powersliders) {
-			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (InterEvoAmount / 100.0F));
-			if (*slider < minP) *slider = minP;
-			if (*slider > maxP) *slider = maxP;
+		for (auto& slider : AttractPowerSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (AttractEvoAmount / 100.0F));
+			if (*slider < minAttP) *slider = minAttP;
+			if (*slider > maxAttP) *slider = maxAttP;
 		}
-		for (auto& slider : vsliders) {
-			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (InterEvoAmount / 100.0F));
-			if (*slider < minR) *slider = minR;
-			if (*slider > maxR) *slider = maxR;
-		}
-	}
-	if (evoToggle && ofRandom(1.0F) < (ViscoEvoChance / 100.0F))
-	{
-		for (auto& slider : viscositysliders) {
-			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (ViscoEvoAmount / 100.0F));
-			if (*slider < minV) *slider = minV;
-			if (*slider > maxV) *slider = maxV;
+		for (auto& slider : AttractDistanceSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (AttractEvoAmount / 100.0F));
+			if (*slider < minAttR) *slider = minAttR;
+			if (*slider > maxAttR) *slider = maxAttR;
 		}
 	}
-	if (evoToggle && ofRandom(1.0F) < (ProbEvoChance / 100.0F))
+	if (evoToggle && ofRandom(1.0F) < (RepelEvoChance / 100.0F))
 	{
-		for (auto& slider : probabilitysliders) {
-			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (ProbEvoAmount / 100.0F));
-			if (*slider < minI) *slider = minI;
-			if (*slider > maxI) *slider = maxI;
+		for (auto& slider : RepelPowerSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (RepelEvoAmount / 100.0F));
+			if (*slider < minRepP) *slider = minRepP;
+			if (*slider > maxRepP) *slider = maxRepP;
+		}
+		for (auto& slider : RepelDistanceSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (RepelEvoAmount / 100.0F));
+			if (*slider < minRepR) *slider = minRepR;
+			if (*slider > maxRepR) *slider = maxRepR;
+		}
+	}
+	if (evoToggle && ofRandom(1.0F) < (ViscoAttractEvoChance / 100.0F))
+	{
+		for (auto& slider : ViscosityAttractSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (ViscoAttractEvoAmount / 100.0F));
+			if (*slider < minAttV) *slider = minAttV;
+			if (*slider > maxAttV) *slider = maxAttV;
+		}
+	}
+	if (evoToggle && ofRandom(1.0F) < (ViscoRepelEvoChance / 100.0F))
+	{
+		for (auto& slider : ViscosityRepelSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (ViscoRepelEvoAmount / 100.0F));
+			if (*slider < minRepV) *slider = minRepV;
+			if (*slider > maxRepV) *slider = maxRepV;
+		}
+	}
+	if (evoToggle && ofRandom(1.0F) < (ProbAttractEvoChance / 100.0F))
+	{
+		for (auto& slider : ProbAttractSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (ProbAttractEvoAmount / 100.0F));
+			if (*slider < minAttI) *slider = minAttI;
+			if (*slider > maxAttI) *slider = maxAttI;
+		}
+	}
+	if (evoToggle && ofRandom(1.0F) < (ProbRepelEvoChance / 100.0F))
+	{
+		for (auto& slider : ProbRepelSliders) {
+			*slider = *slider + ((ofRandom(2.0F) - 1.0F) * (slider->getMax() - slider->getMin()) * (ProbRepelEvoAmount / 100.0F));
+			if (*slider < minAttI) *slider = minAttI;
+			if (*slider > maxAttI) *slider = maxAttI;
 		}
 	}
 
 	if (numberSliderα > 0)
 	{
-		interaction(&alpha, &alpha, powerSliderαα, vSliderαα, viscosityαα, probabilityαα);
-		if (numberSliderβ > 0) interaction(&alpha, &betha, powerSliderαβ, vSliderαβ, viscosityαβ, probabilityαβ);
-		if (numberSliderγ > 0) interaction(&alpha, &gamma, powerSliderαγ, vSliderαγ, viscosityαγ, probabilityαγ);
-		if (numberSliderδ > 0) interaction(&alpha, &elta, powerSliderαδ, vSliderαδ, viscosityαδ, probabilityαδ);
-		if (numberSliderε > 0) interaction(&alpha, &epsilon, powerSliderαε, vSliderαε, viscosityαε, probabilityαε);
-		if (numberSliderζ > 0) interaction(&alpha, &zeta, powerSliderαζ, vSliderαζ, viscosityαζ, probabilityαζ);
-		if (numberSliderη > 0) interaction(&alpha, &eta, powerSliderαη, vSliderαη, viscosityαη, probabilityαη);
-		if (numberSliderθ > 0) interaction(&alpha, &teta, powerSliderαθ, vSliderαθ, viscosityαθ, probabilityαθ);
+		interaction(&alpha, &alpha, AttractPowerSliderαα, RepelPowerSliderαα, AttractDistanceSliderαα, RepelDistanceSliderαα, ViscosityAttractSliderαα, ViscosityRepelSliderαα, ProbAttractSliderαα, ProbRepelSliderαα);
+	if (numberSliderβ > 0) interaction(&alpha, &betha, AttractPowerSliderαβ, RepelPowerSliderαβ, AttractDistanceSliderαβ, RepelDistanceSliderαβ, ViscosityAttractSliderαβ, ViscosityRepelSliderαβ, ProbAttractSliderαβ, ProbRepelSliderαβ);
+	if (numberSliderγ > 0) interaction(&alpha, &gamma, AttractPowerSliderαγ, RepelPowerSliderαγ, AttractDistanceSliderαγ, RepelDistanceSliderαγ, ViscosityAttractSliderαγ, ViscosityRepelSliderαγ, ProbAttractSliderαγ, ProbRepelSliderαγ);
+	if (numberSliderδ > 0) interaction(&alpha, &elta, AttractPowerSliderαδ, RepelPowerSliderαδ, AttractDistanceSliderαδ, RepelDistanceSliderαδ, ViscosityAttractSliderαδ, ViscosityRepelSliderαδ, ProbAttractSliderαδ, ProbRepelSliderαδ);
+	if (numberSliderε > 0) interaction(&alpha, &epsilon, AttractPowerSliderαε, RepelPowerSliderαε, AttractDistanceSliderαε, RepelDistanceSliderαε, ViscosityAttractSliderαε, ViscosityRepelSliderαε, ProbAttractSliderαε, ProbRepelSliderαε);
+	if (numberSliderζ > 0) interaction(&alpha, &zeta, AttractPowerSliderαζ, RepelPowerSliderαζ, AttractDistanceSliderαζ, RepelDistanceSliderαζ, ViscosityAttractSliderαζ, ViscosityRepelSliderαζ, ProbAttractSliderαζ, ProbRepelSliderαζ);
+	if (numberSliderη > 0) interaction(&alpha, &eta, AttractPowerSliderαη, RepelPowerSliderαη, AttractDistanceSliderαη, RepelDistanceSliderαη, ViscosityAttractSliderαη, ViscosityRepelSliderαη, ProbAttractSliderαη, ProbRepelSliderαη);
+	if (numberSliderθ > 0) interaction(&alpha, &teta, AttractPowerSliderαθ, RepelPowerSliderαθ, AttractDistanceSliderαθ, RepelDistanceSliderαθ, ViscosityAttractSliderαθ, ViscosityRepelSliderαθ, ProbAttractSliderαθ, ProbRepelSliderαθ);
 	}
 
 	if (numberSliderβ > 0)
 	{
-		interaction(&betha, &betha, powerSliderββ, vSliderββ, viscosityββ, probabilityββ);
-		if (numberSliderα > 0) interaction(&betha, &alpha, powerSliderβα, vSliderβα, viscosityβα, probabilityβα);
-		if (numberSliderγ > 0) interaction(&betha, &gamma, powerSliderβγ, vSliderβγ, viscosityβγ, probabilityβγ);
-		if (numberSliderδ > 0) interaction(&betha, &elta, powerSliderβδ, vSliderβδ, viscosityβδ, probabilityβδ);
-		if (numberSliderε > 0) interaction(&betha, &epsilon, powerSliderβε, vSliderβε, viscosityβε, probabilityβε);
-		if (numberSliderζ > 0) interaction(&betha, &zeta, powerSliderβζ, vSliderβζ, viscosityβζ, probabilityβζ);
-		if (numberSliderη > 0) interaction(&betha, &eta, powerSliderβη, vSliderβη, viscosityβη, probabilityβη);
-		if (numberSliderθ > 0) interaction(&betha, &teta, powerSliderβθ, vSliderβθ, viscosityβθ, probabilityβθ);
+		interaction(&betha, &betha, AttractPowerSliderββ, RepelPowerSliderββ, AttractDistanceSliderββ, RepelDistanceSliderββ, ViscosityAttractSliderββ, ViscosityRepelSliderββ, ProbAttractSliderββ, ProbRepelSliderββ);
+		if (numberSliderα > 0) interaction(&betha, &alpha, AttractPowerSliderβα, RepelPowerSliderβα, AttractDistanceSliderβα, RepelDistanceSliderβα, ViscosityAttractSliderβα, ViscosityRepelSliderβα, ProbAttractSliderβα, ProbRepelSliderβα);
+		if (numberSliderγ > 0) interaction(&betha, &gamma, AttractPowerSliderβγ, RepelPowerSliderβγ, AttractDistanceSliderβγ, RepelDistanceSliderβγ, ViscosityAttractSliderβγ, ViscosityRepelSliderβγ, ProbAttractSliderβγ, ProbRepelSliderβγ);
+		if (numberSliderδ > 0) interaction(&betha, &elta, AttractPowerSliderβδ, RepelPowerSliderβδ, AttractDistanceSliderβδ, RepelDistanceSliderβδ, ViscosityAttractSliderβδ, ViscosityRepelSliderβδ, ProbAttractSliderβδ, ProbRepelSliderβδ);
+		if (numberSliderε > 0) interaction(&betha, &epsilon, AttractPowerSliderβε, RepelPowerSliderβε, AttractDistanceSliderβε, RepelDistanceSliderβε, ViscosityAttractSliderβε, ViscosityRepelSliderβε, ProbAttractSliderβε, ProbRepelSliderβε);
+		if (numberSliderζ > 0) interaction(&betha, &zeta, AttractPowerSliderβζ, RepelPowerSliderβζ, AttractDistanceSliderβζ, RepelDistanceSliderβζ, ViscosityAttractSliderβζ, ViscosityRepelSliderβζ, ProbAttractSliderβζ, ProbRepelSliderβζ);
+		if (numberSliderη > 0) interaction(&betha, &eta, AttractPowerSliderβη, RepelPowerSliderβη, AttractDistanceSliderβη, RepelDistanceSliderβη, ViscosityAttractSliderβη, ViscosityRepelSliderβη, ProbAttractSliderβη, ProbRepelSliderβη);
+		if (numberSliderθ > 0) interaction(&betha, &teta, AttractPowerSliderβθ, RepelPowerSliderβθ, AttractDistanceSliderβθ, RepelDistanceSliderβθ, ViscosityAttractSliderβθ, ViscosityRepelSliderβθ, ProbAttractSliderβθ, ProbRepelSliderβθ);
 	}
 
 	if (numberSliderγ > 0)
 	{
-		interaction(&gamma, &gamma, powerSliderγγ, vSliderγγ, viscosityγγ, probabilityγγ);
-		if (numberSliderα > 0) interaction(&gamma, &alpha, powerSliderγα, vSliderγα, viscosityγα, probabilityγα);
-		if (numberSliderβ > 0) interaction(&gamma, &betha, powerSliderγβ, vSliderγβ, viscosityγβ, probabilityγβ);
-		if (numberSliderδ > 0) interaction(&gamma, &elta, powerSliderγδ, vSliderγδ, viscosityγδ, probabilityγδ);
-		if (numberSliderε > 0) interaction(&gamma, &epsilon, powerSliderγε, vSliderγε, viscosityγε, probabilityγε);
-		if (numberSliderζ > 0) interaction(&gamma, &zeta, powerSliderγζ, vSliderγζ, viscosityγζ, probabilityγζ);
-		if (numberSliderη > 0) interaction(&gamma, &eta, powerSliderγη, vSliderγη, viscosityγη, probabilityγη);
-		if (numberSliderθ > 0) interaction(&gamma, &teta, powerSliderγθ, vSliderγθ, viscosityγθ, probabilityγθ);
+		interaction(&gamma, &gamma, AttractPowerSliderγγ, RepelPowerSliderγγ, AttractDistanceSliderγγ, RepelDistanceSliderγγ, ViscosityAttractSliderγγ, ViscosityRepelSliderγγ, ProbAttractSliderγγ, ProbRepelSliderγγ);
+		if (numberSliderα > 0) interaction(&gamma, &alpha, AttractPowerSliderγα, RepelPowerSliderγα, AttractDistanceSliderγα, RepelDistanceSliderγα, ViscosityAttractSliderγα, ViscosityRepelSliderγα, ProbAttractSliderγα, ProbRepelSliderγα);
+		if (numberSliderβ > 0) interaction(&gamma, &betha, AttractPowerSliderγβ, RepelPowerSliderγβ, AttractDistanceSliderγβ, RepelDistanceSliderγβ, ViscosityAttractSliderγβ, ViscosityRepelSliderγβ, ProbAttractSliderγβ, ProbRepelSliderγβ);
+		if (numberSliderδ > 0) interaction(&gamma, &elta, AttractPowerSliderγδ, RepelPowerSliderγδ, AttractDistanceSliderγδ, RepelDistanceSliderγδ, ViscosityAttractSliderγδ, ViscosityRepelSliderγδ, ProbAttractSliderγδ, ProbRepelSliderγδ);
+		if (numberSliderε > 0) interaction(&gamma, &epsilon, AttractPowerSliderγε, RepelPowerSliderγε, AttractDistanceSliderγε, RepelDistanceSliderγε, ViscosityAttractSliderγε, ViscosityRepelSliderγε, ProbAttractSliderγε, ProbRepelSliderγε);
+		if (numberSliderζ > 0) interaction(&gamma, &zeta, AttractPowerSliderγζ, RepelPowerSliderγζ, AttractDistanceSliderγζ, RepelDistanceSliderγζ, ViscosityAttractSliderγζ, ViscosityRepelSliderγζ, ProbAttractSliderγζ, ProbRepelSliderγζ);
+		if (numberSliderη > 0) interaction(&gamma, &eta, AttractPowerSliderγη, RepelPowerSliderγη, AttractDistanceSliderγη, RepelDistanceSliderγη, ViscosityAttractSliderγη, ViscosityRepelSliderγη, ProbAttractSliderγη, ProbRepelSliderγη);
+		if (numberSliderθ > 0) interaction(&gamma, &teta, AttractPowerSliderγθ, RepelPowerSliderγθ, AttractDistanceSliderγθ, RepelDistanceSliderγθ, ViscosityAttractSliderγθ, ViscosityRepelSliderγθ, ProbAttractSliderγθ, ProbRepelSliderγθ);
 	}
 
 	if (numberSliderδ > 0)
 	{
-		interaction(&elta, &elta, powerSliderδδ, vSliderδδ, viscosityδδ, probabilityδδ);
-		if (numberSliderα > 0) interaction(&elta, &alpha, powerSliderδα, vSliderδα, viscosityδα, probabilityδα);
-		if (numberSliderβ > 0) interaction(&elta, &betha, powerSliderδβ, vSliderδβ, viscosityδβ, probabilityδβ);
-		if (numberSliderγ > 0) interaction(&elta, &gamma, powerSliderδγ, vSliderδγ, viscosityδγ, probabilityδγ);
-		if (numberSliderε > 0) interaction(&elta, &epsilon, powerSliderδε, vSliderδε, viscosityδε, probabilityδε);
-		if (numberSliderζ > 0) interaction(&elta, &zeta, powerSliderδζ, vSliderδζ, viscosityδζ, probabilityδζ);
-		if (numberSliderη > 0) interaction(&elta, &eta, powerSliderδη, vSliderδη, viscosityδη, probabilityδη);
-		if (numberSliderθ > 0) interaction(&elta, &teta, powerSliderδθ, vSliderδθ, viscosityδθ, probabilityδθ);
+		interaction(&elta, &elta, AttractPowerSliderδδ, RepelPowerSliderδδ, AttractDistanceSliderδδ, RepelDistanceSliderδδ, ViscosityAttractSliderδδ, ViscosityRepelSliderδδ, ProbAttractSliderδδ, ProbRepelSliderδδ);
+		if (numberSliderα > 0) interaction(&elta, &alpha, AttractPowerSliderδα, RepelPowerSliderδα, AttractDistanceSliderδα, RepelDistanceSliderδα, ViscosityAttractSliderδα, ViscosityRepelSliderδα, ProbAttractSliderδα, ProbRepelSliderδα);
+		if (numberSliderβ > 0) interaction(&elta, &betha, AttractPowerSliderδβ, RepelPowerSliderδβ, AttractDistanceSliderδβ, RepelDistanceSliderδβ, ViscosityAttractSliderδβ, ViscosityRepelSliderδβ, ProbAttractSliderδβ, ProbRepelSliderδβ);
+		if (numberSliderγ > 0) interaction(&elta, &gamma, AttractPowerSliderδγ, RepelPowerSliderδγ, AttractDistanceSliderδγ, RepelDistanceSliderδγ, ViscosityAttractSliderδγ, ViscosityRepelSliderδγ, ProbAttractSliderδγ, ProbRepelSliderδγ);
+		if (numberSliderε > 0) interaction(&elta, &epsilon, AttractPowerSliderδε, RepelPowerSliderδε, AttractDistanceSliderδε, RepelDistanceSliderδε, ViscosityAttractSliderδε, ViscosityRepelSliderδε, ProbAttractSliderδε, ProbRepelSliderδε);
+		if (numberSliderζ > 0) interaction(&elta, &zeta, AttractPowerSliderδζ, RepelPowerSliderδζ, AttractDistanceSliderδζ, RepelDistanceSliderδζ, ViscosityAttractSliderδζ, ViscosityRepelSliderδζ, ProbAttractSliderδζ, ProbRepelSliderδζ);
+		if (numberSliderη > 0) interaction(&elta, &eta, AttractPowerSliderδη, RepelPowerSliderδη, AttractDistanceSliderδη, RepelDistanceSliderδη, ViscosityAttractSliderδη, ViscosityRepelSliderδη, ProbAttractSliderδη, ProbRepelSliderδη);
+		if (numberSliderθ > 0) interaction(&elta, &teta, AttractPowerSliderδθ, RepelPowerSliderδθ, AttractDistanceSliderδθ, RepelDistanceSliderδθ, ViscosityAttractSliderδθ, ViscosityRepelSliderδθ, ProbAttractSliderδθ, ProbRepelSliderδθ);
 	}
 
 	if (numberSliderε > 0)
 	{
-		interaction(&epsilon, &epsilon, powerSliderεε, vSliderεε, viscosityεε, probabilityεε);
-		if (numberSliderα > 0) interaction(&epsilon, &alpha, powerSliderεα, vSliderεα, viscosityεα, probabilityεα);
-		if (numberSliderβ > 0) interaction(&epsilon, &betha, powerSliderεβ, vSliderεβ, viscosityεβ, probabilityεβ);
-		if (numberSliderγ > 0) interaction(&epsilon, &gamma, powerSliderεγ, vSliderεγ, viscosityεγ, probabilityεγ);
-		if (numberSliderδ > 0) interaction(&epsilon, &elta, powerSliderεδ, vSliderεδ, viscosityεδ, probabilityεδ);
-		if (numberSliderζ > 0) interaction(&epsilon, &zeta, powerSliderεζ, vSliderεζ, viscosityεζ, probabilityεζ);
-		if (numberSliderη > 0) interaction(&epsilon, &eta, powerSliderεη, vSliderεη, viscosityεη, probabilityεη);
-		if (numberSliderθ > 0) interaction(&epsilon, &teta, powerSliderεθ, vSliderεθ, viscosityεθ, probabilityεθ);
+		interaction(&epsilon, &epsilon, AttractPowerSliderεε, RepelPowerSliderεε, AttractDistanceSliderεε, RepelDistanceSliderεε, ViscosityAttractSliderεε, ViscosityRepelSliderεε, ProbAttractSliderεε, ProbRepelSliderεε);
+		if (numberSliderα > 0) interaction(&epsilon, &alpha, AttractPowerSliderεα, RepelPowerSliderεα, AttractDistanceSliderεα, RepelDistanceSliderεα, ViscosityAttractSliderεα, ViscosityRepelSliderεα, ProbAttractSliderεα, ProbRepelSliderεα);
+		if (numberSliderβ > 0) interaction(&epsilon, &betha, AttractPowerSliderεβ, RepelPowerSliderεβ, AttractDistanceSliderεβ, RepelDistanceSliderεβ, ViscosityAttractSliderεβ, ViscosityRepelSliderεβ, ProbAttractSliderεβ, ProbRepelSliderεβ);
+		if (numberSliderγ > 0) interaction(&epsilon, &gamma, AttractPowerSliderεγ, RepelPowerSliderεγ, AttractDistanceSliderεγ, RepelDistanceSliderεγ, ViscosityAttractSliderεγ, ViscosityRepelSliderεγ, ProbAttractSliderεγ, ProbRepelSliderεγ);
+		if (numberSliderδ > 0) interaction(&epsilon, &elta, AttractPowerSliderεδ, RepelPowerSliderεδ, AttractDistanceSliderεδ, RepelDistanceSliderεδ, ViscosityAttractSliderεδ, ViscosityRepelSliderεδ, ProbAttractSliderεδ, ProbRepelSliderεδ);
+		if (numberSliderζ > 0) interaction(&epsilon, &zeta, AttractPowerSliderεζ, RepelPowerSliderεζ, AttractDistanceSliderεζ, RepelDistanceSliderεζ, ViscosityAttractSliderεζ, ViscosityRepelSliderεζ, ProbAttractSliderεζ, ProbRepelSliderεζ);
+		if (numberSliderη > 0) interaction(&epsilon, &eta, AttractPowerSliderεη, RepelPowerSliderεη, AttractDistanceSliderεη, RepelDistanceSliderεη, ViscosityAttractSliderεη, ViscosityRepelSliderεη, ProbAttractSliderεη, ProbRepelSliderεη);
+		if (numberSliderθ > 0) interaction(&epsilon, &teta, AttractPowerSliderεθ, RepelPowerSliderεθ, AttractDistanceSliderεθ, RepelDistanceSliderεθ, ViscosityAttractSliderεθ, ViscosityRepelSliderεθ, ProbAttractSliderεθ, ProbRepelSliderεθ);
 	}
 
 	if (numberSliderζ > 0)
 	{
-		interaction(&zeta, &zeta, powerSliderζζ, vSliderζζ, viscosityζζ, probabilityζζ);
-		if (numberSliderα > 0) interaction(&zeta, &alpha, powerSliderζα, vSliderζα, viscosityζα, probabilityζα);
-		if (numberSliderβ > 0) interaction(&zeta, &betha, powerSliderζβ, vSliderζβ, viscosityζβ, probabilityζβ);
-		if (numberSliderγ > 0) interaction(&zeta, &gamma, powerSliderζγ, vSliderζγ, viscosityζγ, probabilityζγ);
-		if (numberSliderδ > 0) interaction(&zeta, &elta, powerSliderζδ, vSliderζδ, viscosityζδ, probabilityζδ);
-		if (numberSliderε > 0) interaction(&zeta, &epsilon, powerSliderζε, vSliderζε, viscosityζε, probabilityζε);
-		if (numberSliderη > 0) interaction(&zeta, &eta, powerSliderζη, vSliderζη, viscosityζη, probabilityζη);
-		if (numberSliderθ > 0) interaction(&zeta, &teta, powerSliderζθ, vSliderζθ, viscosityζθ, probabilityζθ);
+		interaction(&zeta, &zeta, AttractPowerSliderζζ, RepelPowerSliderζζ, AttractDistanceSliderζζ, RepelDistanceSliderζζ, ViscosityAttractSliderζζ, ViscosityRepelSliderζζ, ProbAttractSliderζζ, ProbRepelSliderζζ);
+		if (numberSliderα > 0) interaction(&zeta, &alpha, AttractPowerSliderζα, RepelPowerSliderζα, AttractDistanceSliderζα, RepelDistanceSliderζα, ViscosityAttractSliderζα, ViscosityRepelSliderζα, ProbAttractSliderζα, ProbRepelSliderζα);
+		if (numberSliderβ > 0) interaction(&zeta, &betha, AttractPowerSliderζβ, RepelPowerSliderζβ, AttractDistanceSliderζβ, RepelDistanceSliderζβ, ViscosityAttractSliderζβ, ViscosityRepelSliderζβ, ProbAttractSliderζβ, ProbRepelSliderζβ);
+		if (numberSliderγ > 0) interaction(&zeta, &gamma, AttractPowerSliderζγ, RepelPowerSliderζγ, AttractDistanceSliderζγ, RepelDistanceSliderζγ, ViscosityAttractSliderζγ, ViscosityRepelSliderζγ, ProbAttractSliderζγ, ProbRepelSliderζγ);
+		if (numberSliderδ > 0) interaction(&zeta, &elta, AttractPowerSliderζδ, RepelPowerSliderζδ, AttractDistanceSliderζδ, RepelDistanceSliderζδ, ViscosityAttractSliderζδ, ViscosityRepelSliderζδ, ProbAttractSliderζδ, ProbRepelSliderζδ);
+		if (numberSliderε > 0) interaction(&zeta, &epsilon, AttractPowerSliderζε, RepelPowerSliderζε, AttractDistanceSliderζε, RepelDistanceSliderζε, ViscosityAttractSliderζε, ViscosityRepelSliderζε, ProbAttractSliderζε, ProbRepelSliderζε);
+		if (numberSliderη > 0) interaction(&zeta, &eta, AttractPowerSliderζη, RepelPowerSliderζη, AttractDistanceSliderζη, RepelDistanceSliderζη, ViscosityAttractSliderζη, ViscosityRepelSliderζη, ProbAttractSliderζη, ProbRepelSliderζη);
+		if (numberSliderθ > 0) interaction(&zeta, &teta, AttractPowerSliderζθ, RepelPowerSliderζθ, AttractDistanceSliderζθ, RepelDistanceSliderζθ, ViscosityAttractSliderζθ, ViscosityRepelSliderζθ, ProbAttractSliderζθ, ProbRepelSliderζθ);
 	}
 
 	if (numberSliderη > 0)
 	{
-		interaction(&eta, &eta, powerSliderηη, vSliderηη, viscosityηη, probabilityηη);
-		if (numberSliderα > 0) interaction(&eta, &alpha, powerSliderηα, vSliderηα, viscosityηα, probabilityηα);
-		if (numberSliderβ > 0) interaction(&eta, &betha, powerSliderηβ, vSliderηβ, viscosityηβ, probabilityηβ);
-		if (numberSliderγ > 0) interaction(&eta, &gamma, powerSliderηγ, vSliderηγ, viscosityηγ, probabilityηγ);
-		if (numberSliderδ > 0) interaction(&eta, &elta, powerSliderηδ, vSliderηδ, viscosityηδ, probabilityηδ);
-		if (numberSliderε > 0) interaction(&eta, &epsilon, powerSliderηε, vSliderηε, viscosityηε, probabilityηε);
-		if (numberSliderζ > 0) interaction(&eta, &zeta, powerSliderηζ, vSliderηζ, viscosityηζ, probabilityηζ);
-		if (numberSliderθ > 0) interaction(&eta, &teta, powerSliderηθ, vSliderηθ, viscosityηθ, probabilityηθ);
+		interaction(&eta, &eta, AttractPowerSliderηη, RepelPowerSliderηη, AttractDistanceSliderηη, RepelDistanceSliderηη, ViscosityAttractSliderηη, ViscosityRepelSliderηη, ProbAttractSliderηη, ProbRepelSliderηη);
+		if (numberSliderα > 0) interaction(&eta, &alpha, AttractPowerSliderηα, RepelPowerSliderηα, AttractDistanceSliderηα, RepelDistanceSliderηα, ViscosityAttractSliderηα, ViscosityRepelSliderηα, ProbAttractSliderηα, ProbRepelSliderηα);
+		if (numberSliderβ > 0) interaction(&eta, &betha, AttractPowerSliderηβ, RepelPowerSliderηβ, AttractDistanceSliderηβ, RepelDistanceSliderηβ, ViscosityAttractSliderηβ, ViscosityRepelSliderηβ, ProbAttractSliderηβ, ProbRepelSliderηβ);
+		if (numberSliderγ > 0) interaction(&eta, &gamma, AttractPowerSliderηγ, RepelPowerSliderηγ, AttractDistanceSliderηγ, RepelDistanceSliderηγ, ViscosityAttractSliderηγ, ViscosityRepelSliderηγ, ProbAttractSliderηγ, ProbRepelSliderηγ);
+		if (numberSliderδ > 0) interaction(&eta, &elta, AttractPowerSliderηδ, RepelPowerSliderηδ, AttractDistanceSliderηδ, RepelDistanceSliderηδ, ViscosityAttractSliderηδ, ViscosityRepelSliderηδ, ProbAttractSliderηδ, ProbRepelSliderηδ);
+		if (numberSliderε > 0) interaction(&eta, &epsilon, AttractPowerSliderηε, RepelPowerSliderηε, AttractDistanceSliderηε, RepelDistanceSliderηε, ViscosityAttractSliderηε, ViscosityRepelSliderηε, ProbAttractSliderηε, ProbRepelSliderηε);
+		if (numberSliderζ > 0) interaction(&eta, &zeta, AttractPowerSliderηζ, RepelPowerSliderηζ, AttractDistanceSliderηζ, RepelDistanceSliderηζ, ViscosityAttractSliderηζ, ViscosityRepelSliderηζ, ProbAttractSliderηζ, ProbRepelSliderηζ);
+		if (numberSliderθ > 0) interaction(&eta, &teta, AttractPowerSliderηθ, RepelPowerSliderηθ, AttractDistanceSliderηθ, RepelDistanceSliderηθ, ViscosityAttractSliderηθ, ViscosityRepelSliderηθ, ProbAttractSliderηθ, ProbRepelSliderηθ);
 	}
 
 	if (numberSliderθ > 0)
 	{
-		interaction(&teta, &teta, powerSliderθθ, vSliderθθ, viscosityθθ, probabilityθθ);
-		if (numberSliderα > 0) interaction(&teta, &alpha, powerSliderθα, vSliderθα, viscosityθα, probabilityθα);
-		if (numberSliderβ > 0) interaction(&teta, &betha, powerSliderθβ, vSliderθβ, viscosityθβ, probabilityθβ);
-		if (numberSliderγ > 0) interaction(&teta, &gamma, powerSliderθγ, vSliderθγ, viscosityθγ, probabilityθγ);
-		if (numberSliderδ > 0) interaction(&teta, &elta, powerSliderθδ, vSliderθδ, viscosityθδ, probabilityθδ);
-		if (numberSliderε > 0) interaction(&teta, &epsilon, powerSliderθε, vSliderθε, viscosityθε, probabilityθε);
-		if (numberSliderζ > 0) interaction(&teta, &zeta, powerSliderθζ, vSliderθζ, viscosityθζ, probabilityθζ);
-		if (numberSliderη > 0) interaction(&teta, &eta, powerSliderθη, vSliderθη, viscosityθη, probabilityθη);
+		interaction(&teta, &teta, AttractPowerSliderθθ, RepelPowerSliderθθ, AttractDistanceSliderθθ, RepelDistanceSliderθθ, ViscosityAttractSliderθθ, ViscosityRepelSliderθθ, ProbAttractSliderθθ, ProbRepelSliderθθ);
+		if (numberSliderα > 0) interaction(&teta, &alpha, AttractPowerSliderθα, RepelPowerSliderθα, AttractDistanceSliderθα, RepelDistanceSliderθα, ViscosityAttractSliderθα, ViscosityRepelSliderθα, ProbAttractSliderθα, ProbRepelSliderθα);
+		if (numberSliderβ > 0) interaction(&teta, &betha, AttractPowerSliderθβ, RepelPowerSliderθβ, AttractDistanceSliderθβ, RepelDistanceSliderθβ, ViscosityAttractSliderθβ, ViscosityRepelSliderθβ, ProbAttractSliderθβ, ProbRepelSliderθβ);
+		if (numberSliderγ > 0) interaction(&teta, &gamma, AttractPowerSliderθγ, RepelPowerSliderθγ, AttractDistanceSliderθγ, RepelDistanceSliderθγ, ViscosityAttractSliderθγ, ViscosityRepelSliderθγ, ProbAttractSliderθγ, ProbRepelSliderθγ);
+		if (numberSliderδ > 0) interaction(&teta, &elta, AttractPowerSliderθδ, RepelPowerSliderθδ, AttractDistanceSliderθδ, RepelDistanceSliderθδ, ViscosityAttractSliderθδ, ViscosityRepelSliderθδ, ProbAttractSliderθδ, ProbRepelSliderθδ);
+		if (numberSliderε > 0) interaction(&teta, &epsilon, AttractPowerSliderθε, RepelPowerSliderθε, AttractDistanceSliderθε, RepelDistanceSliderθε, ViscosityAttractSliderθε, ViscosityRepelSliderθε, ProbAttractSliderθε, ProbRepelSliderθε);
+		if (numberSliderζ > 0) interaction(&teta, &zeta, AttractPowerSliderθζ, RepelPowerSliderθζ, AttractDistanceSliderθζ, RepelDistanceSliderθζ, ViscosityAttractSliderθζ, ViscosityRepelSliderθζ, ProbAttractSliderθζ, ProbRepelSliderθζ);
+		if (numberSliderη > 0) interaction(&teta, &eta, AttractPowerSliderθη, RepelPowerSliderθη, AttractDistanceSliderθη, RepelDistanceSliderθη, ViscosityAttractSliderθη, ViscosityRepelSliderθη, ProbAttractSliderθη, ProbRepelSliderθη);
 	}
 
 	if (save) { saveSettings(); }
@@ -2917,6 +4746,7 @@ void ofApp::draw()
 	{
 		ofClear(0);
 	}
+	
 	//fps counter
 	cntFps++;
 	now = clock();
@@ -2932,119 +4762,104 @@ void ofApp::draw()
 		cntFps = 0;
 	}
 
-	//Check for GUI interaction
-	if (resetButton) 
-	{ 
-		restart(); 
-	}
-	if (attractDarkButton)
-	{
-		attractDark();
-	}
-	if (repulseDarkButton)
-	{
-		repulseDark();
-	}
-	if (freezeButton)
-	{
-		freeze();
-	}
-	if (randomGeneral)
-	{
-		random();
-		restart();
-	}
-	if (randomRelations)
-	{
-		rndrel();
-	}
-	if (randomCount)
-	{
-		monads();
-		restart();
-	}
-	if (randomVsc)
-	{
-		rndvsc();
-	}
-	if (randomProb)
-	{
-		rndprob();
-	}
-	if (randomChoice)
-	{
-		rndir();
-	}
-	if (rndDarkButton)
-	{
-		rndDark();
-	}
-	if (numberSliderα > 0) { Draw(&alpha); }
-	if (numberSliderβ > 0) { Draw(&betha); }
-	if (numberSliderδ > 0) { Draw(&elta); }
-	if (numberSliderγ > 0) { Draw(&gamma); }
-	if (numberSliderε > 0) { Draw(&epsilon); }
-	if (numberSliderζ > 0) { Draw(&zeta); }
-	if (numberSliderη > 0) { Draw(&eta); }
-	if (numberSliderθ > 0) { Draw(&teta); }
-	if (numberSliderα < 0.0F) numberSliderα = 0;
-	if (numberSliderβ < 0.0F) numberSliderβ = 0;
-	if (numberSliderδ < 0.0F) numberSliderδ = 0;
-	if (numberSliderγ < 0.0F) numberSliderγ = 0;
-	if (numberSliderε < 0.0F) numberSliderε = 0;
-	if (numberSliderζ < 0.0F) numberSliderζ = 0;
-	if (numberSliderη < 0.0F) numberSliderη = 0;
-	if (numberSliderθ < 0.0F) numberSliderθ = 0;
+	
+		
 
-	gui.draw();
-}
+		//Check for GUI interaction
+		if (resetButton)
+		{
+			restart();
+		}
+		if (freezeButton)
+		{
+			freeze();
+		}
+		if (randomGeneral)
+		{
+			random();
+			restart();
+		}
+		if (randomRelations)
+		{
+			rndrel();
+		}
+		if (randomCount)
+		{
+			monads();
+			restart();
+		}
+		if (randomVsc)
+		{
+			rndvsc();
+		}
+		if (randomProb)
+		{
+			rndprob();
+		}
+		if (randomChoice)
+		{
+			rndir();
+		}
+				
+		if (numberSliderα > 0) { Draw(&alpha); }
+		if (numberSliderβ > 0) { Draw(&betha); }
+		if (numberSliderδ > 0) { Draw(&elta); }
+		if (numberSliderγ > 0) { Draw(&gamma); }
+		if (numberSliderε > 0) { Draw(&epsilon); }
+		if (numberSliderζ > 0) { Draw(&zeta); }
+		if (numberSliderη > 0) { Draw(&eta); }
+		if (numberSliderθ > 0) { Draw(&teta); }
+		if (numberSliderα < 0.0F) numberSliderα = 0;
+		if (numberSliderβ < 0.0F) numberSliderβ = 0;
+		if (numberSliderδ < 0.0F) numberSliderδ = 0;
+		if (numberSliderγ < 0.0F) numberSliderγ = 0;
+		if (numberSliderε < 0.0F) numberSliderε = 0;
+		if (numberSliderζ < 0.0F) numberSliderζ = 0;
+		if (numberSliderη < 0.0F) numberSliderη = 0;
+		if (numberSliderθ < 0.0F) numberSliderθ = 0;
+		
+		gui.draw();
+	}
 
-void ofApp::keyPressed(int key)
-{
-	if (key == ' ')
-	{
-		random();
-		restart();
+	void ofApp::keyPressed(int key)
+		{
+			if (key == ' ')
+			{
+				random();
+				restart();
+			}
+			if (key == 'a')
+			{
+				rndrel();
+			}
+			if (key == 'f')
+			{
+				freeze();
+			}
+			if (key == 'q')
+			{
+				monads();
+				restart();
+			}
+			if (key == 'v')
+			{
+				rndvsc();
+			}
+			if (key == 'p')
+			{
+				rndprob();
+			}
+			if (key == 'i')
+			{
+				rndir();
+			}
+			if (key == 'r')
+			{
+				restart();
+			}
+			
 	}
-	if (key == 'a')
-	{
-		rndrel();
-	}
-	if (key == 'j')
-	{
-		attractDark();
-	}
-	if (key == 'k')
-	{
-		repulseDark();
-	}
-	if (key == 'f')
-	{
-		freeze();
-	}
-	if (key == 'q')
-	{
-		monads();
-		restart();
-	}
-	if (key == 'v')
-	{
-		rndvsc();
-	}
-	if (key == 'p')
-	{
-		rndprob();
-	}
-	if (key == 'i')
-	{
-		rndir();
-	}
-	if (key == 'd')
-	{
-		rndDark();
-	}
-	if (key == 'r')
-	{
-		restart();
-	}
-}
+	
+	
+		
+	
