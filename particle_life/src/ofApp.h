@@ -128,10 +128,10 @@ public:
 	ofxFloatSlider minAttractPowerSlider;
 	ofxFloatSlider maxAttractPowerSlider;
 	float minAttP = 0;
-	float maxAttP = 100.0;
+	float maxAttP = 75.0;
 	ofxFloatSlider minRepelPowerSlider;
 	ofxFloatSlider maxRepelPowerSlider;
-	float minRepP = -100.0;
+	float minRepP = -50.0;
 	float maxRepP = 0.0;
 	ofxFloatSlider minAttractRangeSlider;
 	ofxFloatSlider maxAttractRangeSlider;
@@ -140,7 +140,7 @@ public:
 	ofxFloatSlider minRepelRangeSlider;
 	ofxFloatSlider maxRepelRangeSlider;
 	float minRepR = 0.0;
-	float maxRepR = 100.0;
+	float maxRepR = 30.0;
 	ofxFloatSlider minAttractViscoSlider;
 	ofxFloatSlider maxAttractViscoSlider;
 	float minAttV = 0.0;

@@ -11,14 +11,14 @@ std::string physic_text;
 
 //Simulation parameters
 int cntFps = 0;
-float minAttP = -50;
-float maxAttP = 50;
+float minAttP = 0;
+float maxAttP = 75;
 float minAttR = 0;
 float maxAttR = 100;
 float minRepP = -50;
-float maxRepP = 50;
+float maxRepP = 0;
 float minRepR = 0;
-float maxRepR = 100;
+float maxRepR = 30;
 float minAttV = 0.7;
 float maxAttV = 1.0;
 float minRepV = 0.7;
@@ -3693,8 +3693,8 @@ void ofApp::setup()
 
 	// MinMax Group
 	MinMaxGroup.setup("MinMax");
-	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, 0, 50));
-	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, 0, 50));
+	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, 0, 75));
+	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, 0, 75));
 	MinMaxGroup.add(minAttractRangeSlider.setup("Attract minimum range", minAttR, 0, 100));
 	MinMaxGroup.add(maxAttractRangeSlider.setup("Attract maximum range", maxAttR, 0, 100));
 	MinMaxGroup.add(minAttractViscoSlider.setup("Attract minimum viscosity", minAttV, 0.0, 1.0));
@@ -3703,8 +3703,8 @@ void ofApp::setup()
 	MinMaxGroup.add(maxAttractProbSlider.setup("Attract maximum probability", maxAttI, 0, 100));
 	MinMaxGroup.add(minRepelPowerSlider.setup("Repel minimum power", minRepP, -50, 0));
 	MinMaxGroup.add(maxRepelPowerSlider.setup("Repel maximum power", maxRepP, -50, 0));
-	MinMaxGroup.add(minRepelRangeSlider.setup("Repel minimum range", minRepR, 0, 100));
-	MinMaxGroup.add(maxRepelRangeSlider.setup("Repel maximum range", maxRepR, 0, 100));
+	MinMaxGroup.add(minRepelRangeSlider.setup("Repel minimum range", minRepR, 0, 30));
+	MinMaxGroup.add(maxRepelRangeSlider.setup("Repel maximum range", maxRepR, 0, 30));
 	MinMaxGroup.add(minRepelViscoSlider.setup("Repel minimum viscosity", minRepV, 0.0, 1.0));
 	MinMaxGroup.add(maxRepelViscoSlider.setup("Repel maximum viscosity", maxRepV, 0.0, 1.0));
 	MinMaxGroup.add(minRepelProbSlider.setup("Repel minimum probability", minRepI, 0, 100));
@@ -4196,7 +4196,7 @@ void ofApp::setup()
 	gui.add(&etaGroup);
 
 	// Teta
-	tetaGroup.setup("Teta - Dark");
+	tetaGroup.setup("Teta");
 	tetaGroup.add(AttractPowerSliderθα.setup("Attract power teta x alpha:", pAttractPowerSliderθα, minAttP, maxAttP));
 	tetaGroup.add(AttractPowerSliderθβ.setup("Attract power teta x betha:", pAttractPowerSliderθβ, minAttP, maxAttP));
 	tetaGroup.add(AttractPowerSliderθγ.setup("Attract power teta x gamma:", pAttractPowerSliderθγ, minAttP, maxAttP));
