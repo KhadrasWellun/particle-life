@@ -3,9 +3,10 @@
 
 # Artificial Universe with Particle Life Simulation
 
-NEW 1.7 version!!!
- - A new designed menu!
- - 7 Neon colors!
+NEW 1.8 version!!! May 5, 2023
+ - 4 new matrix added! Now there is 8 matrix that controls the simulation.
+ - Random color for each respawn!
+ - Toroidal wrapping! Now each particle that touches the edges of the simulation is teleported to the opposite edge, keeping its direction.
  - Renamed particle types with greek letters to be able to easy change the colors of the particles!
  - Evolve Parameters with three categories: Interaction Evolve Parameters, Probability Evolve Parameters and Viscosity Evolve Parameters!
  - Randomization of simulation parameters between user-defined minimum and maximum limits!
@@ -14,9 +15,7 @@ NEW 1.7 version!!!
  
 Interface (C++ version)
 --------------------------------------------------------
-![](images/1.7.0_Menu_1.jpg)
---------------------------------------------------------
-![](images/1.7.0_Menu_2.jpg)
+![](images/1.8.0_menu.jpg)
 --------------------------------------------------------
 Example Results
 --------------------------------------------------------
