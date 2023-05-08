@@ -12,13 +12,13 @@ std::string physic_text;
 //Simulation parameters
 int cntFps = 0;
 float minAttP = 0;
-float maxAttP = 75;
+float maxAttP = 50;
 float minAttR = 0;
-float maxAttR = 100;
-float minRepP = -50;
+float maxAttR = 60;
+float minRepP = -70;
 float maxRepP = 0;
 float minRepR = 0;
-float maxRepR = 30;
+float maxRepR = 20;
 float minAttV = 0.7;
 float maxAttV = 1.0;
 float minRepV = 0.7;
@@ -121,8 +121,8 @@ void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Gr
 
 	const bool radius_toggle = radiusToogle;
 
-	boundHeight = ofGetHeight();
-	boundWidth = ofGetWidth();
+	spaceHeight = ofGetHeight();
+	spaceWidth = ofGetWidth();
 
 
 	const auto group1size = Group1->size();
@@ -143,18 +143,33 @@ void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Gr
 				const auto dy = p1.y - p2.y;
 				const auto r = dx * dx + dy * dy;
 
-				if (r < attractRadius * attractRadius && r != 0.0F) {
+				if (r < attractRadius * attractRadius && r < repelRadius * repelRadius && r != 0.0F) {
 					if (rd() % 100 < attractProbability) {
-						fx += (dx / std::sqrt(r)) * attractForce;
-						fy += (dy / std::sqrt(r)) * attractForce;
+						fx += (dx / std::sqrt(r)) * (attractForce - repelForce);
+						fy += (dy / std::sqrt(r)) * (attractForce - repelForce);
 					}
 				}
-				else if (r < repelRadius * repelRadius && r != 0.0F) {
-					if (rd() % 100 < repelProbability) {
-						fx -= (dx / std::sqrt(r)) * repelForce;
-						fy -= (dy / std::sqrt(r)) * repelForce;
-					}
+				else
+					if (r < attractRadius * attractRadius && r > repelRadius * repelRadius && r != 0.0F) {
+						if (rd() % 100 < repelProbability) {
+							fx -= (dx / std::sqrt(r)) * attractForce;
+							fy -= (dy / std::sqrt(r)) * attractForce;
+						}
+						else
+							if (r > attractRadius * attractRadius && r < repelRadius * repelRadius && r != 0.0F) {
+								if (rd() % 100 < repelProbability) {
+									fx -= (dx / std::sqrt(r)) * repelForce;
+									fy -= (dy / std::sqrt(r)) * repelForce;
+								}
+								else
+									if (r > attractRadius * attractRadius && r > repelRadius * repelRadius && r != 0.0F) {
+										if (rd() % 100 < repelProbability) {
+											fx -= 0;
+											fy -= 0;
+										}
+									}
 				}
+			}
 			}
 
 			float forceViscosity = (fx > 0) ? attractViscosity : repelViscosity;
@@ -168,8 +183,8 @@ void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Gr
 			{
 				if (p1.x < wallRepel) p1.vx += (wallRepel - p1.x) * 0.1;
 				if (p1.y < wallRepel) p1.vy += (wallRepel - p1.y) * 0.1;
-				if (p1.x > boundWidth - wallRepel) p1.vx += (boundWidth - wallRepel - p1.x) * 0.1;
-				if (p1.y > boundHeight - wallRepel) p1.vy += (boundHeight - wallRepel - p1.y) * 0.1;
+				if (p1.x > spaceWidth - wallRepel) p1.vx += (spaceWidth - wallRepel - p1.x) * 0.1;
+				if (p1.y > spaceHeight - wallRepel) p1.vy += (spaceHeight - wallRepel - p1.y) * 0.1;
 			}
 
 			//Update position based on velocity
@@ -178,46 +193,56 @@ void ofApp::interaction(std::vector<point>* Group1, const std::vector<point>* Gr
 
 			//Checking for canvas bounds
 			if (boundsToggle)
-				// Checking for canvas bounds and implementing toroidal wrapping
+				// Checking for canvas bounds and implementing toroidal wrapping. 
+				//Acest cod verifică dacă o particulă a ieșit din limitele ecranului pe oricare dintre margini și ajustează coordonatele în consecință pentru a crea efectul de wrapping toroidal.
 			{
-				if (p1.x < 0)
-				{
-					p1.x += boundWidth;
-				}
-				else if (p1.x > boundWidth)
-				{
-					p1.x -= boundWidth;
-				}
-
-				if (p1.y < 0)
-				{
-					p1.y += boundHeight;
-				}
-				else if (p1.y > boundHeight)
-				{
-					p1.y -= boundHeight;
-				}
+				if (p1.x < 0) p1.x = spaceWidth;//spaceWidth;
+				if (p1.x > spaceWidth) p1.x = 0;
+				if (p1.y < 0) p1.y = spaceHeight;//spaceHeight;
+				if (p1.y > spaceHeight) p1.y = 0;
 			}
+			/*
 
-			//Acest cod verifică dacă o particulă a ieșit din limitele ecranului pe oricare dintre margini și ajustează coordonatele în consecință pentru a crea efectul de wrapping toroidal.
+						{
+							if (p1.x < 0)
+							{
+								p1.x += boundWidth;
+							}
+							else if (p1.x > boundWidth)
+							{
+								p1.x -= boundWidth;
+							}
+
+							if (p1.y < 0)
+							{
+								p1.y += boundHeight;
+							}
+							else if (p1.y > boundHeight)
+							{
+								p1.y -= boundHeight;
+							}
+						}
+			*/
+
+
 
 		}
 
 	}
 }
-void ofApp::restart()
-{
-	if (numberSliderα > 0) { alpha = CreatePoints(numberSliderα, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderβ > 0) { betha = CreatePoints(numberSliderβ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderγ > 0) { gamma = CreatePoints(numberSliderγ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderδ > 0) { elta = CreatePoints(numberSliderδ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderε > 0) { epsilon = CreatePoints(numberSliderε, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderζ > 0) { zeta = CreatePoints(numberSliderζ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderη > 0) { eta = CreatePoints(numberSliderη, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-	if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
-}
-	
-	void ofApp::random()
+
+	void ofApp::restart()
+	{
+		if (numberSliderα > 0) { alpha = CreatePoints(numberSliderα, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderβ > 0) { betha = CreatePoints(numberSliderβ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderγ > 0) { gamma = CreatePoints(numberSliderγ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderδ > 0) { elta = CreatePoints(numberSliderδ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderε > 0) { epsilon = CreatePoints(numberSliderε, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderζ > 0) { zeta = CreatePoints(numberSliderζ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderη > 0) { eta = CreatePoints(numberSliderη, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+		if (numberSliderθ > 0) { teta = CreatePoints(numberSliderθ, ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)); }
+	}
+void ofApp::random()
 {
 	AttractEvoProbSlider = RandomFloat(0.1, 1.5);
 	AttractEvoAmountSlider = RandomFloat(0.1, 3);
@@ -307,7 +332,7 @@ void ofApp::restart()
 	ViscosityAttractSliderηζ = RandomFloat(minAttV, maxAttV);
 	ViscosityAttractSliderηη = RandomFloat(minAttV, maxAttV);
 	ViscosityAttractSliderηθ = RandomFloat(minAttV, maxAttV);
-		
+
 	ViscosityAttractSliderθα = RandomFloat(minAttV, maxAttV);
 	ViscosityAttractSliderθβ = RandomFloat(minAttV, maxAttV);
 	ViscosityAttractSliderθδ = RandomFloat(minAttV, maxAttV);
@@ -523,7 +548,7 @@ void ofApp::restart()
 	ProbRepelSliderηζ = RandomFloat(minRepI, maxRepI);
 	ProbRepelSliderηη = RandomFloat(minRepI, maxRepI);
 	ProbRepelSliderηθ = RandomFloat(minRepI, maxRepI);
-		
+
 	ProbRepelSliderθα = RandomFloat(minRepI, maxRepI);
 	ProbRepelSliderθβ = RandomFloat(minRepI, maxRepI);
 	ProbRepelSliderθγ = RandomFloat(minRepI, maxRepI);
@@ -571,7 +596,7 @@ void ofApp::restart()
 	RepelDistanceSliderαθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Betha
-	
+
 	AttractPowerSliderβα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderββ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderβδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -609,7 +634,7 @@ void ofApp::restart()
 	RepelDistanceSliderβθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Gamma
-	
+
 	AttractPowerSliderγα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderγβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderγδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -647,7 +672,7 @@ void ofApp::restart()
 	RepelDistanceSliderγθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Delta
-	
+
 	AttractPowerSliderδα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderδβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderδδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -685,7 +710,7 @@ void ofApp::restart()
 	RepelDistanceSliderδθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Epsilon
-	
+
 	AttractPowerSliderεα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderεβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderεδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -723,7 +748,7 @@ void ofApp::restart()
 	RepelDistanceSliderεθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Zeta
-	
+
 	AttractPowerSliderζα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderζβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderζδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -761,7 +786,7 @@ void ofApp::restart()
 	RepelDistanceSliderζθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Etha
-	
+
 	AttractPowerSliderηα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderηβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderηδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -799,7 +824,7 @@ void ofApp::restart()
 	RepelDistanceSliderηθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 
 	// Tetha
-	
+
 	AttractPowerSliderθα = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderθβ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
 	AttractPowerSliderθδ = RandomFloat(minAttP, maxAttP) * AttractForceVariance;
@@ -1430,7 +1455,7 @@ void ofApp::rndrel()
 	RepelDistanceSliderθε = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 	RepelDistanceSliderθζ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 	RepelDistanceSliderθη = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
-	RepelDistanceSliderθθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;	
+	RepelDistanceSliderθθ = RandomFloat(minRepR, maxRepR) * RepelRadiusVariance;
 }
 void ofApp::monads() {
 	numberSliderβ = RandomInt(500, 2000);
@@ -1591,7 +1616,7 @@ void ofApp::rndvsc() {
 }
 void ofApp::rndprob() {
 	probabilitySlider = RandomFloat(minAttI, maxAttI);
-	
+
 	ProbAttractSliderαα = RandomFloat(minAttI, maxAttI);
 	ProbAttractSliderαβ = RandomFloat(minAttI, maxAttI);
 	ProbAttractSliderαγ = RandomFloat(minAttI, maxAttI);
@@ -3073,581 +3098,578 @@ void ofApp::loadSettings()
 	}
 	else
 	{
-AttractPowerSliderαα = p[0];
-AttractPowerSliderαβ = p[1];
-AttractPowerSliderαδ = p[2];
-AttractPowerSliderαγ = p[3];
-AttractPowerSliderαε = p[4];
-AttractPowerSliderαζ = p[5];
-AttractPowerSliderαη = p[6];
-AttractPowerSliderαθ = p[7];
-AttractDistanceSliderαα = p[8];
-AttractDistanceSliderαβ = p[9];
-AttractDistanceSliderαδ = p[10];
-AttractDistanceSliderαγ = p[11];
-AttractDistanceSliderαε = p[12];
-AttractDistanceSliderαζ = p[13];
-AttractDistanceSliderαη = p[14];
-AttractDistanceSliderαθ = p[15];
-AttractPowerSliderβα = p[16];
-AttractPowerSliderββ = p[17];
-AttractPowerSliderβδ = p[18];
-AttractPowerSliderβγ = p[19];
-AttractPowerSliderβε = p[20];
-AttractPowerSliderβζ = p[21];
-AttractPowerSliderβη = p[22];
-AttractPowerSliderβθ = p[23];
-AttractDistanceSliderβα = p[24];
-AttractDistanceSliderββ = p[25];
-AttractDistanceSliderβδ = p[26];
-AttractDistanceSliderβγ = p[27];
-AttractDistanceSliderβε = p[28];
-AttractDistanceSliderβζ = p[29];
-AttractDistanceSliderβη = p[30];
-AttractDistanceSliderβθ = p[31];
-AttractPowerSliderγα = p[32];
-AttractPowerSliderγβ = p[33];
-AttractPowerSliderγδ = p[34];
-AttractPowerSliderγγ = p[35];
-AttractPowerSliderγε = p[36];
-AttractPowerSliderγζ = p[37];
-AttractPowerSliderγη = p[38];
-AttractPowerSliderγθ = p[39];
-AttractDistanceSliderγα = p[40];
-AttractDistanceSliderγβ = p[41];
-AttractDistanceSliderγδ = p[42];
-AttractDistanceSliderγγ = p[43];
-AttractDistanceSliderγε = p[44];
-AttractDistanceSliderγζ = p[45];
-AttractDistanceSliderγη = p[46];
-AttractDistanceSliderγθ = p[47];
-AttractPowerSliderδα = p[48];
-AttractPowerSliderδβ = p[49];
-AttractPowerSliderδδ = p[50];
-AttractPowerSliderδγ = p[51];
-AttractPowerSliderδε = p[52];
-AttractPowerSliderδζ = p[53];
-AttractPowerSliderδη = p[54];
-AttractPowerSliderδθ = p[55];
-AttractDistanceSliderδα = p[56];
-AttractDistanceSliderδβ = p[57];
-AttractDistanceSliderδδ = p[58];
-AttractDistanceSliderδγ = p[59];
-AttractDistanceSliderδε = p[60];
-AttractDistanceSliderδζ = p[61];
-AttractDistanceSliderδη = p[62];
-AttractDistanceSliderδθ = p[63];
-AttractPowerSliderεα = p[64];
-AttractPowerSliderεβ = p[65];
-AttractPowerSliderεδ = p[66];
-AttractPowerSliderεγ = p[67];
-AttractPowerSliderεε = p[68];
-AttractPowerSliderεζ = p[69];
-AttractPowerSliderεη = p[70];
-AttractPowerSliderεθ = p[71];
-AttractDistanceSliderεα = p[72];
-AttractDistanceSliderεβ = p[73];
-AttractDistanceSliderεδ = p[74];
-AttractDistanceSliderεγ = p[75];
-AttractDistanceSliderεε = p[76];
-AttractDistanceSliderεζ = p[77];
-AttractDistanceSliderεη = p[78];
-AttractDistanceSliderεθ = p[79];
-AttractPowerSliderζα = p[80];
-AttractPowerSliderζβ = p[81];
-AttractPowerSliderζδ = p[82];
-AttractPowerSliderζγ = p[83];
-AttractPowerSliderζε = p[84];
-AttractPowerSliderζζ = p[85];
-AttractPowerSliderζη = p[86];
-AttractPowerSliderζθ = p[87];
-AttractDistanceSliderζα = p[88];
-AttractDistanceSliderζβ = p[89];
-AttractDistanceSliderζδ = p[90];
-AttractDistanceSliderζγ = p[91];
-AttractDistanceSliderζε = p[92];
-AttractDistanceSliderζζ = p[93];
-AttractDistanceSliderζη = p[94];
-AttractDistanceSliderζθ = p[95];
-AttractPowerSliderηα = p[96];
-AttractPowerSliderηβ = p[97];
-AttractPowerSliderηδ = p[98];
-AttractPowerSliderηγ = p[99];
-AttractPowerSliderηε = p[100];
-AttractPowerSliderηζ = p[101];
-AttractPowerSliderηη = p[102];
-AttractPowerSliderηθ = p[103];
-AttractDistanceSliderηα = p[104];
-AttractDistanceSliderηβ = p[105];
-AttractDistanceSliderηδ = p[106];
-AttractDistanceSliderηγ = p[107];
-AttractDistanceSliderηε = p[108];
-AttractDistanceSliderηζ = p[109];
-AttractDistanceSliderηη = p[110];
-AttractDistanceSliderηθ = p[111];
-AttractPowerSliderθα = p[112];
-AttractPowerSliderθβ = p[113];
-AttractPowerSliderθδ = p[114];
-AttractPowerSliderθγ = p[115];
-AttractPowerSliderθε = p[116];
-AttractPowerSliderθζ = p[117];
-AttractPowerSliderθη = p[118];
-AttractPowerSliderθθ = p[119];
-AttractDistanceSliderθα = p[120];
-AttractDistanceSliderθβ = p[121];
-AttractDistanceSliderθδ = p[122];
-AttractDistanceSliderθγ = p[123];
-AttractDistanceSliderθε = p[124];
-AttractDistanceSliderθζ = p[125];
-AttractDistanceSliderηθ = p[126];
-AttractDistanceSliderθθ = p[127];
-RepelPowerSliderαα = p[128];
-RepelPowerSliderαβ = p[129];
-RepelPowerSliderαδ = p[130];
-RepelPowerSliderαγ = p[131];
-RepelPowerSliderαε = p[132];
-RepelPowerSliderαζ = p[133];
-RepelPowerSliderαη = p[134];
-RepelPowerSliderαθ = p[135];
-RepelDistanceSliderαα = p[136];
-RepelDistanceSliderαβ = p[137];
-RepelDistanceSliderαδ = p[138];
-RepelDistanceSliderαγ = p[139];
-RepelDistanceSliderαε = p[140];
-RepelDistanceSliderαζ = p[141];
-RepelDistanceSliderαη = p[142];
-RepelDistanceSliderαθ = p[143];
-RepelPowerSliderβα = p[144];
-RepelPowerSliderββ = p[145];
-RepelPowerSliderβδ = p[146];
-RepelPowerSliderβγ = p[147];
-RepelPowerSliderβε = p[148];
-RepelPowerSliderβζ = p[149];
-RepelPowerSliderβη = p[150];
-RepelPowerSliderβθ = p[151];
-RepelDistanceSliderβα = p[152];
-RepelDistanceSliderββ = p[153];
-RepelDistanceSliderβδ = p[154];
-RepelDistanceSliderβγ = p[155];
-RepelDistanceSliderβε = p[156];
-RepelDistanceSliderβζ = p[157];
-RepelDistanceSliderβη = p[158];
-RepelDistanceSliderβθ = p[159];
-RepelPowerSliderγα = p[160];
-RepelPowerSliderγβ = p[161];
-RepelPowerSliderγδ = p[162];
-RepelPowerSliderγγ = p[163];
-RepelPowerSliderγε = p[164];
-RepelPowerSliderγζ = p[165];
-RepelPowerSliderγη = p[166];
-RepelPowerSliderγθ = p[167];
-RepelDistanceSliderγα = p[168];
-RepelDistanceSliderγβ = p[169];
-RepelDistanceSliderγδ = p[170];
-RepelDistanceSliderγγ = p[171];
-RepelDistanceSliderγε = p[172];
-RepelDistanceSliderγζ = p[173];
-RepelDistanceSliderγη = p[174];
-RepelDistanceSliderγθ = p[175];
-RepelPowerSliderδα = p[176];
-RepelPowerSliderδβ = p[177];
-RepelPowerSliderδδ = p[178];
-RepelPowerSliderδγ = p[179];
-RepelPowerSliderδε = p[180];
-RepelPowerSliderδζ = p[181];
-RepelPowerSliderδη = p[182];
-RepelPowerSliderδθ = p[183];
-RepelDistanceSliderδα = p[184];
-RepelDistanceSliderδβ = p[185];
-RepelDistanceSliderδδ = p[186];
-RepelDistanceSliderδγ = p[187];
-RepelDistanceSliderδε = p[188];
-RepelDistanceSliderδζ = p[189];
-RepelDistanceSliderδη = p[190];
-RepelDistanceSliderδθ = p[191];
-RepelPowerSliderεα = p[192];
-RepelPowerSliderεβ = p[193];
-RepelPowerSliderεδ = p[194];
-RepelPowerSliderεγ = p[195];
-RepelPowerSliderεε = p[196];
-RepelPowerSliderεζ = p[197];
-RepelPowerSliderεη = p[198];
-RepelPowerSliderεθ = p[199];
-RepelDistanceSliderεα = p[200];
-RepelDistanceSliderεβ = p[201];
-RepelDistanceSliderεδ = p[202];
-RepelDistanceSliderεγ = p[203];
-RepelDistanceSliderεε = p[204];
-RepelDistanceSliderεζ = p[205];
-RepelDistanceSliderεη = p[206];
-RepelDistanceSliderεθ = p[207];
-RepelPowerSliderζα = p[208];
-RepelPowerSliderζβ = p[209];
-RepelPowerSliderζδ = p[210];
-RepelPowerSliderζγ = p[211];
-RepelPowerSliderζε = p[212];
-RepelPowerSliderζζ = p[213];
-RepelPowerSliderζη = p[214];
-RepelPowerSliderζθ = p[215];
-RepelDistanceSliderζα = p[216];
-RepelDistanceSliderζβ = p[217];
-RepelDistanceSliderζδ = p[218];
-RepelDistanceSliderζγ = p[219];
-RepelDistanceSliderζε = p[220];
-RepelDistanceSliderζζ = p[221];
-RepelDistanceSliderζη = p[222];
-RepelDistanceSliderζθ = p[223];
-RepelPowerSliderηα = p[224];
-RepelPowerSliderηβ = p[225];
-RepelPowerSliderηδ = p[226];
-RepelPowerSliderηγ = p[227];
-RepelPowerSliderηε = p[228];
-RepelPowerSliderηζ = p[229];
-RepelPowerSliderηη = p[230];
-RepelPowerSliderηθ = p[231];
-RepelDistanceSliderηα = p[232];
-RepelDistanceSliderηβ = p[233];
-RepelDistanceSliderηδ = p[234];
-RepelDistanceSliderηγ = p[235];
-RepelDistanceSliderηε = p[236];
-RepelDistanceSliderηζ = p[237];
-RepelDistanceSliderηη = p[238];
-RepelDistanceSliderηθ = p[239];
-RepelPowerSliderθα = p[240];
-RepelPowerSliderθβ = p[241];
-RepelPowerSliderθδ = p[242];
-RepelPowerSliderθγ = p[243];
-RepelPowerSliderθε = p[244];
-RepelPowerSliderθζ = p[245];
-RepelPowerSliderθη = p[246];
-RepelPowerSliderθθ = p[247];
-RepelDistanceSliderθα = p[248];
-RepelDistanceSliderθβ = p[249];
-RepelDistanceSliderθδ = p[250];
-RepelDistanceSliderθγ = p[251];
-RepelDistanceSliderθε = p[252];
-RepelDistanceSliderθζ = p[253];
-RepelDistanceSliderηθ = p[254];
-RepelDistanceSliderθθ = p[255];
-numberSliderβ = static_cast<int>(p[256]);
-numberSliderα = static_cast<int>(p[257]);
-numberSliderδ = static_cast<int>(p[258]);
-numberSliderγ = static_cast<int>(p[259]);
-numberSliderε = static_cast<int>(p[260]);
-numberSliderζ = static_cast<int>(p[261]);
-numberSliderη = static_cast<int>(p[262]);
-numberSliderθ = static_cast<int>(p[263]);
-viscositySlider = p[264];
-ViscosityAttractSliderαα = p[265];
-ViscosityAttractSliderαβ = p[266];
-ViscosityAttractSliderαγ = p[267];
-ViscosityAttractSliderαδ = p[268];
-ViscosityAttractSliderαε = p[269];
-ViscosityAttractSliderαζ = p[270];
-ViscosityAttractSliderαη = p[271];
-ViscosityAttractSliderβα = p[272];
-ViscosityAttractSliderββ = p[273];
-ViscosityAttractSliderβγ = p[274];
-ViscosityAttractSliderβδ = p[275];
-ViscosityAttractSliderβε = p[276];
-ViscosityAttractSliderβζ = p[277];
-ViscosityAttractSliderβη = p[278];
-ViscosityAttractSliderγα = p[279];
-ViscosityAttractSliderγβ = p[280];
-ViscosityAttractSliderγγ = p[281];
-ViscosityAttractSliderγδ = p[282];
-ViscosityAttractSliderγε = p[283];
-ViscosityAttractSliderγζ = p[284];
-ViscosityAttractSliderγη = p[285];
-ViscosityAttractSliderδα = p[286];
-ViscosityAttractSliderδβ = p[287];
-ViscosityAttractSliderδγ = p[288];
-ViscosityAttractSliderδδ = p[289];
-ViscosityAttractSliderδε = p[290];
-ViscosityAttractSliderδζ = p[291];
-ViscosityAttractSliderδη = p[292];
-ViscosityAttractSliderεα = p[293];
-ViscosityAttractSliderεβ = p[294];
-ViscosityAttractSliderεγ = p[295];
-ViscosityAttractSliderεδ = p[296];
-ViscosityAttractSliderεε = p[297];
-ViscosityAttractSliderεζ = p[298];
-ViscosityAttractSliderεη = p[299];
-ViscosityAttractSliderζα = p[300];
-ViscosityAttractSliderζβ = p[301];
-ViscosityAttractSliderζγ = p[302];
-ViscosityAttractSliderζδ = p[303];
-ViscosityAttractSliderζε = p[304];
-ViscosityAttractSliderζζ = p[305];
-ViscosityAttractSliderζη = p[306];
-ViscosityAttractSliderηα = p[307];
-ViscosityAttractSliderηβ = p[308];
-ViscosityAttractSliderηγ = p[309];
-ViscosityAttractSliderηδ = p[310];
-ViscosityAttractSliderηε = p[311];
-ViscosityAttractSliderηζ = p[312];
-ViscosityAttractSliderηη = p[313];
-ViscosityAttractSliderαθ = p[314];
-ViscosityAttractSliderβθ = p[315];
-ViscosityAttractSliderγθ = p[316];
-ViscosityAttractSliderδθ = p[317];
-ViscosityAttractSliderεθ = p[318];
-ViscosityAttractSliderζθ = p[319];
-ViscosityAttractSliderηθ = p[320];
-ViscosityAttractSliderθα = p[321];
-ViscosityAttractSliderθβ = p[322];
-ViscosityAttractSliderθγ = p[323];
-ViscosityAttractSliderθδ = p[324];
-ViscosityAttractSliderθε = p[325];
-ViscosityAttractSliderθζ = p[326];
-ViscosityAttractSliderθη = p[327];
-ViscosityAttractSliderθθ = p[328];
-ViscosityRepelSliderαα = p[329];
-ViscosityRepelSliderαβ = p[330];
-ViscosityRepelSliderαγ = p[331];
-ViscosityRepelSliderαδ = p[332];
-ViscosityRepelSliderαε = p[333];
-ViscosityRepelSliderαζ = p[334];
-ViscosityRepelSliderαη = p[335];
-ViscosityRepelSliderβα = p[336];
-ViscosityRepelSliderββ = p[337];
-ViscosityRepelSliderβγ = p[338];
-ViscosityRepelSliderβδ = p[339];
-ViscosityRepelSliderβε = p[340];
-ViscosityRepelSliderβζ = p[341];
-ViscosityRepelSliderβη = p[342];
-ViscosityRepelSliderγα = p[343];
-ViscosityRepelSliderγβ = p[344];
-ViscosityRepelSliderγγ = p[345];
-ViscosityRepelSliderγδ = p[346];
-ViscosityRepelSliderγε = p[347];
-ViscosityRepelSliderγζ = p[348];
-ViscosityRepelSliderγη = p[349];
-ViscosityRepelSliderδα = p[350];
-ViscosityRepelSliderδβ = p[351];
-ViscosityRepelSliderδγ = p[352];
-ViscosityRepelSliderδδ = p[353];
-ViscosityRepelSliderδε = p[354];
-ViscosityRepelSliderδζ = p[355];
-ViscosityRepelSliderδη = p[356];
-ViscosityRepelSliderεα = p[357];
-ViscosityRepelSliderεβ = p[358];
-ViscosityRepelSliderεγ = p[359];
-ViscosityRepelSliderεδ = p[360];
-ViscosityRepelSliderεε = p[361];
-ViscosityRepelSliderεζ = p[362];
-ViscosityRepelSliderεη = p[363];
-ViscosityRepelSliderζα = p[364];
-ViscosityRepelSliderζβ = p[365];
-ViscosityRepelSliderζγ = p[366];
-ViscosityRepelSliderζδ = p[367];
-ViscosityRepelSliderζε = p[368];
-ViscosityRepelSliderζζ = p[369];
-ViscosityRepelSliderζη = p[370];
-ViscosityRepelSliderηα = p[371];
-ViscosityRepelSliderηβ = p[372];
-ViscosityRepelSliderηγ = p[373];
-ViscosityRepelSliderηδ = p[374];
-ViscosityRepelSliderηε = p[375];
-ViscosityRepelSliderηζ = p[376];
-ViscosityRepelSliderηη = p[377];
-ViscosityRepelSliderαθ = p[378];
-ViscosityRepelSliderβθ = p[379];
-ViscosityRepelSliderγθ = p[380];
-ViscosityRepelSliderδθ = p[381];
-ViscosityRepelSliderεθ = p[382];
-ViscosityRepelSliderζθ = p[383];
-ViscosityRepelSliderηθ = p[384];
-ViscosityRepelSliderθα = p[385];
-ViscosityRepelSliderθβ = p[386];
-ViscosityRepelSliderθγ = p[387];
-ViscosityRepelSliderθδ = p[388];
-ViscosityRepelSliderθε = p[389];
-ViscosityRepelSliderθζ = p[390];
-ViscosityRepelSliderθη = p[391];
-ViscosityRepelSliderθθ = p[392];
-probabilitySlider = p[393];
-ProbAttractSliderαα = p[394];
-ProbAttractSliderαβ = p[395];
-ProbAttractSliderαγ = p[396];
-ProbAttractSliderαδ = p[397];
-ProbAttractSliderαε = p[398];
-ProbAttractSliderαζ = p[399];
-ProbAttractSliderαη = p[400];
-ProbAttractSliderβα = p[401];
-ProbAttractSliderββ = p[402];
-ProbAttractSliderβγ = p[403];
-ProbAttractSliderβδ = p[404];
-ProbAttractSliderβε = p[405];
-ProbAttractSliderβζ = p[406];
-ProbAttractSliderβη = p[407];
-ProbAttractSliderγα = p[408];
-ProbAttractSliderγβ = p[409];
-ProbAttractSliderγγ = p[410];
-ProbAttractSliderγδ = p[411];
-ProbAttractSliderγε = p[412];
-ProbAttractSliderγζ = p[413];
-ProbAttractSliderγη = p[414];
-ProbAttractSliderδα = p[415];
-ProbAttractSliderδβ = p[416];
-ProbAttractSliderδγ = p[417];
-ProbAttractSliderδδ = p[418];
-ProbAttractSliderδε = p[419];
-ProbAttractSliderδζ = p[420];
-ProbAttractSliderδη = p[421];
-ProbAttractSliderεα = p[422];
-ProbAttractSliderεβ = p[423];
-ProbAttractSliderεγ = p[424];
-ProbAttractSliderεδ = p[425];
-ProbAttractSliderεε = p[426];
-ProbAttractSliderεζ = p[427];
-ProbAttractSliderεη = p[428];
-ProbAttractSliderζα = p[429];
-ProbAttractSliderζβ = p[430];
-ProbAttractSliderζγ = p[431];
-ProbAttractSliderζδ = p[432];
-ProbAttractSliderζε = p[433];
-ProbAttractSliderζζ = p[434];
-ProbAttractSliderζη = p[435];
-ProbAttractSliderηα = p[436];
-ProbAttractSliderηβ = p[437];
-ProbAttractSliderηγ = p[438];
-ProbAttractSliderηδ = p[439];
-ProbAttractSliderηε = p[440];
-ProbAttractSliderηζ = p[441];
-ProbAttractSliderηη = p[442];
-ProbAttractSliderαθ = p[443];
-ProbAttractSliderβθ = p[444];
-ProbAttractSliderγθ = p[445];
-ProbAttractSliderδθ = p[446];
-ProbAttractSliderεθ = p[447];
-ProbAttractSliderζθ = p[448];
-ProbAttractSliderηθ = p[449];
-ProbAttractSliderθα = p[450];
-ProbAttractSliderθβ = p[451];
-ProbAttractSliderθγ = p[452];
-ProbAttractSliderθδ = p[453];
-ProbAttractSliderθε = p[454];
-ProbAttractSliderθζ = p[455];
-ProbAttractSliderθη = p[456];
-ProbAttractSliderθθ = p[457];
-ProbRepelSliderαα = p[458];
-ProbRepelSliderαβ = p[459];
-ProbRepelSliderαγ = p[460];
-ProbRepelSliderαδ = p[461];
-ProbRepelSliderαε = p[462];
-ProbRepelSliderαζ = p[463];
-ProbRepelSliderαη = p[464];
-ProbRepelSliderβα = p[465];
-ProbRepelSliderββ = p[466];
-ProbRepelSliderβγ = p[467];
-ProbRepelSliderβδ = p[468];
-ProbRepelSliderβε = p[469];
-ProbRepelSliderβζ = p[470];
-ProbRepelSliderβη = p[471];
-ProbRepelSliderγα = p[472];
-ProbRepelSliderγβ = p[473];
-ProbRepelSliderγγ = p[474];
-ProbRepelSliderγδ = p[475];
-ProbRepelSliderγε = p[476];
-ProbRepelSliderγζ = p[477];
-ProbRepelSliderγη = p[478];
-ProbRepelSliderδα = p[479];
-ProbRepelSliderδβ = p[480];
-ProbRepelSliderδγ = p[481];
-ProbRepelSliderδδ = p[482];
-ProbRepelSliderδε = p[483];
-ProbRepelSliderδζ = p[484];
-ProbRepelSliderδη = p[485];
-ProbRepelSliderεα = p[486];
-ProbRepelSliderεβ = p[487];
-ProbRepelSliderεγ = p[488];
-ProbRepelSliderεδ = p[489];
-ProbRepelSliderεε = p[490];
-ProbRepelSliderεζ = p[491];
-ProbRepelSliderεη = p[492];
-ProbRepelSliderζα = p[493];
-ProbRepelSliderζβ = p[494];
-ProbRepelSliderζγ = p[495];
-ProbRepelSliderζδ = p[496];
-ProbRepelSliderζε = p[497];
-ProbRepelSliderζζ = p[498];
-ProbRepelSliderζη = p[499];
-ProbRepelSliderηα = p[500];
-ProbRepelSliderηβ = p[501];
-ProbRepelSliderηγ = p[502];
-ProbRepelSliderηδ = p[503];
-ProbRepelSliderηε = p[504];
-ProbRepelSliderηζ = p[505];
-ProbRepelSliderηη = p[506];
-ProbRepelSliderαθ = p[507];
-ProbRepelSliderβθ = p[508];
-ProbRepelSliderγθ = p[509];
-ProbRepelSliderδθ = p[510];
-ProbRepelSliderεθ = p[511];
-ProbRepelSliderζθ = p[512];
-ProbRepelSliderηθ = p[513];
-ProbRepelSliderθα = p[514];
-ProbRepelSliderθβ = p[515];
-ProbRepelSliderθγ = p[516];
-ProbRepelSliderθδ = p[517];
-ProbRepelSliderθε = p[518];
-ProbRepelSliderθζ = p[519];
-ProbRepelSliderθη = p[520];
-ProbRepelSliderθθ = p[521];
-minAttractPowerSlider = p[522];
-maxAttractPowerSlider = p[523];
-minRepelPowerSlider = p[524];
-maxRepelPowerSlider = p[525];
-minAttractRangeSlider = p[526];
-maxAttractRangeSlider = p[527];
-minRepelRangeSlider = p[528];
-maxRepelRangeSlider = p[529];
-minAttractViscoSlider = p[530];
-maxAttractViscoSlider = p[531];
-minRepelViscoSlider = p[532];
-maxRepelViscoSlider = p[533];
-minAttractProbSlider = p[534];
-maxAttractProbSlider = p[535];
-minRepelProbSlider = p[536];
-maxRepelProbSlider = p[537];
-AttractEvoProbSlider = p[538];
-AttractEvoAmountSlider = p[539];
-ProbAttractEvoProbSlider = p[540];
-ProbAttractEvoAmountSlider = p[541];
-ViscoAttractEvoProbSlider = p[542];
-ViscoAttractEvoAmountSlider = p[543];
-RepelEvoProbSlider = p[544];
-RepelEvoAmountSlider = p[545];
-ProbRepelEvoProbSlider = p[546];
-ProbRepelEvoAmountSlider = p[547];
-ViscoRepelEvoProbSlider = p[548];
-ViscoRepelEvoAmountSlider = p[549];
-}
+		AttractPowerSliderαα = p[0];
+		AttractPowerSliderαβ = p[1];
+		AttractPowerSliderαδ = p[2];
+		AttractPowerSliderαγ = p[3];
+		AttractPowerSliderαε = p[4];
+		AttractPowerSliderαζ = p[5];
+		AttractPowerSliderαη = p[6];
+		AttractPowerSliderαθ = p[7];
+		AttractDistanceSliderαα = p[8];
+		AttractDistanceSliderαβ = p[9];
+		AttractDistanceSliderαδ = p[10];
+		AttractDistanceSliderαγ = p[11];
+		AttractDistanceSliderαε = p[12];
+		AttractDistanceSliderαζ = p[13];
+		AttractDistanceSliderαη = p[14];
+		AttractDistanceSliderαθ = p[15];
+		AttractPowerSliderβα = p[16];
+		AttractPowerSliderββ = p[17];
+		AttractPowerSliderβδ = p[18];
+		AttractPowerSliderβγ = p[19];
+		AttractPowerSliderβε = p[20];
+		AttractPowerSliderβζ = p[21];
+		AttractPowerSliderβη = p[22];
+		AttractPowerSliderβθ = p[23];
+		AttractDistanceSliderβα = p[24];
+		AttractDistanceSliderββ = p[25];
+		AttractDistanceSliderβδ = p[26];
+		AttractDistanceSliderβγ = p[27];
+		AttractDistanceSliderβε = p[28];
+		AttractDistanceSliderβζ = p[29];
+		AttractDistanceSliderβη = p[30];
+		AttractDistanceSliderβθ = p[31];
+		AttractPowerSliderγα = p[32];
+		AttractPowerSliderγβ = p[33];
+		AttractPowerSliderγδ = p[34];
+		AttractPowerSliderγγ = p[35];
+		AttractPowerSliderγε = p[36];
+		AttractPowerSliderγζ = p[37];
+		AttractPowerSliderγη = p[38];
+		AttractPowerSliderγθ = p[39];
+		AttractDistanceSliderγα = p[40];
+		AttractDistanceSliderγβ = p[41];
+		AttractDistanceSliderγδ = p[42];
+		AttractDistanceSliderγγ = p[43];
+		AttractDistanceSliderγε = p[44];
+		AttractDistanceSliderγζ = p[45];
+		AttractDistanceSliderγη = p[46];
+		AttractDistanceSliderγθ = p[47];
+		AttractPowerSliderδα = p[48];
+		AttractPowerSliderδβ = p[49];
+		AttractPowerSliderδδ = p[50];
+		AttractPowerSliderδγ = p[51];
+		AttractPowerSliderδε = p[52];
+		AttractPowerSliderδζ = p[53];
+		AttractPowerSliderδη = p[54];
+		AttractPowerSliderδθ = p[55];
+		AttractDistanceSliderδα = p[56];
+		AttractDistanceSliderδβ = p[57];
+		AttractDistanceSliderδδ = p[58];
+		AttractDistanceSliderδγ = p[59];
+		AttractDistanceSliderδε = p[60];
+		AttractDistanceSliderδζ = p[61];
+		AttractDistanceSliderδη = p[62];
+		AttractDistanceSliderδθ = p[63];
+		AttractPowerSliderεα = p[64];
+		AttractPowerSliderεβ = p[65];
+		AttractPowerSliderεδ = p[66];
+		AttractPowerSliderεγ = p[67];
+		AttractPowerSliderεε = p[68];
+		AttractPowerSliderεζ = p[69];
+		AttractPowerSliderεη = p[70];
+		AttractPowerSliderεθ = p[71];
+		AttractDistanceSliderεα = p[72];
+		AttractDistanceSliderεβ = p[73];
+		AttractDistanceSliderεδ = p[74];
+		AttractDistanceSliderεγ = p[75];
+		AttractDistanceSliderεε = p[76];
+		AttractDistanceSliderεζ = p[77];
+		AttractDistanceSliderεη = p[78];
+		AttractDistanceSliderεθ = p[79];
+		AttractPowerSliderζα = p[80];
+		AttractPowerSliderζβ = p[81];
+		AttractPowerSliderζδ = p[82];
+		AttractPowerSliderζγ = p[83];
+		AttractPowerSliderζε = p[84];
+		AttractPowerSliderζζ = p[85];
+		AttractPowerSliderζη = p[86];
+		AttractPowerSliderζθ = p[87];
+		AttractDistanceSliderζα = p[88];
+		AttractDistanceSliderζβ = p[89];
+		AttractDistanceSliderζδ = p[90];
+		AttractDistanceSliderζγ = p[91];
+		AttractDistanceSliderζε = p[92];
+		AttractDistanceSliderζζ = p[93];
+		AttractDistanceSliderζη = p[94];
+		AttractDistanceSliderζθ = p[95];
+		AttractPowerSliderηα = p[96];
+		AttractPowerSliderηβ = p[97];
+		AttractPowerSliderηδ = p[98];
+		AttractPowerSliderηγ = p[99];
+		AttractPowerSliderηε = p[100];
+		AttractPowerSliderηζ = p[101];
+		AttractPowerSliderηη = p[102];
+		AttractPowerSliderηθ = p[103];
+		AttractDistanceSliderηα = p[104];
+		AttractDistanceSliderηβ = p[105];
+		AttractDistanceSliderηδ = p[106];
+		AttractDistanceSliderηγ = p[107];
+		AttractDistanceSliderηε = p[108];
+		AttractDistanceSliderηζ = p[109];
+		AttractDistanceSliderηη = p[110];
+		AttractDistanceSliderηθ = p[111];
+		AttractPowerSliderθα = p[112];
+		AttractPowerSliderθβ = p[113];
+		AttractPowerSliderθδ = p[114];
+		AttractPowerSliderθγ = p[115];
+		AttractPowerSliderθε = p[116];
+		AttractPowerSliderθζ = p[117];
+		AttractPowerSliderθη = p[118];
+		AttractPowerSliderθθ = p[119];
+		AttractDistanceSliderθα = p[120];
+		AttractDistanceSliderθβ = p[121];
+		AttractDistanceSliderθδ = p[122];
+		AttractDistanceSliderθγ = p[123];
+		AttractDistanceSliderθε = p[124];
+		AttractDistanceSliderθζ = p[125];
+		AttractDistanceSliderηθ = p[126];
+		AttractDistanceSliderθθ = p[127];
+		RepelPowerSliderαα = p[128];
+		RepelPowerSliderαβ = p[129];
+		RepelPowerSliderαδ = p[130];
+		RepelPowerSliderαγ = p[131];
+		RepelPowerSliderαε = p[132];
+		RepelPowerSliderαζ = p[133];
+		RepelPowerSliderαη = p[134];
+		RepelPowerSliderαθ = p[135];
+		RepelDistanceSliderαα = p[136];
+		RepelDistanceSliderαβ = p[137];
+		RepelDistanceSliderαδ = p[138];
+		RepelDistanceSliderαγ = p[139];
+		RepelDistanceSliderαε = p[140];
+		RepelDistanceSliderαζ = p[141];
+		RepelDistanceSliderαη = p[142];
+		RepelDistanceSliderαθ = p[143];
+		RepelPowerSliderβα = p[144];
+		RepelPowerSliderββ = p[145];
+		RepelPowerSliderβδ = p[146];
+		RepelPowerSliderβγ = p[147];
+		RepelPowerSliderβε = p[148];
+		RepelPowerSliderβζ = p[149];
+		RepelPowerSliderβη = p[150];
+		RepelPowerSliderβθ = p[151];
+		RepelDistanceSliderβα = p[152];
+		RepelDistanceSliderββ = p[153];
+		RepelDistanceSliderβδ = p[154];
+		RepelDistanceSliderβγ = p[155];
+		RepelDistanceSliderβε = p[156];
+		RepelDistanceSliderβζ = p[157];
+		RepelDistanceSliderβη = p[158];
+		RepelDistanceSliderβθ = p[159];
+		RepelPowerSliderγα = p[160];
+		RepelPowerSliderγβ = p[161];
+		RepelPowerSliderγδ = p[162];
+		RepelPowerSliderγγ = p[163];
+		RepelPowerSliderγε = p[164];
+		RepelPowerSliderγζ = p[165];
+		RepelPowerSliderγη = p[166];
+		RepelPowerSliderγθ = p[167];
+		RepelDistanceSliderγα = p[168];
+		RepelDistanceSliderγβ = p[169];
+		RepelDistanceSliderγδ = p[170];
+		RepelDistanceSliderγγ = p[171];
+		RepelDistanceSliderγε = p[172];
+		RepelDistanceSliderγζ = p[173];
+		RepelDistanceSliderγη = p[174];
+		RepelDistanceSliderγθ = p[175];
+		RepelPowerSliderδα = p[176];
+		RepelPowerSliderδβ = p[177];
+		RepelPowerSliderδδ = p[178];
+		RepelPowerSliderδγ = p[179];
+		RepelPowerSliderδε = p[180];
+		RepelPowerSliderδζ = p[181];
+		RepelPowerSliderδη = p[182];
+		RepelPowerSliderδθ = p[183];
+		RepelDistanceSliderδα = p[184];
+		RepelDistanceSliderδβ = p[185];
+		RepelDistanceSliderδδ = p[186];
+		RepelDistanceSliderδγ = p[187];
+		RepelDistanceSliderδε = p[188];
+		RepelDistanceSliderδζ = p[189];
+		RepelDistanceSliderδη = p[190];
+		RepelDistanceSliderδθ = p[191];
+		RepelPowerSliderεα = p[192];
+		RepelPowerSliderεβ = p[193];
+		RepelPowerSliderεδ = p[194];
+		RepelPowerSliderεγ = p[195];
+		RepelPowerSliderεε = p[196];
+		RepelPowerSliderεζ = p[197];
+		RepelPowerSliderεη = p[198];
+		RepelPowerSliderεθ = p[199];
+		RepelDistanceSliderεα = p[200];
+		RepelDistanceSliderεβ = p[201];
+		RepelDistanceSliderεδ = p[202];
+		RepelDistanceSliderεγ = p[203];
+		RepelDistanceSliderεε = p[204];
+		RepelDistanceSliderεζ = p[205];
+		RepelDistanceSliderεη = p[206];
+		RepelDistanceSliderεθ = p[207];
+		RepelPowerSliderζα = p[208];
+		RepelPowerSliderζβ = p[209];
+		RepelPowerSliderζδ = p[210];
+		RepelPowerSliderζγ = p[211];
+		RepelPowerSliderζε = p[212];
+		RepelPowerSliderζζ = p[213];
+		RepelPowerSliderζη = p[214];
+		RepelPowerSliderζθ = p[215];
+		RepelDistanceSliderζα = p[216];
+		RepelDistanceSliderζβ = p[217];
+		RepelDistanceSliderζδ = p[218];
+		RepelDistanceSliderζγ = p[219];
+		RepelDistanceSliderζε = p[220];
+		RepelDistanceSliderζζ = p[221];
+		RepelDistanceSliderζη = p[222];
+		RepelDistanceSliderζθ = p[223];
+		RepelPowerSliderηα = p[224];
+		RepelPowerSliderηβ = p[225];
+		RepelPowerSliderηδ = p[226];
+		RepelPowerSliderηγ = p[227];
+		RepelPowerSliderηε = p[228];
+		RepelPowerSliderηζ = p[229];
+		RepelPowerSliderηη = p[230];
+		RepelPowerSliderηθ = p[231];
+		RepelDistanceSliderηα = p[232];
+		RepelDistanceSliderηβ = p[233];
+		RepelDistanceSliderηδ = p[234];
+		RepelDistanceSliderηγ = p[235];
+		RepelDistanceSliderηε = p[236];
+		RepelDistanceSliderηζ = p[237];
+		RepelDistanceSliderηη = p[238];
+		RepelDistanceSliderηθ = p[239];
+		RepelPowerSliderθα = p[240];
+		RepelPowerSliderθβ = p[241];
+		RepelPowerSliderθδ = p[242];
+		RepelPowerSliderθγ = p[243];
+		RepelPowerSliderθε = p[244];
+		RepelPowerSliderθζ = p[245];
+		RepelPowerSliderθη = p[246];
+		RepelPowerSliderθθ = p[247];
+		RepelDistanceSliderθα = p[248];
+		RepelDistanceSliderθβ = p[249];
+		RepelDistanceSliderθδ = p[250];
+		RepelDistanceSliderθγ = p[251];
+		RepelDistanceSliderθε = p[252];
+		RepelDistanceSliderθζ = p[253];
+		RepelDistanceSliderηθ = p[254];
+		RepelDistanceSliderθθ = p[255];
+		numberSliderβ = static_cast<int>(p[256]);
+		numberSliderα = static_cast<int>(p[257]);
+		numberSliderδ = static_cast<int>(p[258]);
+		numberSliderγ = static_cast<int>(p[259]);
+		numberSliderε = static_cast<int>(p[260]);
+		numberSliderζ = static_cast<int>(p[261]);
+		numberSliderη = static_cast<int>(p[262]);
+		numberSliderθ = static_cast<int>(p[263]);
+		viscositySlider = p[264];
+		ViscosityAttractSliderαα = p[265];
+		ViscosityAttractSliderαβ = p[266];
+		ViscosityAttractSliderαγ = p[267];
+		ViscosityAttractSliderαδ = p[268];
+		ViscosityAttractSliderαε = p[269];
+		ViscosityAttractSliderαζ = p[270];
+		ViscosityAttractSliderαη = p[271];
+		ViscosityAttractSliderβα = p[272];
+		ViscosityAttractSliderββ = p[273];
+		ViscosityAttractSliderβγ = p[274];
+		ViscosityAttractSliderβδ = p[275];
+		ViscosityAttractSliderβε = p[276];
+		ViscosityAttractSliderβζ = p[277];
+		ViscosityAttractSliderβη = p[278];
+		ViscosityAttractSliderγα = p[279];
+		ViscosityAttractSliderγβ = p[280];
+		ViscosityAttractSliderγγ = p[281];
+		ViscosityAttractSliderγδ = p[282];
+		ViscosityAttractSliderγε = p[283];
+		ViscosityAttractSliderγζ = p[284];
+		ViscosityAttractSliderγη = p[285];
+		ViscosityAttractSliderδα = p[286];
+		ViscosityAttractSliderδβ = p[287];
+		ViscosityAttractSliderδγ = p[288];
+		ViscosityAttractSliderδδ = p[289];
+		ViscosityAttractSliderδε = p[290];
+		ViscosityAttractSliderδζ = p[291];
+		ViscosityAttractSliderδη = p[292];
+		ViscosityAttractSliderεα = p[293];
+		ViscosityAttractSliderεβ = p[294];
+		ViscosityAttractSliderεγ = p[295];
+		ViscosityAttractSliderεδ = p[296];
+		ViscosityAttractSliderεε = p[297];
+		ViscosityAttractSliderεζ = p[298];
+		ViscosityAttractSliderεη = p[299];
+		ViscosityAttractSliderζα = p[300];
+		ViscosityAttractSliderζβ = p[301];
+		ViscosityAttractSliderζγ = p[302];
+		ViscosityAttractSliderζδ = p[303];
+		ViscosityAttractSliderζε = p[304];
+		ViscosityAttractSliderζζ = p[305];
+		ViscosityAttractSliderζη = p[306];
+		ViscosityAttractSliderηα = p[307];
+		ViscosityAttractSliderηβ = p[308];
+		ViscosityAttractSliderηγ = p[309];
+		ViscosityAttractSliderηδ = p[310];
+		ViscosityAttractSliderηε = p[311];
+		ViscosityAttractSliderηζ = p[312];
+		ViscosityAttractSliderηη = p[313];
+		ViscosityAttractSliderαθ = p[314];
+		ViscosityAttractSliderβθ = p[315];
+		ViscosityAttractSliderγθ = p[316];
+		ViscosityAttractSliderδθ = p[317];
+		ViscosityAttractSliderεθ = p[318];
+		ViscosityAttractSliderζθ = p[319];
+		ViscosityAttractSliderηθ = p[320];
+		ViscosityAttractSliderθα = p[321];
+		ViscosityAttractSliderθβ = p[322];
+		ViscosityAttractSliderθγ = p[323];
+		ViscosityAttractSliderθδ = p[324];
+		ViscosityAttractSliderθε = p[325];
+		ViscosityAttractSliderθζ = p[326];
+		ViscosityAttractSliderθη = p[327];
+		ViscosityAttractSliderθθ = p[328];
+		ViscosityRepelSliderαα = p[329];
+		ViscosityRepelSliderαβ = p[330];
+		ViscosityRepelSliderαγ = p[331];
+		ViscosityRepelSliderαδ = p[332];
+		ViscosityRepelSliderαε = p[333];
+		ViscosityRepelSliderαζ = p[334];
+		ViscosityRepelSliderαη = p[335];
+		ViscosityRepelSliderβα = p[336];
+		ViscosityRepelSliderββ = p[337];
+		ViscosityRepelSliderβγ = p[338];
+		ViscosityRepelSliderβδ = p[339];
+		ViscosityRepelSliderβε = p[340];
+		ViscosityRepelSliderβζ = p[341];
+		ViscosityRepelSliderβη = p[342];
+		ViscosityRepelSliderγα = p[343];
+		ViscosityRepelSliderγβ = p[344];
+		ViscosityRepelSliderγγ = p[345];
+		ViscosityRepelSliderγδ = p[346];
+		ViscosityRepelSliderγε = p[347];
+		ViscosityRepelSliderγζ = p[348];
+		ViscosityRepelSliderγη = p[349];
+		ViscosityRepelSliderδα = p[350];
+		ViscosityRepelSliderδβ = p[351];
+		ViscosityRepelSliderδγ = p[352];
+		ViscosityRepelSliderδδ = p[353];
+		ViscosityRepelSliderδε = p[354];
+		ViscosityRepelSliderδζ = p[355];
+		ViscosityRepelSliderδη = p[356];
+		ViscosityRepelSliderεα = p[357];
+		ViscosityRepelSliderεβ = p[358];
+		ViscosityRepelSliderεγ = p[359];
+		ViscosityRepelSliderεδ = p[360];
+		ViscosityRepelSliderεε = p[361];
+		ViscosityRepelSliderεζ = p[362];
+		ViscosityRepelSliderεη = p[363];
+		ViscosityRepelSliderζα = p[364];
+		ViscosityRepelSliderζβ = p[365];
+		ViscosityRepelSliderζγ = p[366];
+		ViscosityRepelSliderζδ = p[367];
+		ViscosityRepelSliderζε = p[368];
+		ViscosityRepelSliderζζ = p[369];
+		ViscosityRepelSliderζη = p[370];
+		ViscosityRepelSliderηα = p[371];
+		ViscosityRepelSliderηβ = p[372];
+		ViscosityRepelSliderηγ = p[373];
+		ViscosityRepelSliderηδ = p[374];
+		ViscosityRepelSliderηε = p[375];
+		ViscosityRepelSliderηζ = p[376];
+		ViscosityRepelSliderηη = p[377];
+		ViscosityRepelSliderαθ = p[378];
+		ViscosityRepelSliderβθ = p[379];
+		ViscosityRepelSliderγθ = p[380];
+		ViscosityRepelSliderδθ = p[381];
+		ViscosityRepelSliderεθ = p[382];
+		ViscosityRepelSliderζθ = p[383];
+		ViscosityRepelSliderηθ = p[384];
+		ViscosityRepelSliderθα = p[385];
+		ViscosityRepelSliderθβ = p[386];
+		ViscosityRepelSliderθγ = p[387];
+		ViscosityRepelSliderθδ = p[388];
+		ViscosityRepelSliderθε = p[389];
+		ViscosityRepelSliderθζ = p[390];
+		ViscosityRepelSliderθη = p[391];
+		ViscosityRepelSliderθθ = p[392];
+		probabilitySlider = p[393];
+		ProbAttractSliderαα = p[394];
+		ProbAttractSliderαβ = p[395];
+		ProbAttractSliderαγ = p[396];
+		ProbAttractSliderαδ = p[397];
+		ProbAttractSliderαε = p[398];
+		ProbAttractSliderαζ = p[399];
+		ProbAttractSliderαη = p[400];
+		ProbAttractSliderβα = p[401];
+		ProbAttractSliderββ = p[402];
+		ProbAttractSliderβγ = p[403];
+		ProbAttractSliderβδ = p[404];
+		ProbAttractSliderβε = p[405];
+		ProbAttractSliderβζ = p[406];
+		ProbAttractSliderβη = p[407];
+		ProbAttractSliderγα = p[408];
+		ProbAttractSliderγβ = p[409];
+		ProbAttractSliderγγ = p[410];
+		ProbAttractSliderγδ = p[411];
+		ProbAttractSliderγε = p[412];
+		ProbAttractSliderγζ = p[413];
+		ProbAttractSliderγη = p[414];
+		ProbAttractSliderδα = p[415];
+		ProbAttractSliderδβ = p[416];
+		ProbAttractSliderδγ = p[417];
+		ProbAttractSliderδδ = p[418];
+		ProbAttractSliderδε = p[419];
+		ProbAttractSliderδζ = p[420];
+		ProbAttractSliderδη = p[421];
+		ProbAttractSliderεα = p[422];
+		ProbAttractSliderεβ = p[423];
+		ProbAttractSliderεγ = p[424];
+		ProbAttractSliderεδ = p[425];
+		ProbAttractSliderεε = p[426];
+		ProbAttractSliderεζ = p[427];
+		ProbAttractSliderεη = p[428];
+		ProbAttractSliderζα = p[429];
+		ProbAttractSliderζβ = p[430];
+		ProbAttractSliderζγ = p[431];
+		ProbAttractSliderζδ = p[432];
+		ProbAttractSliderζε = p[433];
+		ProbAttractSliderζζ = p[434];
+		ProbAttractSliderζη = p[435];
+		ProbAttractSliderηα = p[436];
+		ProbAttractSliderηβ = p[437];
+		ProbAttractSliderηγ = p[438];
+		ProbAttractSliderηδ = p[439];
+		ProbAttractSliderηε = p[440];
+		ProbAttractSliderηζ = p[441];
+		ProbAttractSliderηη = p[442];
+		ProbAttractSliderαθ = p[443];
+		ProbAttractSliderβθ = p[444];
+		ProbAttractSliderγθ = p[445];
+		ProbAttractSliderδθ = p[446];
+		ProbAttractSliderεθ = p[447];
+		ProbAttractSliderζθ = p[448];
+		ProbAttractSliderηθ = p[449];
+		ProbAttractSliderθα = p[450];
+		ProbAttractSliderθβ = p[451];
+		ProbAttractSliderθγ = p[452];
+		ProbAttractSliderθδ = p[453];
+		ProbAttractSliderθε = p[454];
+		ProbAttractSliderθζ = p[455];
+		ProbAttractSliderθη = p[456];
+		ProbAttractSliderθθ = p[457];
+		ProbRepelSliderαα = p[458];
+		ProbRepelSliderαβ = p[459];
+		ProbRepelSliderαγ = p[460];
+		ProbRepelSliderαδ = p[461];
+		ProbRepelSliderαε = p[462];
+		ProbRepelSliderαζ = p[463];
+		ProbRepelSliderαη = p[464];
+		ProbRepelSliderβα = p[465];
+		ProbRepelSliderββ = p[466];
+		ProbRepelSliderβγ = p[467];
+		ProbRepelSliderβδ = p[468];
+		ProbRepelSliderβε = p[469];
+		ProbRepelSliderβζ = p[470];
+		ProbRepelSliderβη = p[471];
+		ProbRepelSliderγα = p[472];
+		ProbRepelSliderγβ = p[473];
+		ProbRepelSliderγγ = p[474];
+		ProbRepelSliderγδ = p[475];
+		ProbRepelSliderγε = p[476];
+		ProbRepelSliderγζ = p[477];
+		ProbRepelSliderγη = p[478];
+		ProbRepelSliderδα = p[479];
+		ProbRepelSliderδβ = p[480];
+		ProbRepelSliderδγ = p[481];
+		ProbRepelSliderδδ = p[482];
+		ProbRepelSliderδε = p[483];
+		ProbRepelSliderδζ = p[484];
+		ProbRepelSliderδη = p[485];
+		ProbRepelSliderεα = p[486];
+		ProbRepelSliderεβ = p[487];
+		ProbRepelSliderεγ = p[488];
+		ProbRepelSliderεδ = p[489];
+		ProbRepelSliderεε = p[490];
+		ProbRepelSliderεζ = p[491];
+		ProbRepelSliderεη = p[492];
+		ProbRepelSliderζα = p[493];
+		ProbRepelSliderζβ = p[494];
+		ProbRepelSliderζγ = p[495];
+		ProbRepelSliderζδ = p[496];
+		ProbRepelSliderζε = p[497];
+		ProbRepelSliderζζ = p[498];
+		ProbRepelSliderζη = p[499];
+		ProbRepelSliderηα = p[500];
+		ProbRepelSliderηβ = p[501];
+		ProbRepelSliderηγ = p[502];
+		ProbRepelSliderηδ = p[503];
+		ProbRepelSliderηε = p[504];
+		ProbRepelSliderηζ = p[505];
+		ProbRepelSliderηη = p[506];
+		ProbRepelSliderαθ = p[507];
+		ProbRepelSliderβθ = p[508];
+		ProbRepelSliderγθ = p[509];
+		ProbRepelSliderδθ = p[510];
+		ProbRepelSliderεθ = p[511];
+		ProbRepelSliderζθ = p[512];
+		ProbRepelSliderηθ = p[513];
+		ProbRepelSliderθα = p[514];
+		ProbRepelSliderθβ = p[515];
+		ProbRepelSliderθγ = p[516];
+		ProbRepelSliderθδ = p[517];
+		ProbRepelSliderθε = p[518];
+		ProbRepelSliderθζ = p[519];
+		ProbRepelSliderθη = p[520];
+		ProbRepelSliderθθ = p[521];
+		minAttractPowerSlider = p[522];
+		maxAttractPowerSlider = p[523];
+		minRepelPowerSlider = p[524];
+		maxRepelPowerSlider = p[525];
+		minAttractRangeSlider = p[526];
+		maxAttractRangeSlider = p[527];
+		minRepelRangeSlider = p[528];
+		maxRepelRangeSlider = p[529];
+		minAttractViscoSlider = p[530];
+		maxAttractViscoSlider = p[531];
+		minRepelViscoSlider = p[532];
+		maxRepelViscoSlider = p[533];
+		minAttractProbSlider = p[534];
+		maxAttractProbSlider = p[535];
+		minRepelProbSlider = p[536];
+		maxRepelProbSlider = p[537];
+		AttractEvoProbSlider = p[538];
+		AttractEvoAmountSlider = p[539];
+		ProbAttractEvoProbSlider = p[540];
+		ProbAttractEvoAmountSlider = p[541];
+		ViscoAttractEvoProbSlider = p[542];
+		ViscoAttractEvoAmountSlider = p[543];
+		RepelEvoProbSlider = p[544];
+		RepelEvoAmountSlider = p[545];
+		ProbRepelEvoProbSlider = p[546];
+		ProbRepelEvoAmountSlider = p[547];
+		ViscoRepelEvoProbSlider = p[548];
+		ViscoRepelEvoAmountSlider = p[549];
+	}
 	restart();
 }
-
 
 //------------------------------GUI initialization------------------------------
 void ofApp::setup()
 {
 	lastTime = clock();
-	ofSetWindowTitle("Particle Life - 8c128v128p version 1.8.0");
+	ofSetWindowTitle("Particle Life - 8c128v128p version 1.8.2");
 	ofSetVerticalSync(true);
-	
 	// Interface
 	gui.setup("Settings");
-	gui.loadFont("Arial", 10);
-	gui.setWidthElements(265.0f);
+	gui.loadFont("Arial", 12);
+	gui.setWidthElements(300.0f);
 	gui.add(fps.setup("FPS", "0"));
 	gui.add(physicLabel.setup("physic (ms)", "0"));
 	gui.add(resetButton.setup("Restart (r)"));
 	gui.add(motionBlurToggle.setup("Motion Blur", false));
 	gui.add(save.setup("Save Model"));
 	gui.add(load.setup("Load Model"));
-	
 	//gui.add(modelToggle.setup("Show Model", false));
-	
+
 	rndGroup.setup("Randomize");
 	rndGroup.add(randomGeneral.setup("Randomize all parameters (space bar)"));
 	rndGroup.add(randomRelations.setup("Randomize all interactions (a)"));
@@ -3693,18 +3715,18 @@ void ofApp::setup()
 
 	// MinMax Group
 	MinMaxGroup.setup("MinMax");
-	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, 0, 75));
-	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, 0, 75));
+	MinMaxGroup.add(minAttractPowerSlider.setup("Attract minimum power", minAttP, 0, 100));
+	MinMaxGroup.add(maxAttractPowerSlider.setup("Attract maximum power", maxAttP, 0, 100));
 	MinMaxGroup.add(minAttractRangeSlider.setup("Attract minimum range", minAttR, 0, 100));
 	MinMaxGroup.add(maxAttractRangeSlider.setup("Attract maximum range", maxAttR, 0, 100));
 	MinMaxGroup.add(minAttractViscoSlider.setup("Attract minimum viscosity", minAttV, 0.0, 1.0));
 	MinMaxGroup.add(maxAttractViscoSlider.setup("Attract maximum viscosity", maxAttV, 0.0, 1.0));
 	MinMaxGroup.add(minAttractProbSlider.setup("Attract minimum probability", minAttI, 0, 100));
 	MinMaxGroup.add(maxAttractProbSlider.setup("Attract maximum probability", maxAttI, 0, 100));
-	MinMaxGroup.add(minRepelPowerSlider.setup("Repel minimum power", minRepP, -50, 0));
-	MinMaxGroup.add(maxRepelPowerSlider.setup("Repel maximum power", maxRepP, -50, 0));
-	MinMaxGroup.add(minRepelRangeSlider.setup("Repel minimum range", minRepR, 0, 30));
-	MinMaxGroup.add(maxRepelRangeSlider.setup("Repel maximum range", maxRepR, 0, 30));
+	MinMaxGroup.add(minRepelPowerSlider.setup("Repel minimum power", minRepP, -100, 0));
+	MinMaxGroup.add(maxRepelPowerSlider.setup("Repel maximum power", maxRepP, -100, 0));
+	MinMaxGroup.add(minRepelRangeSlider.setup("Repel minimum range", minRepR, 0, 100));
+	MinMaxGroup.add(maxRepelRangeSlider.setup("Repel maximum range", maxRepR, 0, 100));
 	MinMaxGroup.add(minRepelViscoSlider.setup("Repel minimum viscosity", minRepV, 0.0, 1.0));
 	MinMaxGroup.add(maxRepelViscoSlider.setup("Repel maximum viscosity", maxRepV, 0.0, 1.0));
 	MinMaxGroup.add(minRepelProbSlider.setup("Repel minimum probability", minRepI, 0, 100));
@@ -4273,11 +4295,10 @@ void ofApp::setup()
 	expGroup.add(gravitySlider.setup("Gravity", worldGravity, -1, 1));
 	expGroup.minimize();
 	gui.add(&expGroup);
-	
-	
+
 	ofSetBackgroundAuto(false);
 	ofEnableAlphaBlending();
-	
+
 	restart();
 }
 
@@ -4636,13 +4657,13 @@ void ofApp::update()
 	if (numberSliderα > 0)
 	{
 		interaction(&alpha, &alpha, AttractPowerSliderαα, RepelPowerSliderαα, AttractDistanceSliderαα, RepelDistanceSliderαα, ViscosityAttractSliderαα, ViscosityRepelSliderαα, ProbAttractSliderαα, ProbRepelSliderαα);
-	if (numberSliderβ > 0) interaction(&alpha, &betha, AttractPowerSliderαβ, RepelPowerSliderαβ, AttractDistanceSliderαβ, RepelDistanceSliderαβ, ViscosityAttractSliderαβ, ViscosityRepelSliderαβ, ProbAttractSliderαβ, ProbRepelSliderαβ);
-	if (numberSliderγ > 0) interaction(&alpha, &gamma, AttractPowerSliderαγ, RepelPowerSliderαγ, AttractDistanceSliderαγ, RepelDistanceSliderαγ, ViscosityAttractSliderαγ, ViscosityRepelSliderαγ, ProbAttractSliderαγ, ProbRepelSliderαγ);
-	if (numberSliderδ > 0) interaction(&alpha, &elta, AttractPowerSliderαδ, RepelPowerSliderαδ, AttractDistanceSliderαδ, RepelDistanceSliderαδ, ViscosityAttractSliderαδ, ViscosityRepelSliderαδ, ProbAttractSliderαδ, ProbRepelSliderαδ);
-	if (numberSliderε > 0) interaction(&alpha, &epsilon, AttractPowerSliderαε, RepelPowerSliderαε, AttractDistanceSliderαε, RepelDistanceSliderαε, ViscosityAttractSliderαε, ViscosityRepelSliderαε, ProbAttractSliderαε, ProbRepelSliderαε);
-	if (numberSliderζ > 0) interaction(&alpha, &zeta, AttractPowerSliderαζ, RepelPowerSliderαζ, AttractDistanceSliderαζ, RepelDistanceSliderαζ, ViscosityAttractSliderαζ, ViscosityRepelSliderαζ, ProbAttractSliderαζ, ProbRepelSliderαζ);
-	if (numberSliderη > 0) interaction(&alpha, &eta, AttractPowerSliderαη, RepelPowerSliderαη, AttractDistanceSliderαη, RepelDistanceSliderαη, ViscosityAttractSliderαη, ViscosityRepelSliderαη, ProbAttractSliderαη, ProbRepelSliderαη);
-	if (numberSliderθ > 0) interaction(&alpha, &teta, AttractPowerSliderαθ, RepelPowerSliderαθ, AttractDistanceSliderαθ, RepelDistanceSliderαθ, ViscosityAttractSliderαθ, ViscosityRepelSliderαθ, ProbAttractSliderαθ, ProbRepelSliderαθ);
+		if (numberSliderβ > 0) interaction(&alpha, &betha, AttractPowerSliderαβ, RepelPowerSliderαβ, AttractDistanceSliderαβ, RepelDistanceSliderαβ, ViscosityAttractSliderαβ, ViscosityRepelSliderαβ, ProbAttractSliderαβ, ProbRepelSliderαβ);
+		if (numberSliderγ > 0) interaction(&alpha, &gamma, AttractPowerSliderαγ, RepelPowerSliderαγ, AttractDistanceSliderαγ, RepelDistanceSliderαγ, ViscosityAttractSliderαγ, ViscosityRepelSliderαγ, ProbAttractSliderαγ, ProbRepelSliderαγ);
+		if (numberSliderδ > 0) interaction(&alpha, &elta, AttractPowerSliderαδ, RepelPowerSliderαδ, AttractDistanceSliderαδ, RepelDistanceSliderαδ, ViscosityAttractSliderαδ, ViscosityRepelSliderαδ, ProbAttractSliderαδ, ProbRepelSliderαδ);
+		if (numberSliderε > 0) interaction(&alpha, &epsilon, AttractPowerSliderαε, RepelPowerSliderαε, AttractDistanceSliderαε, RepelDistanceSliderαε, ViscosityAttractSliderαε, ViscosityRepelSliderαε, ProbAttractSliderαε, ProbRepelSliderαε);
+		if (numberSliderζ > 0) interaction(&alpha, &zeta, AttractPowerSliderαζ, RepelPowerSliderαζ, AttractDistanceSliderαζ, RepelDistanceSliderαζ, ViscosityAttractSliderαζ, ViscosityRepelSliderαζ, ProbAttractSliderαζ, ProbRepelSliderαζ);
+		if (numberSliderη > 0) interaction(&alpha, &eta, AttractPowerSliderαη, RepelPowerSliderαη, AttractDistanceSliderαη, RepelDistanceSliderαη, ViscosityAttractSliderαη, ViscosityRepelSliderαη, ProbAttractSliderαη, ProbRepelSliderαη);
+		if (numberSliderθ > 0) interaction(&alpha, &teta, AttractPowerSliderαθ, RepelPowerSliderαθ, AttractDistanceSliderαθ, RepelDistanceSliderαθ, ViscosityAttractSliderαθ, ViscosityRepelSliderαθ, ProbAttractSliderαθ, ProbRepelSliderαθ);
 	}
 
 	if (numberSliderβ > 0)
@@ -4740,13 +4761,13 @@ void ofApp::draw()
 	if (motionBlurToggle)
 	{
 		ofSetColor(0, 0, 0, 64);
-		ofDrawRectangle(0, 0, boundWidth, boundHeight);
+		ofDrawRectangle(0, 0, spaceWidth, spaceHeight);
 	}
 	else
 	{
 		ofClear(0);
 	}
-	
+
 	//fps counter
 	cntFps++;
 	now = clock();
@@ -4762,104 +4783,96 @@ void ofApp::draw()
 		cntFps = 0;
 	}
 
-	
-		
-
-		//Check for GUI interaction
-		if (resetButton)
-		{
-			restart();
-		}
-		if (freezeButton)
-		{
-			freeze();
-		}
-		if (randomGeneral)
-		{
-			random();
-			restart();
-		}
-		if (randomRelations)
-		{
-			rndrel();
-		}
-		if (randomCount)
-		{
-			monads();
-			restart();
-		}
-		if (randomVsc)
-		{
-			rndvsc();
-		}
-		if (randomProb)
-		{
-			rndprob();
-		}
-		if (randomChoice)
-		{
-			rndir();
-		}
-				
-		if (numberSliderα > 0) { Draw(&alpha); }
-		if (numberSliderβ > 0) { Draw(&betha); }
-		if (numberSliderδ > 0) { Draw(&elta); }
-		if (numberSliderγ > 0) { Draw(&gamma); }
-		if (numberSliderε > 0) { Draw(&epsilon); }
-		if (numberSliderζ > 0) { Draw(&zeta); }
-		if (numberSliderη > 0) { Draw(&eta); }
-		if (numberSliderθ > 0) { Draw(&teta); }
-		if (numberSliderα < 0.0F) numberSliderα = 0;
-		if (numberSliderβ < 0.0F) numberSliderβ = 0;
-		if (numberSliderδ < 0.0F) numberSliderδ = 0;
-		if (numberSliderγ < 0.0F) numberSliderγ = 0;
-		if (numberSliderε < 0.0F) numberSliderε = 0;
-		if (numberSliderζ < 0.0F) numberSliderζ = 0;
-		if (numberSliderη < 0.0F) numberSliderη = 0;
-		if (numberSliderθ < 0.0F) numberSliderθ = 0;
-		
-		gui.draw();
+	//Check for GUI interaction
+	if (resetButton)
+	{
+		restart();
+	}
+	if (freezeButton)
+	{
+		freeze();
+	}
+	if (randomGeneral)
+	{
+		random();
+		restart();
+	}
+	if (randomRelations)
+	{
+		rndrel();
+	}
+	if (randomCount)
+	{
+		monads();
+		restart();
+	}
+	if (randomVsc)
+	{
+		rndvsc();
+	}
+	if (randomProb)
+	{
+		rndprob();
+	}
+	if (randomChoice)
+	{
+		rndir();
 	}
 
-	void ofApp::keyPressed(int key)
-		{
-			if (key == ' ')
-			{
-				random();
-				restart();
-			}
-			if (key == 'a')
-			{
-				rndrel();
-			}
-			if (key == 'f')
-			{
-				freeze();
-			}
-			if (key == 'q')
-			{
-				monads();
-				restart();
-			}
-			if (key == 'v')
-			{
-				rndvsc();
-			}
-			if (key == 'p')
-			{
-				rndprob();
-			}
-			if (key == 'i')
-			{
-				rndir();
-			}
-			if (key == 'r')
-			{
-				restart();
-			}
-			
+	if (numberSliderα > 0) { Draw(&alpha); }
+	if (numberSliderβ > 0) { Draw(&betha); }
+	if (numberSliderδ > 0) { Draw(&elta); }
+	if (numberSliderγ > 0) { Draw(&gamma); }
+	if (numberSliderε > 0) { Draw(&epsilon); }
+	if (numberSliderζ > 0) { Draw(&zeta); }
+	if (numberSliderη > 0) { Draw(&eta); }
+	if (numberSliderθ > 0) { Draw(&teta); }
+	if (numberSliderα < 0.0F) numberSliderα = 0;
+	if (numberSliderβ < 0.0F) numberSliderβ = 0;
+	if (numberSliderδ < 0.0F) numberSliderδ = 0;
+	if (numberSliderγ < 0.0F) numberSliderγ = 0;
+	if (numberSliderε < 0.0F) numberSliderε = 0;
+	if (numberSliderζ < 0.0F) numberSliderζ = 0;
+	if (numberSliderη < 0.0F) numberSliderη = 0;
+	if (numberSliderθ < 0.0F) numberSliderθ = 0;
+
+	gui.draw();
+}
+
+void ofApp::keyPressed(int key)
+{
+	if (key == ' ')
+	{
+		random();
+		restart();
 	}
-	
-	
-		
-	
+	if (key == 'a')
+	{
+		rndrel();
+	}
+	if (key == 'f')
+	{
+		freeze();
+	}
+	if (key == 'q')
+	{
+		monads();
+		restart();
+	}
+	if (key == 'v')
+	{
+		rndvsc();
+	}
+	if (key == 'p')
+	{
+		rndprob();
+	}
+	if (key == 'i')
+	{
+		rndir();
+	}
+	if (key == 'r')
+	{
+		restart();
+	}
+}

@@ -60,9 +60,8 @@ public:
 	void saveSettings();
 	void loadSettings();
 	void interaction(std::vector<point>* Group1, const std::vector<point>* Group2, float attractForce, float repelForce, float attractRadius, float repelRadius, float attractViscosity, float repelViscosity, float attractProbability, float repelProbability);;
-	
+
 	ofxPanel gui;
-	
 	
 	ofxGuiGroup evolveGroup;
 	ofxGuiGroup rndGroup;
@@ -80,8 +79,6 @@ public:
 
 	ofxButton resetButton;
 	ofxButton freezeButton;
-	ofxButton attractDarkButton;
-	ofxButton repulseDarkButton;
 	ofxButton selectButton;
 	ofxButton save;
 	ofxButton load;
@@ -92,7 +89,6 @@ public:
 	ofxButton randomChoice;
 	ofxButton randomProb;
 	ofxButton randomVsc;
-	ofxButton rndDarkButton;
 
 	ofxToggle boundsToggle;
 	ofxToggle modelToggle;
@@ -128,10 +124,10 @@ public:
 	ofxFloatSlider minAttractPowerSlider;
 	ofxFloatSlider maxAttractPowerSlider;
 	float minAttP = 0;
-	float maxAttP = 75.0;
+	float maxAttP = 50.0;
 	ofxFloatSlider minRepelPowerSlider;
 	ofxFloatSlider maxRepelPowerSlider;
-	float minRepP = -50.0;
+	float minRepP = -70.0;
 	float maxRepP = 0.0;
 	ofxFloatSlider minAttractRangeSlider;
 	ofxFloatSlider maxAttractRangeSlider;
@@ -140,22 +136,22 @@ public:
 	ofxFloatSlider minRepelRangeSlider;
 	ofxFloatSlider maxRepelRangeSlider;
 	float minRepR = 0.0;
-	float maxRepR = 30.0;
+	float maxRepR = 20.0;
 	ofxFloatSlider minAttractViscoSlider;
 	ofxFloatSlider maxAttractViscoSlider;
-	float minAttV = 0.0;
+	float minAttV = 0.75;
 	float maxAttV = 1.0;
 	ofxFloatSlider minRepelViscoSlider;
 	ofxFloatSlider maxRepelViscoSlider;
-	float minRepV = 0.0;
+	float minRepV = 0.7;
 	float maxRepV = 1.0;
 	ofxFloatSlider minAttractProbSlider;
 	ofxFloatSlider maxAttractProbSlider;
-	float minAttI = 0.0;
+	float minAttI = 0.8;
 	float maxAttI = 100.0;
 	ofxFloatSlider minRepelProbSlider;
 	ofxFloatSlider maxRepelProbSlider;
-	float minRepI = 0.0;
+	float minRepI = 0.7;
 	float maxRepI = 100.0;
 	ofxToggle radiusToogle;
 	ofxLabel physicLabel;
@@ -1368,8 +1364,11 @@ public:
 	ofxLabel fps;
 
 	// simulation bounds
-	int boundWidth = 1600;
-	int boundHeight = 900;
+	// int boundWidth = 1600;
+	// int boundHeight = 900;
+	int spaceWidth = 1600;
+	int spaceHeight = 900;
+	
 	float worldGravity = 0.0F;
 	float AttractForceVariance = 0.5F;
 	float AttractRadiusVariance = 0.5F;
