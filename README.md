@@ -3,58 +3,105 @@
 
 # Artificial Universe with Particle Life Simulation
 
-NEW 1.8 version!!! May 5, 2023
- - 4 new matrix added! Now there is 8 matrix that controls the simulation.
+NEW 2.0 version comming soon!!! The new addition is described in the pdf attached.
+ - Colored forces: Attraction and Rejection per each interaction.
+ - Probability of interaction: each interaction has a certain probability determined by a probability matrix, which has values in the range (0.00, 1.00).
+ - Interaction viscosity: each interaction in (1) has a certain viscosity determined by a viscosity matrix, which has values in the range (-1.00, 1.00). Note: negative viscosity increases particle velocity at each time step, and positive viscosity decreases it at each time step. The value -1.00 means double velocity per time step and 1.00 means zero velocity per time step.
+ - Circular motion: When the attractive forces cancel with the repulsive forces, and the force resulting from their combination is of zero intensity, then all the kinetic energy of the particles is converted into circular motion along the curved line where the forces cancel. The motion is not necessarily in the shape of a circle, but follows the neutralization curve, which can be circle, oval, or some other shape, but is always closed. This leads to the formation of a bond between particles and the creation of a meta-particle, whose edge is the line described by the edge of the particles moving on the neutralization curve. The particles remain bound until an external force (another particle or group of particles) intervenes to hit or influence them and remove them from the bound. With this property one can create groups of particles that form stable structures with stable bonds, necessary for another application option, i.e., the metaparticle.
+ - Reactivity: Particles can change color when they touch. At each touch the colors of the particles change according to a matrix called the reactivity matrix.
+ - Probability of reactivities: each reaction has a certain probability of happening, determined by a matrix of reaction probabilities, which has values in the range (0.00, 1.00).
+ - Gravitational forces: Each particle can have mass. This mass will cause a gravitational or antigravitational force of infinite range, whose intensity decreases with the square of the distance, according to the formula of gravitational attraction in relativistic system.
+ - Spatial-temporal dilation: increasing the velocity of the particle leads to an increase in its kinetic energy at increasing total mass. As the speed approaches that of light (c), the particle (which is a point) elongates and its apparent (not real) motion decreases (distance travelled per frame). When it reaches the speed of light (c) the particle becomes a stationary line (i.e., it does not move) as long as the simulation space and as thick as half the diameter of a point.
+ - Tidal forces: These arise due to the difference in the gravitational field between the near and far sides of an object. To implement this effect, it should calculate the gradient of the gravitational field at the position of each particle.
+ - Precession effects: Precession refers to the change in the direction of an object's axis of rotation over time. In the context of a particle simulation, this could be modelled by adding a rotational component to the motion of each particle. This could be achieved by introducing an additional force acting perpendicular to the direction of motion of the particle.
+ - Interactions of non-linear intensities: The intensities of the interaction forces are not constant over its range but evolve according to a function. There is one function for each type of attractive force and one for each type of repulsive force. The final (resultant) force will be the subtraction of the sum of all repulsive force functions from the sum of all attractive force functions for each point within the range of each force.
  - Random color for each respawn!
  - Toroidal wrapping! Now each particle that touches the edges of the simulation is teleported to the opposite edge, keeping its direction.
  - Renamed particle types with greek letters to be able to easy change the colors of the particles!
  - Evolve Parameters with three categories: Interaction Evolve Parameters, Probability Evolve Parameters and Viscosity Evolve Parameters!
  - Randomization of simulation parameters between user-defined minimum and maximum limits!
- - Probability and viscosity for each type of interaction!
  - Randomization of each category of parameters separately: particle number, viscosity, probability, interaction, and all these together!
  
 Interface (C++ version)
 --------------------------------------------------------
-![](images/1.8.0_menu.jpg)
+![](images/1.7.7.1_Menu.jpg)
 --------------------------------------------------------
 Example Results
 --------------------------------------------------------
-![](images/2023-01.jpg)
+![](images/Cell_cluster_01.jpg)
 -----------------------------------------------
-![](images/2023-02.jpg)
+![](images/Cell_cluster_02.jpg)
 -----------------------------------------------
-![](images/2023-03.jpg)
+![](images/Cell_cluster_03.jpg)
 -----------------------------------------------
-![](images/Planetary_ring.jpg)
+![](images/Many_cells_01.jpg)
 -----------------------------------------------
-![](images/001.jpg)
+![](images/Many_cells_02.jpg)
 -----------------------------------------------
-![](images/002.jpg)
+![](images/Many_cells_03.jpg)
 -----------------------------------------------
-![](images/003.jpg)
------------------------------------------------
-![](images/004.jpg)
------------------------------------------------
-![](images/005.jpg)
------------------------------------------------
-![](images/006.jpg)
------------------------------------------------
-![](images/007.jpg)
------------------------------------------------
-![](images/010.jpg)
------------------------------------------------
-![](images/011.jpg)
------------------------------------------------
-![](images/012.jpg)
------------------------------------------------
-
 Some Interesting Patterns to Reproduce:
 -------------------------------------
 You do not need to be exact with the parameters to reproduce these patterns. The best way to get interesting patterns is to first try random parameter explorations, once you find an interesting pattern, try fine-tuning it gradually. To avoid becoming stuck at a local maximum, you can make some occasional big parameter jumps. In this way interesting and different patterns shall keep poping up.
 
-![](images/Aliens_04.jpg)
+![](images/Entitatea_01.jpg)
 -----------------------------------------------
-![](images/Dark_Matter.jpg)
+![](images/Entitatea_02.jpg)
+-----------------------------------------------
+![](images/Entitatea_03.jpg)
+-----------------------------------------------
+![](images/Entitatea_07.jpg)
+-----------------------------------------------
+![](images/Entitatea_10.jpg)
+-----------------------------------------------
+![](images/Entitatea_X-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entitiy_070-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entitiy_078-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entitiy_083-x10.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_01-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_02-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_03-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_04-6x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_18-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_19-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_21-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_23-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_29-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_30-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_33-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_34-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_35-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_36-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_37-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity_39-10x.jpg)
+-----------------------------------------------
+![](images/1.7.7-Entity38-10x.jpg)
+-----------------------------------------------
+![](images/1.7.8-Entity_05-6x.jpg)
+-----------------------------------------------
+![](images/1.7.8-Entity_18-6x.jpg)
+-----------------------------------------------
+![](images/1.7.8-Entity_38-6x.jpg)
+-----------------------------------------------
 
 The video tutorial and walkthrough are available below.
 
@@ -78,9 +125,6 @@ https://youtu.be/5G5Bnc5s7Kg
 -----------------------------------------------
 https://youtu.be/3rGuQ2XCYvc
 -----------------------------------------------
-Interaction model
-
-![](images/Particle_Life_Model.jpg) ![](images/Particle_Life_Model_black.jpg)
 -----------------------------------------------
 Online Demo (JavaScript version):
 -----------------------------------------------  
@@ -124,14 +168,8 @@ Other Ports:
 
 My Todos:
 --------------------
-1. Introducing into the interactions between any two colours both the attractive force and the repulsive force, each with its intensity and range acting simultaneously (it is now either attractive or repulsive force).
-2. Ability to add more particle types (currently it is fixed to eight particle types).
-3. Adding the mass parameter for each particle type.
-4. Addition of particle reactivity. When two or more particles touch, there is a probability that some will change colour. This change is done according to a user-defined reactivity table.
-5. Addition of antiparticles, which have negative mass and annihilate on contact with positive mass particles. These will be generated from reactions between normal particles.
-6. Adding metaball. A metaball consists of two or more particles that touch and remain connected for a user-defined minimum time. The metaball will exert an attractive and a repulsive force, calculated according to a certain algorithm and depending on the component particles, and an electric charge as a force resulting from the composition of the internal coloured forces. 
-7. Adding a thermal view option, whereby kinetic energy can be viewed through a specific colour spectrum.
-8. (done) Linking each type of interaction to a probability parameter. Thus, no general probability will apply to all interactions between particles, but each type will have its own probability.
-9. Add the ability to zoom, take screenshots and record video.
-10. (done) Addition of a specific viscosity to each color interaction (possibility of creating superfluids).
-
+1. Singularity
+2. Wormhole
+3. Metaparticle
+4. Riemannian simulation surfaces
+5. Wrap speed
