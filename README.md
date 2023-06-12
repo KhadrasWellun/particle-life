@@ -3,7 +3,7 @@
 
 # Artificial Universe with Particle Life Simulation
 
-NEW 2.0 version comming soon!!! The new addition is described in the pdf attached.
+NEW 2.0 version coming soon!!! The new addition is described in the pdf attached.
  - Colored forces: Attraction and Rejection per each interaction.
  - Probability of interaction: each interaction has a certain probability determined by a probability matrix, which has values in the range (0.00, 1.00).
  - Interaction viscosity: each interaction in (1) has a certain viscosity determined by a viscosity matrix, which has values in the range (-1.00, 1.00). Note: negative viscosity increases particle velocity at each time step, and positive viscosity decreases it at each time step. The value -1.00 means double velocity per time step and 1.00 means zero velocity per time step.
